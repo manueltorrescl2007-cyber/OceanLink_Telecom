@@ -2,27 +2,28 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>OceanLink - Historial de Incidencias</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>OceanLink - Visualizar Incidencia</title>
+  <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
 <div class="contenedor">
 
+  <!-- ===== SIDEBAR: se repite igual en las 3 páginas ===== -->
   <nav class="sidebar">
     <h1 class="logo">Oceanlink</h1>
 
     <ul>
       <li><a href="index.html">Menú</a></li>
-      <li><a href="estado-red.html">Estado de la Red</a></li>
+      <li><a href="estado_red.html">Estado de la Red</a></li>
       <li>
         Incidencias
         <ul class="submenu">
-          <li><a href="incidencias-visualizar.html">Visualizar</a></li>
-          <li><a href="registrar-incidencia.html">Registrar</a></li>
+          <li><a href="incidencias-visualizar.html" class="active">Visualizar</a></li>
+          <li><a href="registrar_incidencia.html">Registrar</a></li>
         </ul>
       </li>
-      <li><a href="historial.html" class="active">Historial</a></li>
+      <li><a href="historial.html">Historial</a></li>
     </ul>
 
     <ul class="menu-inferior">
@@ -36,11 +37,11 @@
     </ul>
   </nav>
 
-  <!-- ===== CONTENIDO PRINCIPAL ===== -->
+  <!-- ===== CONTENIDO PRINCIPA Y OJO NO TOCAR EL MAIN BASENSE EN ESTE===== -->
   <main class="contenido">
 
     <header class="topbar">
-      <h2>Historial de incidencias</h2>
+      <h2>Visualizar Incidencia</h2>
       <div class="usuario">
         <div class="avatar"></div>
         <div>
@@ -51,23 +52,20 @@
     </header>
 
     <section>
-      <h3>Filtrar</h3>
+      <h3>Incidencias activas</h3>
 
       <div class="filtros">
-        <input type="date">
-        <input type="date">
         <select>
-          <option>Severidad</option>
+          <option>Todas las severidades</option>
           <option>Alta</option>
           <option>Crítica</option>
           <option>Media</option>
         </select>
         <select>
-          <option>Segmento</option>
+          <option>Todos los segmentos</option>
           <option>LIM-VLP-01</option>
           <option>LIM-VLP-02</option>
           <option>LIM-GYE-01</option>
-          <option>LIM-GYE-04</option>
         </select>
       </div>
 
@@ -77,33 +75,33 @@
           <th>ID</th>
           <th>Segmento</th>
           <th>Severidad</th>
-          <th>Cerrada el</th>
+          <th>Estado</th>
         </tr>
         </thead>
         <tbody>
         <tr>
-          <td><a href="incidencias-detalle.html">INC-009</a></td>
-          <td>LIM-VLP-01</td>
-          <td class="severidad-media">Media</td>
-          <td>18 ago 2026</td>
+          <td><a href="incidencias-detalle.html">INC-014</a></td>
+          <td>LIM-VLP-02</td>
+          <td class="severidad-alta">Alta</td>
+          <td>En análisis</td>
         </tr>
         <tr>
           <td><a href="incidencias-detalle.html">INC-013</a></td>
           <td>LIM-VLP-02</td>
           <td class="severidad-critica">Crítica</td>
-          <td>13 jul 2026</td>
+          <td>En reparación</td>
         </tr>
         <tr>
           <td><a href="incidencias-detalle.html">INC-011</a></td>
           <td>LIM-GYE-01</td>
           <td class="severidad-media">Media</td>
-          <td>25 ago 2025</td>
+          <td>Reparación programada</td>
         </tr>
         <tr>
           <td><a href="incidencias-detalle.html">INC-010</a></td>
           <td>LIM-GYE-04</td>
-          <td class="severidad-alta">Alto</td>
-          <td>5 jul 2025</td>
+          <td class="severidad-alta">Alta</td>
+          <td>Restaurado</td>
         </tr>
         </tbody>
       </table>
