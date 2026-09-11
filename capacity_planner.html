@@ -70,22 +70,22 @@
 
           <div class="fila">
             <span>Solicitudes registradas</span>
-            <strong>12</strong>
+            <strong id="totalSolicitudes">0</strong>
           </div>
 
           <div class="fila">
             <span>Pendientes de evaluación</span>
-            <strong>4</strong>
+            <strong id="totalPendientes">0</strong>
           </div>
 
           <div class="fila">
             <span>Solicitudes aprobadas</span>
-            <strong>6</strong>
+            <strong id="totalAprobadas">0</strong>
           </div>
 
           <div class="fila">
             <span>Servicios activos</span>
-            <strong>2</strong>
+            <strong id="totalServiciosActivos">0</strong>
           </div>
         </article>
 
@@ -94,17 +94,17 @@
           <h3>Estado de rutas por capacidad</h3>
 
           <div class="fila">
-            <span>8 disponibles</span>
+            <span id="textoDisponibles">0 disponibles</span>
             <span class="estado disponible"></span>
           </div>
 
           <div class="fila">
-            <span>3 limitadas</span>
+            <span id="textoLimitadas">0 limitadas</span>
             <span class="estado limitada"></span>
           </div>
 
           <div class="fila">
-            <span>2 insuficientes</span>
+            <span id="textoInsuficientes">0 insuficientes</span>
             <span class="estado insuficiente"></span>
           </div>
         </article>
@@ -112,46 +112,21 @@
         <!-- Acciones pendientes -->
         <article class="tarjeta acciones">
 
-            <div class="encabezado-acciones">
-                <h3>Acciones pendientes</h3>
+          <div class="encabezado-acciones">
 
-                <span id="cantidadAcciones" class="cantidad-acciones">3</span>
-            </div>
+            <h3>Acciones pendientes</h3>
 
-            <ul id="listaAcciones" class="lista-acciones">
+            <span id="cantidadAcciones" class="cantidad-acciones">
+              0
+            </span>
 
-                <li>
-                    <div class="informacion-accion">
-                        <strong>SOL-014</strong>
-                        <span>Verificar capacidad</span>
-                    </div>
+          </div>
 
-                    <span class="prioridad critica">Crítica</span>
-                </li>
+          <ul id="listaAcciones" class="lista-acciones"></ul>
 
-                <li>
-                    <div class="informacion-accion">
-                        <strong>SOL-018</strong>
-                        <span>Seleccionar ruta</span>
-                    </div>
-
-                    <span class="prioridad alta">Alta</span>
-                </li>
-
-                <li>
-                    <div class="informacion-accion">
-                        <strong>SOL-021</strong>
-                        <span>Confirmar reserva</span>
-                    </div>
-
-                    <span class="prioridad media">Media</span>
-                </li>
-
-            </ul>
-
-            <button id="botonNuevo" class="boton-nuevo" type="button">
-                + Nuevo
-            </button>
+          <button id="botonNuevo" class="boton-nuevo" type="button">
+            + Nuevo
+          </button>
 
         </article>
 

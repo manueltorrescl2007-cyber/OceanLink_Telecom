@@ -1,110 +1,365 @@
-const botonNuevo = document.getElementById("botonNuevo");
-const modalAccion = document.getElementById("modalAccion");
-const cerrarModal = document.getElementById("cerrarModal");
-const cancelarAccion = document.getElementById("cancelarAccion");
-const formularioAccion = document.getElementById("formularioAccion");
-const descripcionAccion = document.getElementById("descripcionAccion");
-const prioridadAccion = document.getElementById("prioridadAccion");
-const listaAcciones = document.getElementById("listaAcciones");
-const cantidadAcciones = document.getElementById("cantidadAcciones");
+const CLAVE_CLIENTES = "clientesOceanLinkV2";
+const CLAVE_RUTAS = "rutasOceanLinkV1";
+const CLAVE_ACCIONES = "accionesDashboardV2";
 
-/* Acciones iniciales */
+/* Datos recuperados */
 
-const accionesIniciales = [
-  {
-    codigo: "SOL-014",
-    descripcion: "Verificar capacidad",
-    prioridad: "critica"
-  },
-  {
-    codigo: "SOL-018",
-    descripcion: "Seleccionar ruta",
-    prioridad: "alta"
-  },
-  {
-    codigo: "SOL-021",
-    descripcion: "Confirmar reserva",
-    prioridad: "media"
-  }
-];
+let clientes = [];
+let rutas = [];
+let accionesManuales = [];
 
-/* Recupera las acciones guardadas en el navegador */
+/* Resumen */
 
-let acciones = JSON.parse(localStorage.getItem("accionesPendientes"));
+const totalSolicitudes =
+  document.getElementById("totalSolicitudes");
 
-if (acciones === null) {
-  acciones = accionesIniciales;
-  guardarAcciones();
+const totalPendientes =
+  document.getElementById("totalPendientes");
+
+const totalAprobadas =
+  document.getElementById("totalAprobadas");
+
+const totalServiciosActivos =
+  document.getElementById("totalServiciosActivos");
+
+/* Rutas */
+
+const textoDisponibles =
+  document.getElementById("textoDisponibles");
+
+const textoLimitadas =
+  document.getElementById("textoLimitadas");
+
+const textoInsuficientes =
+  document.getElementById("textoInsuficientes");
+
+/* Acciones */
+
+const listaAcciones =
+  document.getElementById("listaAcciones");
+
+const cantidadAcciones =
+  document.getElementById("cantidadAcciones");
+
+const botonNuevo =
+  document.getElementById("botonNuevo");
+
+/* Modal de acciones */
+
+const modalAccion =
+  document.getElementById("modalAccion");
+
+const cerrarModal =
+  document.getElementById("cerrarModal");
+
+const cancelarAccion =
+  document.getElementById("cancelarAccion");
+
+const formularioAccion =
+  document.getElementById("formularioAccion");
+
+const descripcionAccion =
+  document.getElementById("descripcionAccion");
+
+const prioridadAccion =
+  document.getElementById("prioridadAccion");
+
+/* Recupera todos los datos */
+
+function cargarDatos() {
+  clientes =
+    JSON.parse(
+      localStorage.getItem(CLAVE_CLIENTES)
+    ) || [];
+
+  rutas =
+    JSON.parse(
+      localStorage.getItem(CLAVE_RUTAS)
+    ) || [];
+
+  accionesManuales =
+    JSON.parse(
+      localStorage.getItem(CLAVE_ACCIONES)
+    ) || [];
 }
 
-/* Abre el formulario */
+/* Obtiene todas las solicitudes */
 
-botonNuevo.addEventListener("click", function () {
-  modalAccion.classList.add("mostrar");
-  descripcionAccion.focus();
-});
+function obtenerSolicitudes() {
+  const solicitudes = [];
 
-/* Cierra el formulario */
+  clientes.forEach(function (cliente) {
+    if (!Array.isArray(cliente.solicitudes)) {
+      return;
+    }
 
-cerrarModal.addEventListener("click", cerrarVentana);
-cancelarAccion.addEventListener("click", cerrarVentana);
+    cliente.solicitudes.forEach(function (solicitud) {
+      solicitudes.push({
+        clienteCodigo: cliente.codigo,
+        clienteNombre: cliente.nombre,
+        solicitud: solicitud
+      });
+    });
+  });
 
-function cerrarVentana() {
-  modalAccion.classList.remove("mostrar");
-  formularioAccion.reset();
+  return solicitudes;
 }
 
-/* Cierra el formulario al presionar fuera del cuadro */
+/* Obtiene todos los servicios */
 
-modalAccion.addEventListener("click", function (evento) {
-  if (evento.target === modalAccion) {
-    cerrarVentana();
-  }
-});
+function obtenerServicios() {
+  const servicios = [];
 
-/* Registra una nueva acción */
+  clientes.forEach(function (cliente) {
+    if (!Array.isArray(cliente.servicios)) {
+      return;
+    }
 
-formularioAccion.addEventListener("submit", function (evento) {
-  evento.preventDefault();
+    cliente.servicios.forEach(function (servicio) {
+      servicios.push({
+        clienteCodigo: cliente.codigo,
+        clienteNombre: cliente.nombre,
+        servicio: servicio
+      });
+    });
+  });
 
-  const nuevaAccion = {
-    codigo: generarCodigo(),
-    descripcion: descripcionAccion.value.trim(),
-    prioridad: prioridadAccion.value
-  };
+  return servicios;
+}
 
-  acciones.push(nuevaAccion);
+/* Actualiza los números del resumen */
 
-  guardarAcciones();
-  mostrarAcciones();
-  cerrarVentana();
-});
+function actualizarResumen() {
+  const solicitudes = obtenerSolicitudes();
+  const servicios = obtenerServicios();
 
-/* Genera automáticamente un código */
+  const pendientes = solicitudes.filter(
+    function (registro) {
+      return registro.solicitud.estado === "Pendiente";
+    }
+  );
 
-function generarCodigo() {
-  let numeroMayor = 0;
+  const aprobadas = solicitudes.filter(
+    function (registro) {
+      return registro.solicitud.estado === "Aprobado";
+    }
+  );
 
-  acciones.forEach(function (accion) {
-    const numero = parseInt(accion.codigo.replace("SOL-", ""));
+  const serviciosActivos = servicios.filter(
+    function (registro) {
+      return registro.servicio.estado === "Activo";
+    }
+  );
 
-    if (numero > numeroMayor) {
-      numeroMayor = numero;
+  totalSolicitudes.textContent =
+    solicitudes.length;
+
+  totalPendientes.textContent =
+    pendientes.length;
+
+  totalAprobadas.textContent =
+    aprobadas.length;
+
+  totalServiciosActivos.textContent =
+    serviciosActivos.length;
+}
+
+/* Calcula la capacidad utilizada por una ruta */
+
+function calcularCapacidadUsada(codigoRuta) {
+  let capacidadUsada = 0;
+
+  obtenerServicios().forEach(function (registro) {
+    const servicio = registro.servicio;
+
+    const consumeCapacidad =
+      servicio.estado === "Activo" ||
+      servicio.estado === "Provisionado";
+
+    if (
+      servicio.rutaCodigo === codigoRuta &&
+      consumeCapacidad
+    ) {
+      capacidadUsada +=
+        obtenerCapacidadServicio(servicio);
     }
   });
 
-  const nuevoNumero = numeroMayor + 1;
-
-  return "SOL-" + String(nuevoNumero).padStart(3, "0");
+  return capacidadUsada;
 }
 
-/* Muestra todas las acciones dentro de la tarjeta */
+/* Convierte la capacidad de un servicio a Gbps */
+
+function obtenerCapacidadServicio(servicio) {
+  if (
+    typeof servicio.capacidadGbps === "number"
+  ) {
+    return servicio.capacidadGbps;
+  }
+
+  const texto =
+    String(servicio.capacidad || "");
+
+  const cantidad =
+    parseFloat(texto) || 0;
+
+  if (
+    texto.toLowerCase().includes("mbps")
+  ) {
+    return cantidad / 1000;
+  }
+
+  return cantidad;
+}
+
+/* Obtiene la capacidad total de una ruta */
+
+function obtenerCapacidadRuta(ruta) {
+  if (
+    typeof ruta.capacidadTotalGbps === "number"
+  ) {
+    return ruta.capacidadTotalGbps;
+  }
+
+  const texto = String(
+    ruta.capacidadTotal ||
+    ruta.capacidad ||
+    ""
+  );
+
+  const cantidad =
+    parseFloat(texto) || 0;
+
+  if (
+    texto.toLowerCase().includes("mbps")
+  ) {
+    return cantidad / 1000;
+  }
+
+  return cantidad;
+}
+
+/* Calcula el estado automático de una ruta */
+
+function calcularEstadoRuta(ruta) {
+  const capacidadTotal =
+    obtenerCapacidadRuta(ruta);
+
+  const capacidadUsada =
+    calcularCapacidadUsada(ruta.codigo);
+
+  const disponible =
+    capacidadTotal - capacidadUsada;
+
+  const porcentajeDisponible =
+    capacidadTotal > 0
+      ? disponible / capacidadTotal
+      : 0;
+
+  if (disponible <= 0) {
+    return "Insuficiente";
+  }
+
+  if (porcentajeDisponible <= 0.30) {
+    return "Limitada";
+  }
+
+  return "Disponible";
+}
+
+/* Actualiza la tarjeta de rutas */
+
+function actualizarEstadoRutas() {
+  let disponibles = 0;
+  let limitadas = 0;
+  let insuficientes = 0;
+
+  rutas.forEach(function (ruta) {
+    const estado =
+      calcularEstadoRuta(ruta);
+
+    if (estado === "Disponible") {
+      disponibles++;
+    }
+
+    if (estado === "Limitada") {
+      limitadas++;
+    }
+
+    if (estado === "Insuficiente") {
+      insuficientes++;
+    }
+  });
+
+  textoDisponibles.textContent =
+    disponibles + " disponibles";
+
+  textoLimitadas.textContent =
+    limitadas + " limitadas";
+
+  textoInsuficientes.textContent =
+    insuficientes + " insuficientes";
+}
+
+/* Convierte solicitudes pendientes en acciones */
+
+function obtenerAccionesSolicitudes() {
+  const acciones = [];
+
+  obtenerSolicitudes().forEach(function (registro) {
+    const solicitud = registro.solicitud;
+
+    if (solicitud.estado === "Pendiente") {
+      acciones.push({
+        codigo: solicitud.codigo,
+
+        descripcion:
+          "Evaluar solicitud de " +
+          registro.clienteNombre,
+
+        prioridad: "media",
+
+        tipo: "solicitud"
+      });
+    }
+  });
+
+  return acciones;
+}
+
+/* Une acciones automáticas y manuales */
+
+function obtenerTodasLasAcciones() {
+  return [
+    ...obtenerAccionesSolicitudes(),
+    ...accionesManuales
+  ];
+}
+
+/* Muestra las acciones */
 
 function mostrarAcciones() {
+  const acciones =
+    obtenerTodasLasAcciones();
+
   listaAcciones.innerHTML = "";
 
+  cantidadAcciones.textContent =
+    acciones.length;
+
+  if (acciones.length === 0) {
+    listaAcciones.innerHTML = `
+      <li class="sin-acciones">
+        No existen acciones pendientes.
+      </li>
+    `;
+
+    return;
+  }
+
   acciones.forEach(function (accion) {
-    const elemento = document.createElement("li");
+    const elemento =
+      document.createElement("li");
 
     elemento.innerHTML = `
       <div class="informacion-accion">
@@ -113,39 +368,155 @@ function mostrarAcciones() {
       </div>
 
       <span class="prioridad ${accion.prioridad}">
-        ${obtenerNombrePrioridad(accion.prioridad)}
+        ${obtenerNombrePrioridad(accion)}
       </span>
     `;
 
     listaAcciones.appendChild(elemento);
   });
-
-  cantidadAcciones.textContent = acciones.length;
 }
 
-/* Convierte el nombre de la prioridad */
+/* Texto mostrado dentro de la etiqueta */
 
-function obtenerNombrePrioridad(prioridad) {
-  if (prioridad === "critica") {
+function obtenerNombrePrioridad(accion) {
+  if (accion.tipo === "solicitud") {
+    return "Pendiente";
+  }
+
+  if (accion.prioridad === "critica") {
     return "Crítica";
   }
 
-  if (prioridad === "alta") {
+  if (accion.prioridad === "alta") {
     return "Alta";
   }
 
   return "Media";
 }
 
-/* Guarda las acciones en el navegador */
+/* Abre el formulario de acciones */
+
+botonNuevo.addEventListener(
+  "click",
+  function () {
+    formularioAccion.reset();
+    modalAccion.classList.add("mostrar");
+    descripcionAccion.focus();
+  }
+);
+
+/* Guarda una acción manual */
+
+formularioAccion.addEventListener(
+  "submit",
+  function (evento) {
+    evento.preventDefault();
+
+    const accion = {
+      codigo: generarCodigoAccion(),
+
+      descripcion:
+        descripcionAccion.value.trim(),
+
+      prioridad:
+        prioridadAccion.value,
+
+      tipo: "manual"
+    };
+
+    accionesManuales.push(accion);
+
+    guardarAcciones();
+    mostrarAcciones();
+    cerrarVentana();
+  }
+);
+
+/* Genera el código de acción */
+
+function generarCodigoAccion() {
+  let numeroMayor = 0;
+
+  accionesManuales.forEach(function (accion) {
+    const numero = parseInt(
+      accion.codigo.replace("ACC-", "")
+    );
+
+    if (numero > numeroMayor) {
+      numeroMayor = numero;
+    }
+  });
+
+  return "ACC-" +
+    String(numeroMayor + 1).padStart(3, "0");
+}
+
+/* Guarda las acciones manuales */
 
 function guardarAcciones() {
   localStorage.setItem(
-    "accionesPendientes",
-    JSON.stringify(acciones)
+    CLAVE_ACCIONES,
+    JSON.stringify(accionesManuales)
   );
 }
 
-/* Muestra la lista al cargar la página */
+/* Cierra el formulario */
 
-mostrarAcciones();
+function cerrarVentana() {
+  modalAccion.classList.remove("mostrar");
+  formularioAccion.reset();
+}
+
+cerrarModal.addEventListener(
+  "click",
+  cerrarVentana
+);
+
+cancelarAccion.addEventListener(
+  "click",
+  cerrarVentana
+);
+
+modalAccion.addEventListener(
+  "click",
+  function (evento) {
+    if (evento.target === modalAccion) {
+      cerrarVentana();
+    }
+  }
+);
+
+/* Actualiza todo el Dashboard */
+
+function actualizarDashboard() {
+  cargarDatos();
+  actualizarResumen();
+  actualizarEstadoRutas();
+  mostrarAcciones();
+}
+
+/* Actualiza cuando se regresa de otra página */
+
+window.addEventListener(
+  "pageshow",
+  actualizarDashboard
+);
+
+/* Actualiza si otra pestaña cambia los datos */
+
+window.addEventListener(
+  "storage",
+  function (evento) {
+    if (
+      evento.key === CLAVE_CLIENTES ||
+      evento.key === CLAVE_RUTAS ||
+      evento.key === CLAVE_ACCIONES
+    ) {
+      actualizarDashboard();
+    }
+  }
+);
+
+/* Primera carga */
+
+actualizarDashboard();
