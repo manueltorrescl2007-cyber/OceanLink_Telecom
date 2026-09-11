@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | OceanLink</title>
+
+    <link rel = "Stylesheet" href="css/capacity_planner.css">
+</head>
+
+<body>
+
+    <header class="barra-superior">
+
+        <a href="index.html" class="logo">OceanLink</a>
+
+        <div class="usuario">
+            <div class="Foto-usuario">CP</div>
+            <div>
+               <p class="nombre-usuario">Username</p> 
+               <p class="rol-usuario">Capacity</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="contenedor">
+        <aside class="menu-lateral">
+            <div>
+                <h2>Menú</h2>
+
+                <nav>
+                    <a href="capacity_planner.html" class="activo">Dashboard</a>
+                    <a href="clientes.html">Clientes</a>
+                    <a href="solicitudes.html">Solicitudes</a>
+                    <a href="rutas.html">Rutas</a>
+                    <a href="servicios.html">Servicios</a>
+                </nav>
+            </div>
+
+            <div class="configuracion">
+                <h3>Configuración</h3>
+                <a href="#">Perfil</a>
+                <a href="index.html">Cerrar sesión</a>
+            </div>
+        </aside>
+
+        <main class="contenido-principal"
+            <section class="encabezado-panel">
+                <div>
+                    <div class="titulo-rol">
+                        <h2>Capacity Planner</h2>
+                        <button class="boton-opciones" type="button">•••</button>
+                    </div>
+
+                    <h1>Dashboard</h1>
+                </div>
+
+                <div class ="buscador">
+                    <span>⌕</span>
+                    <input type="search" placeholder="Buscar...">
+                </div>
+            </section>
+
+            <section class="tarjetas">
+                <article class="tarjeta">
+                    <h3>Resumen</h3>
+
+                    <div class="fila">
+                        <span>Solicitudes registradas</span>
+                        <strong>12</strong>
+                    </div>
+
+                    <div class="fila">
+                        <span>Pendientes de evaluación</span>
+                        <strong>4</strong>
+                    </div>
+
+                    <div class="fila">
+                        <span>Solicitudes aprobadas</span>
+                        <strong>6</strong>
+                    </div>
+
+                    <div class="fila">
+                        <span>Servicios activos</span>
+                        <strong>2</strong>
+                    </div>
+
+                </article>
+
+                <article class="tarjeta">
+                    <h3>Estado de rutas por capacidad</h3>
+
+                    <div class="fila">
+                        <span>8 disponibles</span>
+                        <span class="estado verde"></span>
+                    </div>
+
+                    <div class="fila">
+                        <span>3 limitadas</span>
+                        <span class="estado amarillo"></span>
+                    </div>
+
+                    <div class="fila">
+                        <span>2 insuficientes</span>
+                        <span class="estado rojo"></span>
+                    </div>
+
+                </article>
+
+                <article class="tarjeta acciones">
+                    <h3>Acciones pendientes</h3>
+
+                    <ul>
+                        <li>
+                            <div>
+                                <strong>SOL-014</strong>
+                                <span>Verificar capacidad</span>
+                            </div>
+
+                            <span class="prioridad critica">Crítica</span>
+                        </li>
+
+                        <li>
+                            <div>
+                                <strong>SOL-018</strong>
+                                <span>Seleccionar ruta</span>
+                            </div>
+
+                            <span class="prioridad alta">Alta</span>
+                        </li>
+
+                        <li>
+                            <div>
+                                <strong>SOL-021</strong>
+                                <span>Confirmar reserva</span>
+                            </div>
+
+                            <span class="prioridad media">Media</span>
+                        </li>
+                    </ul>
+
+                    <button id="botonNuevo" class="boton-nuevo" type="button">
+                        + Nuevo
+                    </button>
+                </article>
+            </section>
+        </main>    
+    </div>
+    <script src="js/capacity_planner.js"></script>
+    
+</body>
+</html>
