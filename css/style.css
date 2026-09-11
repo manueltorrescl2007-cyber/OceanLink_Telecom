@@ -1,247 +1,303 @@
-/*! HTML5 Boilerplate v9.0.1 | MIT License | https://html5boilerplate.com/ */
-
-/* main.css 3.0.0 | MIT License | https://github.com/h5bp/main.css#readme */
-/*
- * What follows is the result of much research on cross-browser styling.
- * Credit left inline and big thanks to Nicolas Gallagher, Jonathan Neal,
- * Kroc Camen, and the H5BP dev community and team.
- */
-
-/* ==========================================================================
-   Base styles: opinionated defaults
-   ========================================================================== */
-
-html {
-  color: #222;
-  font-size: 1em;
-  line-height: 1.4;
+:root {
+  --color-primario: #0b3d5c;     /* azul marino - sidebar y textos importantes */
+  --color-acento: #1c8c9c;       /* azul-verdoso - elementos activos/resaltados */
+  --color-fondo: #f5f7fa;        /* fondo general de la página */
+  --color-texto: #1e293b;        /* texto principal */
+  --color-texto-claro: #64748b;  /* texto secundario (encabezados de tabla, etc.) */
+  --color-borde: #d9e1e8;        /* bordes de tablas, inputs, avatar */
+  --color-alta: #e8871e;
+  --color-critica: #d64545;
+  --color-media: #ecb84a;
+  --fuente-principal: Arial, Helvetica, sans-serif;
 }
 
-/*
- * Remove text-shadow in selection highlight:
- * https://twitter.com/miketaylr/status/12228805301
- *
- * Customize the background color to match your design.
- */
-
-::-moz-selection {
-  background: #b3d4fc;
-  text-shadow: none;
-}
-
-::selection {
-  background: #b3d4fc;
-  text-shadow: none;
-}
-
-/*
- * A better looking default horizontal rule
- */
-
-hr {
-  display: block;
-  height: 1px;
-  border: 0;
-  border-top: 1px solid #ccc;
-  margin: 1em 0;
-  padding: 0;
-}
-
-/*
- * Remove the gap between audio, canvas, iframes,
- * images, videos and the bottom of their containers:
- * https://github.com/h5bp/html5-boilerplate/issues/440
- */
-
-audio,
-canvas,
-iframe,
-img,
-svg,
-video {
-  vertical-align: middle;
-}
-
-/*
- * Remove default fieldset styles.
- */
-
-fieldset {
-  border: 0;
+/* Reset simple: quita los márgenes por defecto raros del navegador
+   y hace que padding no aumente el ancho total de los elementos */
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
-/*
- * Allow only vertical resizing of textareas.
- */
-
-textarea {
-  resize: vertical;
+body {
+  font-family: var(--fuente-principal);
+  color: var(--color-texto);
+  background-color: var(--color-fondo);
 }
 
-/* ==========================================================================
-   Author's custom styles
-   ========================================================================== */
-
-/* ==========================================================================
-   Helper classes
-   ========================================================================== */
-
-/*
- * Hide visually and from screen readers
- */
-
-.hidden,
-[hidden] {
-  display: none !important;
+/* =========================================================
+   LAYOUT GENERAL: sidebar fijo + contenido que ocupa el resto
+   ========================================================= */
+.contenedor {
+  display: flex;          /* sidebar y contenido en fila */
+  min-height: 100vh;      /* que ocupe al menos toda la altura de pantalla */
 }
 
-/*
- * Hide only visually, but have it available for screen readers:
- * https://snook.ca/archives/html_and_css/hiding-content-for-accessibility
- *
- * 1. For long content, line feeds are not interpreted as spaces and small width
- *    causes content to wrap 1 word per line:
- *    https://medium.com/@jessebeach/beware-smushed-off-screen-accessible-text-5952a4c2cbfe
- */
-
-.visually-hidden {
-  border: 0;
-  clip: rect(0, 0, 0, 0);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  white-space: nowrap;
-  width: 1px;
-  /* 1 */
+.sidebar {
+  width: 220px;           /* ancho fijo */
+  flex-shrink: 0;         /* que nunca se achique aunque falte espacio */
+  background-color: var(--color-primario);
+  color: white;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
 }
 
-/*
- * Extends the .visually-hidden class to allow the element
- * to be focusable when navigated to via the keyboard:
- * https://www.drupal.org/node/897638
- */
-
-.visually-hidden.focusable:active,
-.visually-hidden.focusable:focus {
-  clip: auto;
-  height: auto;
-  margin: 0;
-  overflow: visible;
-  position: static;
-  white-space: inherit;
-  width: auto;
+.contenido {
+  flex: 1;                /* ocupa TODO el espacio restante, sea cual sea */
+  padding: 32px 40px;
 }
 
-/*
- * Hide visually and from screen readers, but maintain layout
- */
-
-.invisible {
-  visibility: hidden;
+/* ---- Sidebar: logo y menú ---- */
+.sidebar .logo {
+  font-size: 22px;
+  margin-bottom: 40px;
 }
 
-/*
- * Clearfix: contain floats
- *
- * The use of `table` rather than `block` is only necessary if using
- * `::before` to contain the top-margins of child elements.
- */
-
-.clearfix::before,
-.clearfix::after {
-  content: "";
-  display: table;
+.sidebar ul {
+  list-style: none;
 }
 
-.clearfix::after {
-  clear: both;
+.sidebar > ul > li {
+  margin-bottom: 22px;
 }
 
-/* ==========================================================================
-   EXAMPLE Media Queries for Responsive Design.
-   These examples override the primary ('mobile first') styles.
-   Modify as content requires.
-   ========================================================================== */
-
-@media only screen and (min-width: 35em) {
-  /* Style adjustments for viewports that meet the condition */
+.sidebar a {
+  color: white;
+  text-decoration: none;
 }
 
-@media print,
-  (-webkit-min-device-pixel-ratio: 1.25),
-  (min-resolution: 1.25dppx),
-  (min-resolution: 120dpi) {
-  /* Style adjustments for high resolution devices */
+.sidebar a:hover {
+  text-decoration: underline;
 }
 
-/* ==========================================================================
-   Print styles.
-   Inlined to avoid the additional HTTP request:
-   https://www.phpied.com/delay-loading-your-print-css/
-   ========================================================================== */
-
-@media print {
-  *,
-  *::before,
-  *::after {
-    background: #fff !important;
-    color: #000 !important;
-    /* Black prints faster */
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
-
-  a,
-  a:visited {
-    text-decoration: underline;
-  }
-
-  a[href]::after {
-    content: " (" attr(href) ")";
-  }
-
-  abbr[title]::after {
-    content: " (" attr(title) ")";
-  }
-
-  /*
-   * Don't show links that are fragment identifiers,
-   * or use the `javascript:` pseudo protocol
-   */
-  a[href^="#"]::after,
-  a[href^="javascript:"]::after {
-    content: "";
-  }
-
-  pre {
-    white-space: pre-wrap !important;
-  }
-
-  pre,
-  blockquote {
-    border: 1px solid #999;
-    page-break-inside: avoid;
-  }
-
-  tr,
-  img {
-    page-break-inside: avoid;
-  }
-
-  p,
-  h2,
-  h3 {
-    orphans: 3;
-    widows: 3;
-  }
-
-  h2,
-  h3 {
-    page-break-after: avoid;
-  }
+.sidebar a.active {
+  color: var(--color-acento);
+  font-weight: bold;
 }
 
+.sidebar .submenu {
+  list-style: none;
+  margin-top: 10px;
+  margin-left: 14px;
+}
+
+.sidebar .submenu li {
+  margin-bottom: 10px;
+}
+
+.menu-inferior {
+  margin-top: auto; /* empuja "Configuración" hacia el fondo del sidebar */
+}
+
+/* =========================================================
+   BARRA SUPERIOR (título de la página + usuario)
+   ========================================================= */
+.topbar {
+  display: flex;
+  justify-content: space-between; /* título a la izquierda, usuario a la derecha */
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.topbar h2 {
+  font-size: 22px;
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;   /* círculo perfecto */
+  background-color: var(--color-borde);
+}
+
+.usuario small {
+  color: var(--color-texto-claro);
+}
+
+/* =========================================================
+   FILTROS (selects y fechas arriba de las tablas)
+   ========================================================= */
+.filtros {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+select,
+input[type="date"],
+input[type="text"] {
+  padding: 8px 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  font-family: inherit;
+  color: var(--color-texto);
+  background-color: white;
+}
+
+/* =========================================================
+   TABLAS
+   ========================================================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+
+th, td {
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+th {
+  background-color: var(--color-fondo);
+  color: var(--color-texto-claro);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+tr:hover {
+  background-color: var(--color-fondo);
+}
+
+a {
+  color: var(--color-primario);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.ayuda {
+  margin-top: 12px;
+  color: var(--color-texto-claro);
+  font-size: 14px;
+}
+
+/* Colores de severidad, reutilizables en cualquier página */
+.severidad-alta { color: var(--color-alta); font-weight: 600; }
+.severidad-critica { color: var(--color-critica); font-weight: 600; }
+.severidad-media { color: var(--color-media); font-weight: 600; }
+
+/* =========================================================
+   VISTA DE DETALLE DE INCIDENCIA
+   ========================================================= */
+.migas {
+  color: var(--color-texto-claro);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.titulo-incidencia {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+}
+
+.badge.severidad-alta { background-color: var(--color-alta); }
+.badge.severidad-critica { background-color: var(--color-critica); }
+.badge.severidad-media { background-color: var(--color-media); }
+
+/* Stepper: 6 pasos repartidos en una sola fila */
+.stepper {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+.paso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-texto-claro);
+  font-size: 14px;
+}
+
+.circulo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--color-borde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background-color: white;
+}
+
+.paso.completado .circulo {
+  background-color: var(--color-acento);
+  border-color: var(--color-acento);
+  color: white;
+}
+
+.paso.actual .circulo {
+  border-color: var(--color-primario);
+  color: var(--color-primario);
+}
+
+.paso.actual p, .paso.completado p {
+  color: var(--color-texto);
+  font-weight: 600;
+}
+
+/* Dos columnas: servicios afectados / bitácora */
+.dos-columnas {
+  display: flex;
+  gap: 32px;
+}
+
+.columna {
+  flex: 1; /* cada columna toma la mitad, sin calcular nada a mano */
+}
+
+.columna h4 {
+  margin-bottom: 12px;
+}
+
+.tarjeta {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.tarjeta span {
+  color: var(--color-texto-claro);
+}
+
+.registro {
+  padding: 12px 16px;
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.registro p {
+  margin-top: 4px;
+  color: var(--color-texto-claro);
+}
