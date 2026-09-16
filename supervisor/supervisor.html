@@ -15,7 +15,7 @@
   <!-- Barra superior -->
   <header class="barra-superior">
 
-    <a href="../index.html" class="logo">OceanLink</a>
+    <a href="#" class="logo">OceanLink</a>
 
     <div class="usuario">
       <div class="foto-usuario">CP</div>
@@ -48,8 +48,10 @@
       </div>
 
       <div class="configuracion">
-        <h4><a href="#">Perfil</a></h4>
-        <h4><a href="#">Cerrar sesión</a></h4>
+        <nav>
+          <h4><a href="#">Perfil</a></h4>
+          <h4><a href="#">Cerrar sesión</a></h4>
+        </nav>
       </div>
 
     </aside>
@@ -58,139 +60,80 @@
     <main class="contenido-principal">
 
       <section class="encabezado-panel">
-        <h2>Capacity Planner</h2>
-        <h1>Dashboard</h1>
+        <h2>Supervisor</h2>
+        <h1>Dashboard general</h1>
       </section>
 
       <!-- Tarjetas del dashboard -->
       <section class="tarjetas">
 
-        <!-- Resumen -->
+        <!-- Estado de la red -->
         <article class="tarjeta">
-          <h3>Resumen</h3>
-
-          <div class="fila">
-            <span>Solicitudes registradas</span>
-            <strong id="totalSolicitudes">0</strong>
+          <div class="information">
+            <p>Estado de la red</p>
           </div>
-
-          <div class="fila">
-            <span>Pendientes de evaluación</span>
-            <strong id="totalPendientes">0</strong>
+          <div class="information">
+            <strong>OPERATIVA</strong>
           </div>
-
-          <div class="fila">
-            <span>Solicitudes aprobadas</span>
-            <strong id="totalAprobadas">0</strong>
-          </div>
-
-          <div class="fila">
-            <span>Servicios activos</span>
-            <strong id="totalServiciosActivos">0</strong>
+          <div class = "information">
+            <p>Disponiblidad: <b>99.2%</b></p>
           </div>
         </article>
 
-        <!-- Estado de rutas -->
+        <!-- Incidencias activas -->
         <article class="tarjeta">
-          <h3>Estado de rutas por capacidad</h3>
-
-          <div class="fila">
-            <span id="textoDisponibles">0 disponibles</span>
-            <span class="estado disponible"></span>
+          <div class="information">
+            <p>Incidencias activas</p>
           </div>
-
-          <div class="fila">
-            <span id="textoLimitadas">0 limitadas</span>
-            <span class="estado limitada"></span>
+          <div class="information">
+            <strong>5</strong>
           </div>
-
-          <div class="fila">
-            <span id="textoInsuficientes">0 insuficientes</span>
-            <span class="estado insuficiente"></span>
+          <div class = "information">
+            <p>Críticas: <b>2</b> Medias: <b>3</b></p>
           </div>
         </article>
 
-        <!-- Acciones pendientes -->
-        <article class="tarjeta acciones">
-
-          <div class="encabezado-acciones">
-
-            <h3>Acciones pendientes</h3>
-
-            <span id="cantidadAcciones" class="cantidad-acciones">
-              0
-            </span>
-
+        <!-- Clientes afectados -->
+        <article class="tarjeta">
+          <div class="information">
+            <p>Clientes afectados</p>
           </div>
-
-          <ul id="listaAcciones" class="lista-acciones"></ul>
-
-          <button id="botonNuevo" class="boton-nuevo" type="button">
-            + Nuevo
-          </button>
-
+          <div class="information">
+            <strong>32</strong>
+          </div>
+          <div class = "information">
+            <p>Servicios afectados: <b>3</b></p>
+          </div>
         </article>
 
+        <!-- Mantenimientos programados -->
+        <article class="tarjeta">
+          <div class="information">
+            <p>Mantenimientos programados</p>
+          </div>
+          <div class="information">
+            <strong>2</strong>
+          </div>
+          <div class = "information">
+            <p>Próximos 7 días</p>
+          </div>
+        </article>
+
+        <!-- Utilización promedio -->
+        <article class="tarjeta">
+          <div class="information">
+            <p>Utilización promedio</p>
+          </div>
+          <div class="information">
+            <strong>68%</strong>
+          </div>
+          <div class = "information">
+            <p>Capacidad de la red</p>
+          </div>
+        </article>
       </section>
 
     </main>
-
-  </div>
-
-  <!-- Ventana para registrar una nueva acción -->
-  <div id="modalAccion" class="modal">
-
-    <div class="contenido-modal">
-
-        <div class="encabezado-modal">
-            <h2>Nueva acción pendiente</h2>
-
-            <button id="cerrarModal" class="cerrar-modal" type="button">
-                &times;
-            </button>
-        </div>
-
-        <form id="formularioAccion">
-
-            <div class="grupo-formulario">
-                <label for="descripcionAccion">Descripción de la acción</label>
-
-                    <input
-                        type="text"
-                        id="descripcionAccion"
-                        placeholder="Ejemplo: Revisar disponibilidad de la ruta"
-                        maxlength="80"
-                        required
-                    >
-            </div>
-
-            <div class="grupo-formulario">
-                <label for="prioridadAccion">Prioridad</label>
-
-                <select id="prioridadAccion" required>
-                    <option value="">Seleccione una prioridad</option>
-                    <option value="critica">Crítica</option>
-                    <option value="alta">Alta</option>
-                    <option value="media">Media</option>
-                </select>
-            </div>
-
-            <div class="botones-modal">
-                <button id="cancelarAccion" class="boton-cancelar" type="button">
-                    Cancelar
-                </button>
-
-                <button class="boton-guardar" type="submit">
-                    Guardar acción
-                </button>
-            </div>
-
-        </form>
-
-    </div>
-
-  </div>
-  <script src="js/capacity_planner.js"></script>
 </body>
 
 </html>
