@@ -1,3 +1,4 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,55 +9,11 @@
 </head>
 <body class="app-page">
 
-    <aside class="sidebar">
-        <h1 class="sidebar-logo">Oceanlink</h1>
+    <!-- 1. Configuramos la clave de la página activa -->
+    <% request.setAttribute("activePage", "estado_red"); %>
 
-        <nav class="sidebar-nav">
-            <section class="nav-section">
-                <h2 class="nav-section-title">Menú</h2>
-            </section>
-
-            <section class="nav-section">
-                <ul class="nav-list">
-                    <li class="nav-item active">
-                        <a href="estado_red.html">Estado de la Red</a>
-                    </li>
-                </ul>
-            </section>
-
-            <section class="nav-section">
-                <h2 class="nav-section-title">Incidencias</h2>
-                <ul class="nav-list nav-sublist">
-                    <li class="nav-item">
-                        <a href="registrar_incidencia.html">Registrar</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="visualizar_incidencia.html">Visualizar</a>
-                    </li>
-                </ul>
-            </section>
-
-            <section class="nav-section">
-                <ul class="nav-list">
-                    <li class="nav-item">
-                        <a href="historial.html">Historial</a>
-                    </li>
-                </ul>
-            </section>
-
-            <section class="nav-section">
-                <h2 class="nav-section-title">Configuración</h2>
-                <ul class="nav-list">
-                    <li class="nav-item">
-                        <a href="#">Perfil</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="login.html">Cerrar sesión</a>
-                    </li>
-                </ul>
-            </section>
-        </nav>
-    </aside>
+    <!-- 2. Reemplazamos la barra lateral por la inclusión dinámica -->
+    <jsp:include page="slidebar_netoperator.jsp" />
 
     <div class="content-wrapper">
 

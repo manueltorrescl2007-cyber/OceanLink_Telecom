@@ -1,3 +1,4 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,33 +10,8 @@
 
 <div class="contenedor">
 
-
-  <nav class="sidebar">
-    <h1 class="logo">Oceanlink</h1>
-
-    <ul>
-      <li><a href="index.html">Menú</a></li>
-      <li><a href="estado_red.html">Estado de la Red</a></li>
-      <li>
-        Incidencias
-        <ul class="submenu">
-          <li><a href="incidencias-visualizar.html" class="active">Visualizar</a></li>
-          <li><a href="registrar_incidencia.html">Registrar</a></li>
-        </ul>
-      </li>
-      <li><a href="historial.html">Historial</a></li>
-    </ul>
-
-    <ul class="menu-inferior">
-      <li>
-        Configuración
-        <ul class="submenu">
-          <li><a href="perfil.html">Perfil</a></li>
-          <li><a href="login.html">Cerrar sesión</a></li>
-        </ul>
-      </li>
-    </ul>
-  </nav>
+<!-- Estructura de la barra lateral -->
+  <jsp:include page="slidebar_netoperator.jsp" />
 
   <!-- ===== CONTENIDO PRINCIPAL ===== -->
   <main class="contenido">

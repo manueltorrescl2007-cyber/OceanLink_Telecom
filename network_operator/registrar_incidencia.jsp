@@ -1,3 +1,4 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,57 +7,9 @@
     <title>Oceanlink | Registrar Incidencia</title>
     <link rel="stylesheet" href="../css/registrar_incidencia.css">
 </head>
+<% request.setAttribute("activePage", "registrar_incidencia"); %>
 <body class="app-page">
-
-    <aside class="sidebar">
-        <h1 class="sidebar-logo">Oceanlink</h1>
-
-        <nav class="sidebar-nav">
-            <section class="nav-section">
-                <h2 class="nav-section-title">Menú</h2>
-            </section>
-
-            <section class="nav-section">
-                <ul class="nav-list">
-                    <li class="nav-item">
-                        <a href="estado_red.html">Estado de la Red</a>
-                    </li>
-                </ul>
-            </section>
-
-            <section class="nav-section">
-                <h2 class="nav-section-title">Incidencias</h2>
-                <ul class="nav-list nav-sublist">
-                    <li class="nav-item active">
-                        <a href="registrar_incidencia.html">Registrar</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="incidencias-detalle.html">Visualizar</a>
-                    </li>
-                </ul>
-            </section>
-
-            <section class="nav-section">
-                <ul class="nav-list">
-                    <li class="nav-item">
-                        <a href="historial.html">Historial</a>
-                    </li>
-                </ul>
-            </section>
-
-            <section class="nav-section">
-                <h2 class="nav-section-title">Configuración</h2>
-                <ul class="nav-list">
-                    <li class="nav-item">
-                        <a href="#">Perfil</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="login.html">Cerrar sesión</a>
-                    </li>
-                </ul>
-            </section>
-        </nav>
-    </aside>
+<jsp:include page="slidebar_netoperator.jsp" />
 
     <div class="content-wrapper">
 

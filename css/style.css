@@ -31,64 +31,16 @@ body {
 .contenedor {
   display: flex;          /* sidebar y contenido en fila */
   min-height: 100vh;      /* que ocupe al menos toda la altura de pantalla */
-}
-
-.sidebar {
-  width: 220px;           /* ancho fijo */
-  flex-shrink: 0;         /* que nunca se achique aunque falte espacio */
-  background-color: var(--color-primario);
-  color: white;
-  padding: 24px 20px;
-  display: flex;
-  flex-direction: column;
+  width: 100%;
 }
 
 .contenido {
-  flex: 1;                /* ocupa TODO el espacio restante, sea cual sea */
+  flex: 1;                /* toma todo el espacio disponible a la derecha */
+  min-width: 0;           /* CLAVE: evita que tablas o elementos anchos empujen el contenido debajo del sidebar */
   padding: 32px 40px;
 }
 
-/* ---- Sidebar: logo y menú ---- */
-.sidebar .logo {
-  font-size: 22px;
-  margin-bottom: 40px;
-}
-
-.sidebar ul {
-  list-style: none;
-}
-
-.sidebar > ul > li {
-  margin-bottom: 22px;
-}
-
-.sidebar a {
-  color: white;
-  text-decoration: none;
-}
-
-.sidebar a:hover {
-  text-decoration: underline;
-}
-
-.sidebar a.active {
-  color: var(--color-acento);
-  font-weight: bold;
-}
-
-.sidebar .submenu {
-  list-style: none;
-  margin-top: 10px;
-  margin-left: 14px;
-}
-
-.sidebar .submenu li {
-  margin-bottom: 10px;
-}
-
-.menu-inferior {
-  margin-top: auto; /* empuja "Configuración" hacia el fondo del sidebar */
-}
+/* Aqui se borro la barra slidebar y se reemplazo un slidebar general en slidebar_netoperato.sjp */
 
 /* =========================================================
    BARRA SUPERIOR (título de la página + usuario)
