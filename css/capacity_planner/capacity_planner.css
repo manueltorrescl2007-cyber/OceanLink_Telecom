@@ -524,3 +524,162 @@ a {
     grid-column: auto;
   }
 }
+
+/* =========================================================
+   OCULTAR Y MOSTRAR MENÚ LATERAL
+   ========================================================= */
+
+/* Checkbox utilizado para controlar el menú */
+.control-menu {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Agrupa el botón y el logo */
+.zona-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Botón ☰ */
+.boton-menu {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primario);
+  font-size: 22px;
+  background-color: #e8edf2;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.boton-menu:hover {
+  color: white;
+  background-color: var(--color-acento);
+}
+
+/* Prepara el menú para la animación */
+.menu-lateral {
+  width: 220px;
+  min-width: 220px;
+  overflow: hidden;
+  transition:
+    width 0.3s ease,
+    min-width 0.3s ease,
+    padding 0.3s ease;
+}
+
+/* Evita que el contenido se comprima durante la animación */
+.contenido-menu,
+.configuracion {
+  min-width: 172px;
+}
+
+/* Oculta el menú cuando se presiona ☰ */
+.control-menu:checked + .contenedor .menu-lateral {
+  width: 0;
+  min-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* =========================================================
+   PRIORIDADES UTILIZADAS EN EL JSP
+   ========================================================= */
+
+/*
+  Estas clases corresponden con:
+  prioridad prioridad-critica
+  prioridad prioridad-alta
+  prioridad prioridad-media
+*/
+
+.prioridad-critica {
+  background-color: var(--color-critica);
+}
+
+.prioridad-alta {
+  background-color: var(--color-alta);
+}
+
+.prioridad-media {
+  color: var(--color-texto);
+  background-color: var(--color-media);
+}
+
+/* =========================================================
+   VENTANA EMERGENTE CON POPOVER
+   ========================================================= */
+
+/*
+  Sobrescribe la ventana antigua que dependía de:
+  .modal.mostrar
+*/
+
+.modal[popover] {
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100vh - 40px);
+  padding: 0;
+  border: none;
+  border-radius: 9px;
+  background-color: transparent;
+  box-shadow: 0 15px 35px rgba(11, 61, 92, 0.25);
+}
+
+/* Cuando se abre mediante popovertarget */
+.modal[popover]:popover-open {
+  position: fixed;
+  inset: 0;
+  display: block;
+  margin: auto;
+}
+
+/* Fondo oscuro detrás de la ventana */
+.modal[popover]::backdrop {
+  background-color: rgba(15, 23, 42, 0.55);
+}
+
+/* Ajuste del contenido interno */
+.modal[popover] .contenido-modal {
+  width: 100%;
+  max-width: none;
+}
+
+/* =========================================================
+   AJUSTES PARA PANTALLAS PEQUEÑAS
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  .menu-lateral {
+    width: 165px;
+    min-width: 165px;
+  }
+
+  .contenido-menu,
+  .configuracion {
+    min-width: 137px;
+  }
+
+  .control-menu:checked + .contenedor .menu-lateral {
+    width: 0;
+    min-width: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .nombre-usuario,
+  .rol-usuario {
+    display: none;
+  }
+}

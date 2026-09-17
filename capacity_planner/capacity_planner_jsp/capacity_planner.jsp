@@ -1,5 +1,4 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <!doctype html>
 <html lang="es">
@@ -14,6 +13,10 @@
         rel="stylesheet"
         href="${pageContext.request.contextPath}/css/capacity_planner/capacity_planner.css"
     >
+    <link
+        rel="stylesheet"
+        href="../../css/capacity_planner/comun.css"
+    >
 </head>
 
 <body>
@@ -21,71 +24,106 @@
 <!-- Barra superior -->
 <header class="barra-superior">
 
-    <a
-        href="${pageContext.request.contextPath}/"
-        class="logo"
-    >
-        OceanLink
-    </a>
+    <div class="zona-logo">
+
+        <!-- Control para ocultar o mostrar el menú -->
+        <label
+            for="controlMenu"
+            class="boton-menu"
+            title="Ocultar o mostrar menú"
+        >
+            ☰
+        </label>
+
+        <a
+            href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp"
+            class="logo"
+        >
+            OceanLink
+        </a>
+
+    </div>
 
     <div class="usuario">
-        <div class="foto-usuario">CP</div>
+
+        <div class="foto-usuario">
+            CP
+        </div>
 
         <div>
-            <p class="nombre-usuario">
-                <c:out value="${empty usuarioNombre ? 'Username' : usuarioNombre}"/>
-            </p>
-
+            <p class="nombre-usuario">Username</p>
             <p class="rol-usuario">Capacity Planner</p>
         </div>
+
     </div>
 
 </header>
+
+<!-- Checkbox invisible para controlar el menú sin JavaScript -->
+<input
+    type="checkbox"
+    id="controlMenu"
+    class="control-menu"
+>
 
 <div class="contenedor">
 
     <!-- Menú lateral -->
     <aside class="menu-lateral">
 
-        <div>
+        <div class="contenido-menu">
+
             <h2>Menú</h2>
 
             <nav>
+
                 <a
-                    href="${pageContext.request.contextPath}/capacity-planner"
+                    href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp"
                     class="activo"
                 >
                     Dashboard
                 </a>
 
-                <a href="${pageContext.request.contextPath}/clientes">
+                <a
+                    href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/clientes.jsp"
+                >
                     Clientes
                 </a>
 
-                <a href="${pageContext.request.contextPath}/solicitudes">
+                <a
+                    href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp"
+                >
                     Solicitudes
                 </a>
 
-                <a href="${pageContext.request.contextPath}/rutas">
+                <a
+                    href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/rutas.jsp"
+                >
                     Rutas
                 </a>
 
-                <a href="${pageContext.request.contextPath}/servicios">
+                <a
+                    href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/servicios.jsp"
+                >
                     Servicios
                 </a>
+
             </nav>
+
         </div>
 
         <div class="configuracion">
+
             <h3>Configuración</h3>
 
-            <a href="${pageContext.request.contextPath}/perfil">
+            <a href="#">
                 Perfil
             </a>
 
-            <a href="${pageContext.request.contextPath}/cerrar-sesion">
+            <a href="${pageContext.request.contextPath}/index.html">
                 Cerrar sesión
             </a>
+
         </div>
 
     </aside>
@@ -98,140 +136,145 @@
             <h1>Dashboard</h1>
         </section>
 
-        <!-- Mensajes enviados por el Servlet -->
-        <c:if test="${not empty mensajeExito}">
-            <div class="mensaje mensaje-exito">
-                <c:out value="${mensajeExito}"/>
-            </div>
-        </c:if>
-
-        <c:if test="${not empty mensajeError}">
-            <div class="mensaje mensaje-error">
-                <c:out value="${mensajeError}"/>
-            </div>
-        </c:if>
-
-        <!-- Tarjetas -->
+        <!-- Tarjetas del dashboard -->
         <section class="tarjetas">
 
             <!-- Resumen -->
             <article class="tarjeta">
+
                 <h3>Resumen</h3>
 
+                <!-- Datos de prueba -->
                 <div class="fila">
                     <span>Solicitudes registradas</span>
-                    <strong>
-                        <c:out value="${empty totalSolicitudes ? 0 : totalSolicitudes}"/>
-                    </strong>
+                    <strong>12</strong>
                 </div>
 
                 <div class="fila">
                     <span>Pendientes de evaluación</span>
-                    <strong>
-                        <c:out value="${empty totalPendientes ? 0 : totalPendientes}"/>
-                    </strong>
+                    <strong>4</strong>
                 </div>
 
                 <div class="fila">
                     <span>Solicitudes aprobadas</span>
-                    <strong>
-                        <c:out value="${empty totalAprobadas ? 0 : totalAprobadas}"/>
-                    </strong>
+                    <strong>6</strong>
                 </div>
 
                 <div class="fila">
                     <span>Servicios activos</span>
-                    <strong>
-                        <c:out value="${empty totalServiciosActivos ? 0 : totalServiciosActivos}"/>
-                    </strong>
+                    <strong>2</strong>
                 </div>
+
             </article>
 
-            <!-- Estado de rutas -->
+            <!-- Estado de las rutas -->
             <article class="tarjeta">
+
                 <h3>Estado de rutas por capacidad</h3>
 
+                <!-- Caso de prueba: ruta disponible -->
                 <div class="fila">
-                    <span>
-                        <c:out value="${empty totalDisponibles ? 0 : totalDisponibles}"/>
-                        disponibles
-                    </span>
-
-                    <span class="estado disponible"></span>
+                    <span>8 disponibles</span>
+                    <span
+                        class="estado disponible"
+                        title="Disponible"
+                    ></span>
                 </div>
 
+                <!-- Caso de prueba: ruta limitada -->
                 <div class="fila">
-                    <span>
-                        <c:out value="${empty totalLimitadas ? 0 : totalLimitadas}"/>
-                        limitadas
-                    </span>
-
-                    <span class="estado limitada"></span>
+                    <span>3 limitadas</span>
+                    <span
+                        class="estado limitada"
+                        title="Limitada"
+                    ></span>
                 </div>
 
+                <!-- Caso de prueba: ruta insuficiente -->
                 <div class="fila">
-                    <span>
-                        <c:out value="${empty totalInsuficientes ? 0 : totalInsuficientes}"/>
-                        insuficientes
-                    </span>
-
-                    <span class="estado insuficiente"></span>
+                    <span>2 insuficientes</span>
+                    <span
+                        class="estado insuficiente"
+                        title="Insuficiente"
+                    ></span>
                 </div>
+
             </article>
 
             <!-- Acciones pendientes -->
             <article class="tarjeta acciones">
 
                 <div class="encabezado-acciones">
+
                     <h3>Acciones pendientes</h3>
 
                     <span class="cantidad-acciones">
-                        <c:out value="${empty cantidadAcciones ? 0 : cantidadAcciones}"/>
+                        4
                     </span>
+
                 </div>
 
                 <ul class="lista-acciones">
 
-                    <c:choose>
+                    <!-- Caso de prueba 1 -->
+                    <li class="item-accion">
 
-                        <c:when test="${not empty accionesPendientes}">
+                        <div class="informacion-accion">
+                            <strong>SOL-014</strong>
+                            <span>Verificar capacidad</span>
+                        </div>
 
-                            <c:forEach
-                                var="accion"
-                                items="${accionesPendientes}"
-                            >
-                                <li class="item-accion">
+                        <span class="prioridad prioridad-critica">
+                            Crítica
+                        </span>
 
-                                    <div class="informacion-accion">
-                                        <strong>
-                                            <c:out value="${accion.codigo}"/>
-                                        </strong>
+                    </li>
 
-                                        <span>
-                                            <c:out value="${accion.descripcion}"/>
-                                        </span>
-                                    </div>
+                    <!-- Caso de prueba 2 -->
+                    <li class="item-accion">
 
-                                    <span class="prioridad prioridad-${accion.prioridad}">
-                                        <c:out value="${accion.prioridad}"/>
-                                    </span>
+                        <div class="informacion-accion">
+                            <strong>SOL-018</strong>
+                            <span>Seleccionar ruta</span>
+                        </div>
 
-                                </li>
-                            </c:forEach>
+                        <span class="prioridad prioridad-alta">
+                            Alta
+                        </span>
 
-                        </c:when>
+                    </li>
 
-                        <c:otherwise>
-                            <li class="sin-acciones">
-                                No hay acciones pendientes.
-                            </li>
-                        </c:otherwise>
+                    <!-- Caso de prueba 3 -->
+                    <li class="item-accion">
 
-                    </c:choose>
+                        <div class="informacion-accion">
+                            <strong>SOL-021</strong>
+                            <span>Confirmar reserva</span>
+                        </div>
+
+                        <span class="prioridad prioridad-media">
+                            Media
+                        </span>
+
+                    </li>
+
+                    <!-- Caso de prueba 4 -->
+                    <li class="item-accion">
+
+                        <div class="informacion-accion">
+                            <strong>SOL-022</strong>
+                            <span>Revisar disponibilidad</span>
+                        </div>
+
+                        <span class="prioridad prioridad-alta">
+                            Alta
+                        </span>
+
+                    </li>
 
                 </ul>
 
-                <!-- Abre el formulario sin JavaScript -->
+                <!-- Abre la ventana sin JavaScript -->
                 <button
                     class="boton-nuevo"
                     type="button"
@@ -258,6 +301,7 @@
     <div class="contenido-modal">
 
         <div class="encabezado-modal">
+
             <h2>Nueva acción pendiente</h2>
 
             <button
@@ -265,18 +309,38 @@
                 type="button"
                 popovertarget="modalAccion"
                 popovertargetaction="hide"
-                aria-label="Cerrar"
+                aria-label="Cerrar ventana"
             >
                 &times;
             </button>
+
         </div>
 
-        <form
-            method="post"
-            action="${pageContext.request.contextPath}/capacity-planner/acciones"
-        >
+        <!--
+            Este formulario es visual.
+            Posteriormente se conectará con un Servlet.
+        -->
+        <form action="#" method="post">
 
             <div class="grupo-formulario">
+
+                <label for="codigoAccion">
+                    Código
+                </label>
+
+                <input
+                    type="text"
+                    id="codigoAccion"
+                    name="codigo"
+                    placeholder="Ejemplo: SOL-023"
+                    maxlength="15"
+                    required
+                >
+
+            </div>
+
+            <div class="grupo-formulario">
+
                 <label for="descripcionAccion">
                     Descripción de la acción
                 </label>
@@ -285,13 +349,15 @@
                     type="text"
                     id="descripcionAccion"
                     name="descripcion"
-                    placeholder="Ejemplo: Revisar disponibilidad de la ruta"
+                    placeholder="Ejemplo: Revisar disponibilidad de ruta"
                     maxlength="80"
                     required
                 >
+
             </div>
 
             <div class="grupo-formulario">
+
                 <label for="prioridadAccion">
                     Prioridad
                 </label>
@@ -301,11 +367,23 @@
                     name="prioridad"
                     required
                 >
-                    <option value="">Seleccione una prioridad</option>
-                    <option value="critica">Crítica</option>
-                    <option value="alta">Alta</option>
-                    <option value="media">Media</option>
+                    <option value="">
+                        Seleccione una prioridad
+                    </option>
+
+                    <option value="critica">
+                        Crítica
+                    </option>
+
+                    <option value="alta">
+                        Alta
+                    </option>
+
+                    <option value="media">
+                        Media
+                    </option>
                 </select>
+
             </div>
 
             <div class="botones-modal">

@@ -682,3 +682,495 @@ a {
     flex-direction: column;
   }
 }
+
+/* =========================================================
+   BOTÓN PARA OCULTAR Y MOSTRAR EL MENÚ
+   ========================================================= */
+
+.control-menu {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.zona-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.boton-menu {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primario);
+  font-size: 22px;
+  background-color: #e8edf2;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.boton-menu:hover {
+  color: white;
+  background-color: var(--color-acento);
+}
+
+.menu-lateral {
+  width: 220px;
+  min-width: 220px;
+  overflow: hidden;
+  transition:
+    width 0.3s ease,
+    min-width 0.3s ease,
+    padding 0.3s ease;
+}
+
+.contenido-menu,
+.configuracion {
+  min-width: 172px;
+}
+
+.control-menu:checked + .contenedor .menu-lateral {
+  width: 0;
+  min-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* =========================================================
+   CLIENTES DE PRUEBA
+   ========================================================= */
+
+/* Cada elemento de la lista */
+.lista-clientes li {
+  margin-bottom: 7px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+}
+
+/* Enlace completo del cliente */
+.cliente-enlace {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 12px;
+  border-radius: 7px;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.cliente-enlace:hover {
+  background-color: #eef6f7;
+}
+
+/* Cliente seleccionado */
+.lista-clientes li.cliente-seleccionado {
+  background-color: #e2f2f4;
+  border-color: var(--color-acento);
+}
+
+/* Información del cliente */
+.datos-cliente {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.datos-cliente strong {
+  color: var(--color-primario);
+  font-size: 14px;
+}
+
+.datos-cliente small {
+  color: var(--color-texto-claro);
+  font-size: 11px;
+}
+
+/* Estrella de actividad */
+.actividad-cliente {
+  color: var(--color-pendiente);
+  font-size: 19px;
+  text-align: center;
+}
+
+/* =========================================================
+   TARJETAS DE DETALLE
+   ========================================================= */
+
+.contenido-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tarjeta-detalle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.tarjeta-detalle > div {
+  min-width: 0;
+}
+
+.tarjeta-detalle strong {
+  color: var(--color-primario);
+  font-size: 14px;
+}
+
+.tarjeta-detalle.servicio,
+.tarjeta-detalle.contacto {
+  display: block;
+}
+
+.tarjeta-detalle.servicio > strong {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.tarjeta-detalle.servicio p,
+.tarjeta-detalle.contacto p {
+  margin-top: 8px;
+}
+
+/* =========================================================
+   ETIQUETAS DE ESTADO
+   ========================================================= */
+
+.badge {
+  display: inline-block;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 12px;
+}
+
+.badge.pendiente {
+  color: #6b4700;
+  background-color: var(--color-pendiente);
+}
+
+.badge.aprobada,
+.badge.activa {
+  background-color: var(--color-exito);
+}
+
+.badge.desaprobada,
+.badge.inactiva {
+  background-color: var(--color-peligro);
+}
+
+.badge.evaluacion {
+  color: #6b4700;
+  background-color: var(--color-pendiente);
+}
+
+/* =========================================================
+   VENTANAS EMERGENTES SIN JAVASCRIPT
+   ========================================================= */
+
+/*
+  Estas reglas reemplazan el comportamiento antiguo
+  de .modal.mostrar que necesitaba JavaScript.
+*/
+
+.modal[popover] {
+  width: min(500px, calc(100% - 32px));
+  max-height: calc(100vh - 40px);
+  padding: 0;
+  border: none;
+  border-radius: 9px;
+  background-color: transparent;
+  box-shadow: 0 15px 35px rgba(11, 61, 92, 0.25);
+}
+
+.modal[popover]:popover-open {
+  position: fixed;
+  inset: 0;
+  display: block;
+  margin: auto;
+}
+
+.modal[popover]::backdrop {
+  background-color: rgba(15, 23, 42, 0.55);
+}
+
+.modal[popover] .contenido-modal {
+  width: 100%;
+  max-width: none;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+/* Ventana de confirmación */
+.modal-confirmacion {
+  width: min(430px, calc(100% - 32px)) !important;
+}
+
+.mensaje-confirmacion {
+  margin-bottom: 12px;
+  color: var(--color-texto);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.advertencia-eliminar {
+  padding: 11px 12px;
+  color: #8a2929;
+  font-size: 12px;
+  line-height: 1.45;
+  background-color: #fdeaea;
+  border-radius: 6px;
+}
+
+.boton-confirmar-eliminar {
+  padding: 10px 15px;
+  color: white;
+  font-family: var(--fuente-principal);
+  background-color: var(--color-peligro);
+  border: 1px solid var(--color-peligro);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.boton-confirmar-eliminar:hover {
+  background-color: #b93636;
+  border-color: #b93636;
+}
+
+/* =========================================================
+   DISEÑO ADAPTABLE
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+  .menu-lateral {
+    width: 165px;
+    min-width: 165px;
+  }
+
+  .contenido-menu,
+  .configuracion {
+    min-width: 137px;
+  }
+
+  .control-menu:checked + .contenedor .menu-lateral {
+    width: 0;
+    min-width: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .nombre-usuario,
+  .rol-usuario {
+    display: none;
+  }
+
+  .tarjeta-detalle {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+.numero-selecciones {
+  margin-top: 2px;
+  color: var(--color-acento) !important;
+  font-size: 10px !important;
+  font-weight: bold;
+}
+
+/* =========================================================
+   PROPORCIONES DE TEXTO
+   ========================================================= */
+
+/* Título principal */
+.encabezado-panel h2 {
+  color: var(--color-primario);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.encabezado-panel h1 {
+  margin-top: 2px;
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+/* Título de clientes frecuentes */
+.titulo-seccion {
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.titulo-seccion h2 {
+  color: var(--color-primario);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Cantidad de clientes */
+.cantidad-clientes {
+  min-width: 30px;
+  height: 30px;
+  font-size: 13px;
+}
+
+/* Información de cada cliente */
+.datos-cliente strong {
+  color: var(--color-primario);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.datos-cliente small {
+  color: var(--color-texto-claro);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+/* Identificador del cliente seleccionado */
+.identificador-cliente {
+  padding-bottom: 18px;
+}
+
+.identificador-cliente strong {
+  color: var(--color-primario);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Opciones del resumen */
+.texto-opcion strong {
+  color: var(--color-texto);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.texto-opcion small {
+  margin-top: 4px;
+  color: var(--color-texto-claro);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+/* Estrellas azules del resumen */
+.icono-opcion {
+  font-size: 19px;
+}
+
+/* Flechas */
+.flecha {
+  font-size: 22px;
+}
+
+/* Menú lateral */
+.menu-lateral h2 {
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.menu-lateral nav a {
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.configuracion h3 {
+  font-size: 15px;
+}
+
+.configuracion a {
+  font-size: 12px;
+}
+
+/* Botones */
+.boton {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+
+/* Encabezado del panel de resumen */
+
+.encabezado-resumen {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.etiqueta-resumen {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--color-texto-claro);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.titulo-resumen {
+  display: block;
+  color: var(--color-texto);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.botones-clientes {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 35px;
+  width: 100%;
+  padding-top: 18px;
+}
+
+/* Ocultar barra de desplazamiento sin desactivar el scroll */
+
+.lista-clientes {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.lista-clientes::-webkit-scrollbar {
+  display: none;
+}
+
+/* Igualar encabezado con el Dashboard */
+
+.encabezado-panel h2 {
+  margin: 0;
+  color: var(--color-primario);
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.encabezado-panel h1 {
+  margin: 3px 0 0;
+  color: var(--color-texto);
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1.15;
+}
