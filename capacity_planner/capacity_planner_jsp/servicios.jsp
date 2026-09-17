@@ -726,7 +726,7 @@
 
     <!-- Contenido principal -->
 
-    <main class="contenido-principal pagina de servicios">
+    <main class="contenido-principal pagina-servicios">
 
         <section class="encabezado-pagina">
 
