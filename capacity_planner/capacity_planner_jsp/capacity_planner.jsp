@@ -119,8 +119,8 @@
             <a href="#">
                 Perfil
             </a>
-
-            <a href="${pageContext.request.contextPath}/index.html">
+            <!-- Cierre de sesión, redirección a login -->
+            <a href="../../login.jsp">
                 Cerrar sesión
             </a>
 
