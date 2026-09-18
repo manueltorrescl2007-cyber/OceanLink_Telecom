@@ -50,7 +50,7 @@
           <a href="#">Perfil</a>
         </li>
         <li class="nav-item">
-          <a href="#">Cerrar sesión</a>
+          <a href="../login.jsp">Cerrar sesión</a>
         </li>
       </ul>
     </div>

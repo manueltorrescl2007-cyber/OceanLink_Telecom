@@ -49,7 +49,7 @@
         <span class="nav-group-label">Configuración</span>
         <ul class="nav-sublist">
             <li><a href="perfil.jsp" class="nav-subitem">Perfil</a></li>
-            <li><a href="logout.jsp" class="nav-subitem">Cerrar sesión</a></li>
+            <li><a href="../login.jsp" class="nav-subitem">Cerrar sesión</a></li>
         </ul>
     </div>
 </aside>
