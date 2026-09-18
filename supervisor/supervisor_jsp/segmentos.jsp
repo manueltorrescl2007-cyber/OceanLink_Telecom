@@ -348,7 +348,7 @@
             <div class="configuracion">
                     <nav>
                       <h4><a href="#">Perfil</a></h4>
-                      <h4><a href="#">Cerrar sesión</a></h4>
+                      <h4><a href="../../login.jsp">Cerrar sesión</a></h4>
                     </nav>
             </div>
 

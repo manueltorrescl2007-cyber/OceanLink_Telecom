@@ -151,7 +151,7 @@
           </h4>
 
           <h4>
-            <a href="#">
+            <a href="../../login.jsp">
                 Cerrar sesión
             </a>
           </h4>

@@ -309,7 +309,7 @@
                 Mi perfil
             </a>
 
-            <a href="${pageContext.request.contextPath}/index.html">
+            <a href="../../login.jsp">
                 Cerrar sesión
             </a>
 

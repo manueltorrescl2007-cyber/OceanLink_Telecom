@@ -716,7 +716,7 @@
                 Perfil
             </a>
 
-            <a href="../../index.html">
+            <a href="../../login.jsp">
                 Cerrar sesión
             </a>
 

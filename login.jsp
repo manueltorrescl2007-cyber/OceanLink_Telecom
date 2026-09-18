@@ -17,6 +17,21 @@ return; // Termina la ejecución de esta página
 response.sendRedirect(request.getContextPath() + "/Maintenance_coordinator/nuevo_mantenimiento.jsp");
 return;
 
+} else if (user.equals("capacity_planner") && pass.equals("capacity_planner")) {
+  response.sendRedirect(request.getContextPath() + "/capacity_planner/capacity_planner_jsp/capacity_planner.jsp");
+  return;
+
+
+} else if (user.equals("supervisor") && pass.equals("supervisor")) {
+  response.sendRedirect(request.getContextPath() + "/supervisor/supervisor_jsp/supervisor.jsp");
+  return;
+
+} else if (user.equals("admin") && pass.equals("admin")) {
+  response.sendRedirect(request.getContextPath() + "/supervisor/supervisor_jsp/usuarios.jsp");
+  return;
+
+
+
 } else {
 errorMsg = "Usuario o contraseña incorrectos.";
 }
@@ -37,11 +52,8 @@ errorMsg = "Usuario o contraseña incorrectos.";
   <section class="brand-section">
     <div class="brand-content">
       <h1 class="brand-name">Oceanlink</h1>
-      <img class="brand-icon" src="assets/logo-icon.png" alt="Icono Oceanlink">
-      <div class="brand-logo">
-        <span class="logo-name">LOGO NAME</span>
-        <p class="logo-tagline">Business Tagline</p>
-      </div>
+      <img class="brand-icon" src="LOGO.png" alt="Icono Oceanlink">
+
     </div>
   </section>
 

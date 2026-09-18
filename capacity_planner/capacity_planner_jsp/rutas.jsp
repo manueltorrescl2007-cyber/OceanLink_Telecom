@@ -338,7 +338,7 @@
         <div class="configuracion">
             <h3>Configuración</h3>
             <a href="#">Perfil</a>
-            <a href="../../index.html">Cerrar sesión</a>
+            <a href="../../login.jsp">Cerrar sesión</a>
         </div>
 
     </aside>

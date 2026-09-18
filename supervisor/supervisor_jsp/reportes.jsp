@@ -234,8 +234,8 @@
                 Mi perfil
             </a>
 
-            <a href="${pageContext.request.contextPath}/index.html">
-                Cerrar sesión
+            <a href="../../login.jsp">
+              Cerrar sesión
             </a>
 
         </div>
