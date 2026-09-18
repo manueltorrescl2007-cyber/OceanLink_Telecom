@@ -1,0 +1,380 @@
+:root {
+  --color-primario: #0b4666;
+  --color-acento: #2394a5;
+  --color-fondo: #f4f7fb;
+  --color-texto: #0f172a;
+  --color-texto-claro: #58708f;
+  --color-borde: #d4e0e8;
+  --fuente-principal: Arial, Helvetica, sans-serif;
+}
+
+/* Tipografía general */
+
+body {
+  color: var(--color-texto);
+  font-family: var(--fuente-principal);
+  font-size: 14px;
+}
+
+/* Barra superior */
+
+.barra-superior {
+  height: 58px;
+  padding: 0 30px;
+}
+
+.zona-logo {
+  gap: 14px;
+}
+
+.boton-menu {
+  width: 38px;
+  height: 38px;
+  font-size: 23px;
+  line-height: 1;
+  border-radius: 7px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.foto-usuario {
+  width: 34px;
+  height: 34px;
+  font-size: 12px;
+}
+
+.nombre-usuario {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.rol-usuario {
+  font-size: 10px;
+}
+
+/* Menú lateral */
+
+.menu-lateral {
+  width: 220px;
+  min-width: 220px;
+  padding: 25px 24px;
+}
+
+.menu-lateral h2 {
+  margin-bottom: 20px;
+  font-size: 22px;
+  font-weight: normal;
+}
+
+.menu-lateral nav {
+  gap: 5px;
+}
+
+.menu-lateral nav a {
+  padding: 9px 12px;
+  font-size: 15px;
+  line-height: 1.35;
+  border-radius: 6px;
+}
+
+.configuracion h3 {
+  margin-bottom: 9px;
+  font-size: 15px;
+  font-weight: normal;
+}
+
+.configuracion a {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+/* Contenido principal */
+
+.contenido-principal {
+  padding: 32px;
+}
+
+/* Títulos principales */
+
+.encabezado-panel h2 {
+  color: var(--color-primario);
+  font-size: 23px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.encabezado-panel h1 {
+  margin-top: 3px;
+  font-size: 34px;
+  font-weight: normal;
+  line-height: 1.1;
+}
+
+/* Encabezado con botón */
+
+.encabezado-pagina {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  margin-bottom: 25px;
+}
+
+/* Botones principales superiores */
+
+
+.boton-nuevo:hover,
+.boton-asignar:hover,
+.boton-nueva-solicitud:hover {
+  background-color: var(--color-acento);
+  border-color: var(--color-acento);
+}
+
+/* Filtros */
+
+.barra-herramientas {
+  min-height: 45px;
+  margin-bottom: 20px;
+}
+
+.formulario-filtro label {
+  color: var(--color-texto-claro);
+  font-size: 14px;
+}
+
+.formulario-filtro select {
+  width: 185px;
+  height: 43px;
+  padding: 0 14px;
+  font-size: 14px;
+  border-radius: 7px;
+}
+
+.cantidad-registros {
+  color: var(--color-texto-claro);
+  font-size: 13px;
+}
+
+/* Tablas */
+
+table th {
+  color: var(--color-texto-claro);
+  font-size: 13px;
+  font-weight: bold;
+}
+
+table td {
+  color: var(--color-texto);
+  font-size: 14px;
+}
+
+table td strong {
+  font-size: 14px;
+}
+
+/* Estados */
+
+.estado-servicio,
+.estado-ruta {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* Detalles */
+
+.encabezado-detalle p {
+  font-size: 13px;
+}
+
+.encabezado-detalle h2 {
+  color: var(--color-primario);
+  font-size: 21px;
+}
+
+.dato-detalle span {
+  color: var(--color-texto-claro);
+  font-size: 13px;
+}
+
+.dato-detalle strong {
+  font-size: 15px;
+}
+
+/* Botones del detalle */
+
+.boton {
+  min-width: 135px;
+  min-height: 39px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 17px;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 6px;
+}
+
+/* Ventanas emergentes */
+
+.encabezado-modal h2 {
+  color: var(--color-primario);
+  font-size: 21px;
+}
+
+.grupo-formulario label {
+  color: var(--color-primario);
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.grupo-formulario input,
+.grupo-formulario select,
+.grupo-formulario textarea {
+  font-size: 14px;
+}
+
+.boton-cancelar,
+.boton-guardar {
+  min-height: 39px;
+  padding: 10px 16px;
+  font-size: 13px;
+}
+
+/* Adaptación para pantallas pequeñas */
+
+@media (max-width: 700px) {
+  .barra-superior {
+    padding: 0 18px;
+  }
+
+  .menu-lateral {
+    width: 165px;
+    min-width: 165px;
+    padding: 22px 14px;
+  }
+
+  .contenido-principal {
+    padding: 22px;
+  }
+
+  .encabezado-panel h1 {
+    font-size: 30px;
+  }
+
+  .encabezado-pagina {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Alineación idéntica de los encabezados */
+
+.encabezado-pagina {
+  width: 100%;
+  height: 84px;
+  min-height: 84px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 25px;
+  margin-bottom: 20px;
+}
+
+.encabezado-pagina .encabezado-panel {
+  margin: 0;
+  padding: 0;
+}
+
+.encabezado-pagina .encabezado-panel h2 {
+  margin: 0;
+  padding: 0;
+  font-size: 23px;
+  line-height: 28px;
+}
+
+.encabezado-pagina .encabezado-panel h1 {
+  margin: 3px 0 0;
+  padding: 0;
+  font-size: 34px;
+  line-height: 38px;
+}
+
+/* Servicios estaba aproximadamente 7 px más arriba */
+
+.contenido-principal.pagina-servicios {
+  padding-top: 39px;
+}
+
+/* Todos los botones superiores tendrán el mismo tamaño */
+
+.boton-nuevo,
+.boton-asignar,
+.boton-nueva-solicitud {
+  width: 170px;
+  min-width: 170px;
+  height: 42px;
+  min-height: 42px;
+  margin-top: 10px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  border-radius: 7px;
+}
+
+/* Misma posición para filtros y cantidad */
+
+.barra-herramientas {
+  width: 100%;
+  min-height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 20px;
+  padding: 0;
+}
+
+/* Misma separación entre filtro y tabla */
+
+.contenedor-tabla {
+  margin-top: 0;
+}
+
+/* Corrección definitiva de botones superiores */
+
+.encabezado-pagina .boton-nuevo,
+.encabezado-pagina .boton-asignar,
+.encabezado-pagina .boton-nueva-solicitud {
+  width: auto;
+  min-width: 0;
+  height: 38px;
+  min-height: 38px;
+  margin-top: 10px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 1;
+  white-space: nowrap;
+  background-color: var(--color-primario);
+  border: 1px solid var(--color-primario);
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.encabezado-pagina .boton-nuevo:hover,
+.encabezado-pagina .boton-asignar:hover,
+.encabezado-pagina .boton-nueva-solicitud:hover {
+  background-color: var(--color-acento);
+  border-color: var(--color-acento);
+}
