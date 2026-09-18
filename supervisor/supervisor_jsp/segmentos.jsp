@@ -213,7 +213,7 @@
             content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Segmentos | OceanLink</title>
+    <title>OceanLink | Segmentos</title>
 
     <link
             rel="stylesheet"
@@ -242,7 +242,7 @@
         </label>
 
         <a
-                href="${pageContext.request.contextPath}/supervisor/supervisor.html"
+                href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/supervisor.jsp"
                 class="logo"
         >
             OceanLink
@@ -282,11 +282,11 @@
 
             <nav class="navegacion-lateral">
 
-                <a href="${pageContext.request.contextPath}/supervisor/supervisor.html">
+                <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/supervisor.jsp">
                     Dashboard general
                 </a>
 
-                <a href="${pageContext.request.contextPath}/supervisor/incidencias.html">
+                <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/incidencias.jsp">
                     Incidencias
                 </a>
 
@@ -327,7 +327,7 @@
 
                 </div>
 
-                <a href="${pageContext.request.contextPath}/supervisor/servicios_clientes.html">
+                <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/servicios_clientes.jsp">
                     Servicios y clientes
                 </a>
 
@@ -335,7 +335,7 @@
                     Reportes
                 </a>
 
-                <a href="${pageContext.request.contextPath}/supervisor/historicos.html">
+                <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historicos.jps">
                     Históricos
                 </a>
 
@@ -345,13 +345,20 @@
 
         <div class="configuracion">
 
+            <div class="configuracion">
+                    <nav>
+                      <h4><a href="#">Perfil</a></h4>
+                      <h4><a href="#">Cerrar sesión</a></h4>
+                    </nav>
+            </div>
+
             <h3>Configuración</h3>
 
             <a href="#">
                 Mi perfil
             </a>
 
-            <a href="${pageContext.request.contextPath}/index.html">
+            <a href="#">
                 Cerrar sesión
             </a>
 

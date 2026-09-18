@@ -4,59 +4,164 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>OceanLink | Dashboard</title>
+    <title>OceanLink | Dashboard</title>
 
-  <link rel="stylesheet" href="../css/supervisor/supervisor.css">
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/supervisor/supervisor.css?v=2">
 </head>
 
 <body>
 
-  <!-- Barra superior -->
-  <header class="barra-superior">
+<!-- Control para abrir/cerrar el menú -->
+<input
+  type="checkbox"
+  id="controlMenu"
+  class="control-menu"
+>
 
-    <a href="#" class="logo">OceanLink</a>
+<!-- Barra superior -->
+<header class="barra-superior">
 
-    <div class="usuario">
-      <div class="foto-usuario">CP</div>
+  <div class="zona-logo">
 
-      <div>
-        <p class="nombre-usuario">Username</p>
-        <p class="rol-usuario">Capacity Planner</p>
-      </div>
+    <label
+            for="controlMenu"
+            class="boton-menu">
+        ☰
+    </label>
+
+    <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/supervisor.jsp"
+       class="logo">
+        OceanLink
+    </a>
+  </div>
+
+  <div class="usuario">
+
+    <div class="foto-usuario">
+        SU
     </div>
 
-  </header>
+    <div>
+        <p class="nombre-usuario">Username</p>
+        <p class="rol-usuario">Supervisor</p>
+    </div>
 
-  <div class="contenedor">
+  </div>
 
-    <!-- Menú lateral -->
-    <aside class="menu-lateral">
+</header>
 
-      <div>
-        <h2>Menú</h2>
+<div class="contenedor">
 
-        <nav>
-          <a href="supervisor.html" class="activo">Dashboard general</a>
-          <a href="incidencias.html">Incidencias</a>
-          <a href="estado_red_s.html">Estado de la red</a>
-          <a href="servicios_clientes.html">Servicios y clientes</a>
-          <a href="mantenimientos.html">Mantenimientos</a>
-          <a href="reportes.html">Reportes</a>
-          <a href="historicos.html">Históricos</a>
-        </nav>
-      </div>
+  <!-- Barra lateral -->
+  <aside class="menu-lateral">
 
+    <div class="contenido-menu">
+
+      <h2>Menú</h2>
+
+      <nav class="navegacion-lateral">
+
+        <!-- Dashboard -->
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/supervisor.jsp"
+           class="activo">
+            Dashboard general
+        </a>
+
+        <!-- Incidencias -->
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/incidencias.jsp">
+            Incidencias
+        </a>
+
+        <!-- Estado de la red -->
+        <div class="grupo-menu">
+
+          <input
+            type="checkbox"
+            id="controlEstadoRed"
+            class="control-submenu"
+          >
+
+          <label
+                  for="controlEstadoRed"
+                  class="titulo-grupo">
+
+            <span class="texto-grupo">
+                Estado de la red
+            </span>
+
+            <span class="flecha-submenu"></span>
+
+          </label>
+
+
+          <div class="contenido-submenu">
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/capacidad.jsp"
+                    class="subopcion">
+                Capacidad
+            </a>
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/segmentos.jsp"
+                    class="subopcion">
+                Segmentos
+            </a>
+          </div>
+        </div>
+
+        <!-- Servicios y clientes -->
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/servicios_clientes.jsp">
+            Servicios y clientes
+        </a>
+
+        <!-- Mantenimientos -->
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/mantenimientos.jsp">
+            Mantenimientos
+        </a>
+
+        <!-- Reportes -->
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/reportes.jsp">
+            Reportes
+        </a>
+
+        <!-- Históricos -->
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historicos.jsp">
+            Históricos
+        </a>
+
+      </nav>
+
+    </div>
+
+
+      <!-- Conservamos tu configuración -->
       <div class="configuracion">
+
         <nav>
-          <h4><a href="#">Perfil</a></h4>
-          <h4><a href="#">Cerrar sesión</a></h4>
+
+          <h4>
+            <a href="#">
+                Perfil
+            </a>
+          </h4>
+
+          <h4>
+            <a href="#">
+                Cerrar sesión
+            </a>
+          </h4>
+
         </nav>
+
       </div>
 
     </aside>
+
 
     <!-- Contenido principal -->
     <main class="contenido-principal">
@@ -137,19 +242,16 @@
 
       <!-- Mapa interactivo (con fe) -->
       <section class="mapa-interactivo">
-        <div>
-          <img src="../img/mapa.png" alt="Mapa interactivo">
-        </div>
+          <div>
+              <img src="${pageContext.request.contextPath}/img/mapa.png"
+                   alt="Mapa interactivo">
+          </div>
       </section>
 
       <!-- Incidencias -->
-
-
-
 
     </main>
   </div>
 </body>
 
 </html>
-
