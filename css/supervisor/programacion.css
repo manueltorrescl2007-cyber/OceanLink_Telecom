@@ -467,157 +467,198 @@ a {
   font-weight: normal;
 }
 
-/* Tarjetas */
 
-.tarjetas {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-  align-items: stretch;
-  gap: 10px;
-}
+/* ==========================================================================
+   TABLAS (vista: Fechas y duración / Historial)
+   ========================================================================== */
 
-.tarjeta {
-  min-height: min-content;
-  min-width: min-content;
-  padding: 5px;
-  background-color: white;
-  border: 1px solid var(--color-borde);
-  border-radius: 7px;
-  box-shadow: 0 2px 7px rgba(11, 61, 92, 0.08);
-}
-
-.information {
-  min-height: 43px;
+.table-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  font-size: 14px;
-  place-content: center;
+  margin-bottom: 14px;
 }
 
-.information strong {
-  gap: 20px;
-  color: var(--color-primario);
-  font-size: 200%;
-}
-
-.mapa-interactivo{
-  gap: 40px;
+.table-toolbar-left {
   display: flex;
-  align-items: stretch;
-  place-content: center;
-  margin-top: 8px;
-  margin-bottom: 8px;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-texto);
 }
 
-/* Incidencias activas */
-/* =========================================================
-   FILTROS (selects y fechas arriba de las tablas)
-   ========================================================= */
-.filtros {
+.table-toolbar-icons {
   display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--color-texto-claro);
+  font-size: 15px;
+}
+
+.table-toolbar-icons span {
+  cursor: pointer;
+}
+
+.table-icons-row {
+  display: flex;
+  align-items: center;
   gap: 16px;
-  margin-top: 10px;
-  margin-bottom: 15px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-borde);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background-color: var(--color-fondo);
+  color: var(--color-texto-claro);
+  font-size: 14px;
 }
 
-select,
-input[type="date"],
-input[type="text"] {
-  padding: 8px 12px;
+.table-icons-row span {
+  cursor: pointer;
+}
+
+.table-icons-row + .data-table-wrapper {
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+}
+
+.data-table-wrapper {
+  overflow-x: auto;
   border: 1px solid var(--color-borde);
   border-radius: 6px;
-  font-family: inherit;
-  color: var(--color-texto);
-  background-color: white;
 }
 
-/* =========================================================
-   TABLAS
-   ========================================================= */
-table {
+.data-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
+  min-width: 720px;
 }
 
-th, td {
+.data-table thead th {
+  background-color: var(--color-fondo);
+  color: var(--color-texto-claro);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
   text-align: left;
-  padding: 14px 16px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--color-borde);
+  white-space: nowrap;
 }
 
-th {
-  background-color: var(--color-fondo);
+.data-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-borde);
+  font-size: 13.5px;
+  color: var(--color-texto);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr.row-empty td {
+  height: 34px;
+  color: transparent;
+}
+
+.data-table tbody tr:hover:not(.row-empty) {
+  background-color: rgba(28, 140, 156, 0.05);
+}
+
+/* Badges de prioridad / estado */
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.badge-leve { background-color: var(--color-leve); }
+.badge-media { background-color: var(--color-media); color: var(--color-texto); }
+.badge-alta { background-color: var(--color-alta); }
+.badge-critica { background-color: var(--color-critica); }
+
+.badge-finalizado { background-color: var(--color-alta); }
+.badge-programado { background-color: var(--color-texto-claro); }
+.badge-en-progreso { background-color: var(--color-acento); }
+.badge-testing { background-color: var(--color-media); color: var(--color-texto); }
+
+.badge-segmento {
+  background-color: rgba(58, 166, 107, 0.15);
+  color: var(--color-leve);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   STEPPER (vista: Estado)
+   ========================================================================== */
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 620px;
+  margin: 10px auto 30px auto;
+}
+
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  position: relative;
+}
+
+.stepper-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 17px;
+  left: 55%;
+  width: 90%;
+  height: 2px;
+  background-color: var(--color-borde);
+  z-index: 0;
+}
+
+.stepper-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--color-borde);
+  background-color: #ffffff;
+  z-index: 1;
+}
+
+.stepper-step.completed .stepper-circle,
+.stepper-step.active .stepper-circle {
+  border-color: var(--color-acento);
+  background-color: var(--color-acento);
+}
+
+.stepper-label {
+  font-size: 12.5px;
   color: var(--color-texto-claro);
   font-weight: 600;
-  font-size: 14px;
 }
 
-tr:hover {
-  background-color: var(--color-fondo);
-}
-
-a {
+.stepper-step.active .stepper-label,
+.stepper-step.completed .stepper-label {
   color: var(--color-primario);
-  text-decoration: none;
-  font-weight: 600;
 }
 
-a:hover {
-  text-decoration: underline;
-}
-
-.ayuda {
-  margin-top: 12px;
-  color: var(--color-texto-claro);
-  font-size: 14px;
-}
-
-/* Colores de severidad, reutilizables en cualquier página */
-.severidad-alta { color: var(--color-alta); font-weight: 600; }
-.severidad-critica { color: var(--color-critica); font-weight: 600; }
-.severidad-media { color: var(--color-media); font-weight: 600; }
-
-/* Diseño adaptable */
-
-@media (max-width: 1000px) {
-  .tarjetas {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .acciones {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 700px) {
-  .menu-lateral {
-    width: 165px;
-    min-width: 165px;
-    padding: 22px 14px;
-  }
-
-  .contenido-menu,
-  .configuracion {
-    width: 137px;
-    min-width: 137px;
-  }
-
-  .navegacion-lateral > a,
-  .titulo-grupo {
-    font-size: 14px;
-  }
-
-  .control-menu:checked
-  ~ .contenedor
-  .menu-lateral {
-
-    width: 0;
-    min-width: 0;
-
-    padding-left: 0;
-    padding-right: 0;
-  }
+.bitacora {
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  min-height: 220px;
+  padding: 16px;
+  font-size: 13px;
+  color: var(--color-texto);
+  line-height: 1.9;
+  white-space: pre-line;
 }

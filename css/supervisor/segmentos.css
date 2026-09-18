@@ -297,17 +297,49 @@ a {
 
 /* Configuración inferior */
 
+.configuracion {
+  width: 172px;
+  min-width: 172px;
+
+  margin-top: auto;
+}
+
+.configuracion nav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .configuracion h4 {
-  margin-bottom: 1px;
-  font-size: 20px;
-  font-weight: bold;
+  margin: 0;
+  font-size: 12px;
+  font-weight: normal;
 }
 
 .configuracion nav a {
+  width: 100%;
+
   display: block;
-  margin-top: 6px;
+
+  padding: 9px 12px;
+
+  color: white;
+
   font-size: 12px;
+  font-weight: normal;
+
+  border-radius: 6px;
+
+  transition: background-color 0.2s ease;
 }
+
+/* Perfil */
+
+.configuracion nav h4:first-child a:hover {
+  background-color: var(--color-acento);
+}
+
+/* Cerrar sesión */
 
 .configuracion nav h4:last-child a:hover {
   color: white;

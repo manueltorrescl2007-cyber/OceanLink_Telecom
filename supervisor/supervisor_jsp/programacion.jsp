@@ -10,7 +10,7 @@
     <title>OceanLink | Dashboard</title>
 
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/supervisor/incidencias.css">
+          href="${pageContext.request.contextPath}/css/supervisor/programacion.css">
 </head>
 
 <body>
@@ -258,71 +258,101 @@
     </div>
   </aside>
 
-
-
     <!-- Contenido principal -->
     <main class="contenido-principal">
-      <section class="encabezado-panel">
-              <h2>Incidencias</h2>
-              <h1>Incidencias activas</h1>
-            </section>
-      <section>
-        <div class="filtros">
-          <select>
-            <option>Todas las severidades</option>
-            <option>Alta</option>
-            <option>Crítica</option>
-            <option>Media</option>
-          </select>
-          <select>
-            <option>Todos los segmentos</option>
-            <option>LIM-VLP-01</option>
-            <option>LIM-VLP-02</option>
-            <option>LIM-GYE-01</option>
-          </select>
-        </div>
+      <%
+          /*
+              En una implementación real, esta lista vendría de un Servlet/DAO
+              (p. ej. request.getAttribute("mantenimientos")) que consulta la
+              base de datos. Aquí se simula un único registro de ejemplo,
+              tal como en el wireframe, y se completan filas vacías hasta 10
+              para conservar el aspecto de "Vista de Tabla".
+          */
+          List<Map<String, String>> mantenimientos = new ArrayList<Map<String, String>>();
+          Map<String, String> ejemplo = new HashMap<String, String>();
+          ejemplo.put("segmento", "LIM-VLP-02");
+          ejemplo.put("tipo", "Preventivo");
+          ejemplo.put("fechaInicio", "4 de sep. de 2026");
+          ejemplo.put("fechaFin", "30 de sep. de 2026");
+          ejemplo.put("prioridad", "Leve");
+          ejemplo.put("notas", "Verificar estado de conectores");
+          mantenimientos.add(ejemplo);
 
-        <table>
-          <thead>
-          <tr>
-            <th>ID</th>
-            <th>Segmento</th>
-            <th>Severidad</th>
-            <th>Estado</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td><a href="incidencia-detalle.jsp">INC-014</a></td>
-            <td>LIM-VLP-02</td>
-            <td class="severidad-alta">Alta</td>
-            <td>En análisis</td>
-          </tr>
-          <tr>
-            <td><a href="incidencia-detalle.jsp">INC-013</a></td>
-            <td>LIM-VLP-02</td>
-            <td class="severidad-critica">Crítica</td>
-            <td>En reparación</td>
-          </tr>
-          <tr>
-            <td><a href="incidencia-detalle.jsp">INC-011</a></td>
-            <td>LIM-GYE-01</td>
-            <td class="severidad-media">Media</td>
-            <td>Reparación programada</td>
-          </tr>
-          <tr>
-            <td><a href="incidencia-detalle.jsp">INC-010</a></td>
-            <td>LIM-GYE-04</td>
-            <td class="severidad-alta">Alta</td>
-            <td>Restaurado</td>
-          </tr>
-          </tbody>
-        </table>
-          <p class="ayuda">Click en una fila para ver el detalle de la incidencia.</p>
-      </section>
+          int totalFilas = 10;
+      %>
 
+      <div class="app-layout">
+
+          <div class="main-content">
+
+              <div class="content-container">
+                  <div class="card">
+                      <h2 class="card-title">Fechas y duración de mantenimientos programados</h2>
+
+                      <div class="table-toolbar">
+                          <div class="table-toolbar-left">
+                              <span>&#9638;</span> Vista de Tabla
+                          </div>
+                          <div class="table-toolbar-icons">
+                              <span title="Expandir">&#8599;</span>
+                              <span title="Más opciones">&#8942;</span>
+                          </div>
+                      </div>
+
+                      <div class="data-table-wrapper">
+                          <table class="data-table">
+                              <thead>
+                                  <tr>
+                                      <th>Segmento</th>
+                                      <th>Tipo de mantenimiento</th>
+                                      <th>Fecha de inicio</th>
+                                      <th>Fecha de fin</th>
+                                      <th>Prioridad</th>
+                                      <th>Notas / Descripción</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  <%
+                                      for (int i = 0; i < totalFilas; i++) {
+                                          if (i < mantenimientos.size()) {
+                                              Map<String, String> m = mantenimientos.get(i);
+                                              String prioridad = m.get("prioridad");
+                                              String badgeClass = "badge-leve";
+                                              if ("Media".equalsIgnoreCase(prioridad)) badgeClass = "badge-media";
+                                              else if ("Alta".equalsIgnoreCase(prioridad)) badgeClass = "badge-alta";
+                                              else if ("Critica".equalsIgnoreCase(prioridad) || "Crítica".equalsIgnoreCase(prioridad)) badgeClass = "badge-critica";
+                                  %>
+                                      <tr>
+                                          <td><%= m.get("segmento") %></td>
+                                          <td><%= m.get("tipo") %></td>
+                                          <td><%= m.get("fechaInicio") %></td>
+                                          <td><%= m.get("fechaFin") %></td>
+                                          <td><span class="badge <%= badgeClass %>"><%= prioridad %></span></td>
+                                          <td><%= m.get("notas") %></td>
+                                      </tr>
+                                  <%
+                                          } else {
+                                  %>
+                                      <tr class="row-empty">
+                                          <td>&nbsp;</td>
+                                          <td>&nbsp;</td>
+                                          <td>&nbsp;</td>
+                                          <td>&nbsp;</td>
+                                          <td>&nbsp;</td>
+                                          <td>&nbsp;</td>
+                                      </tr>
+                                  <%
+                                          }
+                                      }
+                                  %>
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+              </div>
+
+          </div>
+      </div>
     </main>
-  </div>
-
 </body>
 </html>

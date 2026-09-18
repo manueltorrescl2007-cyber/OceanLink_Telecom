@@ -217,7 +217,7 @@
 
     <link
             rel="stylesheet"
-            href="${pageContext.request.contextPath}/css/supervisor/segmentos.css"
+            href="${pageContext.request.contextPath}/css/supervisor/segmentos.css?=v2"
     >
 
 </head>
@@ -274,97 +274,210 @@
 
 <div class="contenedor">
 
-    <aside class="menu-lateral">
+  <!-- Barra lateral -->
+  <aside class="menu-lateral">
 
-        <div class="contenido-menu">
+    <div class="contenido-menu">
 
-            <h2>Menú</h2>
+      <h2>Menú</h2>
 
-            <nav class="navegacion-lateral">
+      <nav class="navegacion-lateral">
 
-                <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/supervisor.jsp">
-                    Dashboard general
-                </a>
+        <!-- Dashboard -->
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/supervisor.jsp"
+           class="activo">
+            Dashboard general
+        </a>
 
-                <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/incidencias.jsp">
-                    Incidencias
-                </a>
+        <!-- Incidencias -->
+        <div class="grupo-menu">
 
-                <div class="grupo-menu">
+          <input
+            type="checkbox"
+            id="control-incidencias"
+            class="control-submenu"
+          >
 
-                    <input
-                            type="checkbox"
-                            id="controlEstadoRed"
-                            class="control-submenu"
-                            checked
-                    >
+          <label
+                  for="control-incidencias"
+                  class="titulo-grupo">
 
-                    <label
-                            for="controlEstadoRed"
-                            class="titulo-grupo"
-                    >
-                        <span class="texto-grupo">Estado de la red</span>
-                        <span class="flecha-submenu"></span>
-                    </label>
+            <span class="texto-grupo">
+                Incidencias
+            </span>
 
-                    <div class="contenido-submenu">
+            <span class="flecha-submenu"></span>
 
-                        <a
-                                href="${pageContext.request.contextPath}/supervisor/estado_red.html"
-                                class="subopcion"
-                        >
-                            Capacidad
-                        </a>
+          </label>
 
-                        <a
-                                href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/segmentos.jsp"
-                                class="subopcion activa"
-                        >
-                            Segmentos
-                        </a>
 
-                    </div>
+          <div class="contenido-submenu">
 
-                </div>
-
-                <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/servicios_clientes.jsp">
-                    Servicios y clientes
-                </a>
-
-                <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/reportes.jsp">
-                    Reportes
-                </a>
-
-                <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historicos.jps">
-                    Históricos
-                </a>
-
-            </nav>
-
-        </div>
-
-        <div class="configuracion">
-
-            <div class="configuracion">
-                    <nav>
-                      <h4><a href="#">Perfil</a></h4>
-                      <h4><a href="#">Cerrar sesión</a></h4>
-                    </nav>
-            </div>
-
-            <h3>Configuración</h3>
-
-            <a href="#">
-                Mi perfil
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/visualizar.jsp"
+                    class="subopcion">
+                Visualizar
             </a>
 
-            <a href="#">
-                Cerrar sesión
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historial_incidencias.jsp"
+                    class="subopcion">
+                Historial de incidencias
             </a>
-
+          </div>
         </div>
 
-    </aside>
+        <!-- Estado de la red -->
+        <div class="grupo-menu">
+
+          <input
+            type="checkbox"
+            id="controlEstadoRed"
+            class="control-submenu"
+          >
+
+          <label
+                  for="controlEstadoRed"
+                  class="titulo-grupo">
+
+            <span class="texto-grupo">
+                Estado de la red
+            </span>
+
+            <span class="flecha-submenu"></span>
+
+          </label>
+
+
+          <div class="contenido-submenu">
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/capacidad.jsp"
+                    class="subopcion">
+                Capacidad
+            </a>
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/segmentos.jsp"
+                    class="subopcion">
+                Segmentos
+            </a>
+          </div>
+        </div>
+
+        <!-- Servicios y clientes -->
+        <div class="grupo-menu">
+
+          <input
+            type="checkbox"
+            id="control-servicios-clientes"
+            class="control-submenu"
+          >
+
+          <label
+                  for="control-servicios-clientes"
+                  class="titulo-grupo">
+
+            <span class="texto-grupo">
+                Servicios y clientes
+            </span>
+
+            <span class="flecha-submenu"></span>
+
+          </label>
+
+
+          <div class="contenido-submenu">
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/clientes.jsp"
+                    class="subopcion">
+                Clientes
+            </a>
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/servicios.jsp"
+                    class="subopcion">
+                Servicios
+            </a>
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/solicitudes.jsp"
+                    class="subopcion">
+                Solicitudes
+            </a>
+          </div>
+        </div>
+
+        <!-- Mantenimientos -->
+        <div class="grupo-menu">
+
+          <input
+            type="checkbox"
+            id="control-mantenimientos"
+            class="control-submenu"
+          >
+
+          <label
+                  for="control-mantenimientos"
+                  class="titulo-grupo">
+
+            <span class="texto-grupo">
+                Mantenimientos
+            </span>
+
+            <span class="flecha-submenu"></span>
+
+          </label>
+
+          <div class="contenido-submenu">
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/programacion.jsp"
+                    class="subopcion">
+                Programación
+            </a>
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historial_programados.jsp"
+                    class="subopcion">
+                Historial de programados
+            </a>
+          </div>
+        </div>
+
+        <!-- Reportes -->
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/reportes.jsp">
+            Reportes
+        </a>
+
+        <!-- Históricos -->
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historicos.jsp">
+            Históricos
+        </a>
+
+      </nav>
+
+    </div>
+
+
+    <!-- parte baja -->
+    <div class="configuracion">
+      <nav>
+        <h4>
+          <a href="#">
+              Perfil
+          </a>
+        </h4>
+
+        <h4>
+          <a href="#">
+              Cerrar sesión
+          </a>
+        </h4>
+      </nav>
+    </div>
+  </aside>
+
 
     <main class="contenido-principal">
 

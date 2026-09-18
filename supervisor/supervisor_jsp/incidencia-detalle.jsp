@@ -262,67 +262,74 @@
 
     <!-- Contenido principal -->
     <main class="contenido-principal">
-      <section class="encabezado-panel">
-              <h2>Incidencias</h2>
-              <h1>Incidencias activas</h1>
-            </section>
-      <section>
-        <div class="filtros">
-          <select>
-            <option>Todas las severidades</option>
-            <option>Alta</option>
-            <option>Crítica</option>
-            <option>Media</option>
-          </select>
-          <select>
-            <option>Todos los segmentos</option>
-            <option>LIM-VLP-01</option>
-            <option>LIM-VLP-02</option>
-            <option>LIM-GYE-01</option>
-          </select>
+    <section class="encabezado-panel">
+      <h2>Incidencias</h2>
+      <h1>Incidencias activas</h1>
+    </section>
+
+    <section>
+      <p class="migas">Incidencias / Visualizar / INC-014</p>
+
+      <div class="titulo-incidencia">
+        <h3>INC-014</h3>
+        <span class="badge severidad-alta">Alta</span>
+      </div>
+
+      <!-- Stepper: 6 pasos en fila, gracias a display:flex -->
+      <div class="stepper">
+        <div class="paso completado">
+          <div class="circulo">&#10003;</div>
+          <p>Detectada</p>
+        </div>
+        <div class="paso actual">
+          <div class="circulo">2</div>
+          <p>En análisis</p>
+        </div>
+        <div class="paso">
+          <div class="circulo">3</div>
+          <p>Rep. prog.</p>
+        </div>
+        <div class="paso">
+          <div class="circulo">4</div>
+          <p>En rep.</p>
+        </div>
+        <div class="paso">
+          <div class="circulo">5</div>
+          <p>Restaurado</p>
+        </div>
+        <div class="paso">
+          <div class="circulo">6</div>
+          <p>Cerrada</p>
+        </div>
+      </div>
+
+      <!-- Dos columnas repartidas al 50% con flex -->
+      <div class="dos-columnas">
+        <div class="columna">
+          <h4>Servicios y clientes afectados</h4>
+          <div class="tarjeta">
+            <span>SRV-118</span>
+            <span>Cliente XXYY</span>
+          </div>
+          <div class="tarjeta">
+            <span>SRV-121</span>
+            <span>Cliente ZZUU</span>
+          </div>
         </div>
 
-        <table>
-          <thead>
-          <tr>
-            <th>ID</th>
-            <th>Segmento</th>
-            <th>Severidad</th>
-            <th>Estado</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td><a href="incidencia-detalle.jsp">INC-014</a></td>
-            <td>LIM-VLP-02</td>
-            <td class="severidad-alta">Alta</td>
-            <td>En análisis</td>
-          </tr>
-          <tr>
-            <td><a href="incidencia-detalle.jsp">INC-013</a></td>
-            <td>LIM-VLP-02</td>
-            <td class="severidad-critica">Crítica</td>
-            <td>En reparación</td>
-          </tr>
-          <tr>
-            <td><a href="incidencia-detalle.jsp">INC-011</a></td>
-            <td>LIM-GYE-01</td>
-            <td class="severidad-media">Media</td>
-            <td>Reparación programada</td>
-          </tr>
-          <tr>
-            <td><a href="incidencia-detalle.jsp">INC-010</a></td>
-            <td>LIM-GYE-04</td>
-            <td class="severidad-alta">Alta</td>
-            <td>Restaurado</td>
-          </tr>
-          </tbody>
-        </table>
-          <p class="ayuda">Click en una fila para ver el detalle de la incidencia.</p>
-      </section>
+        <div class="columna">
+          <h4>Bitácora</h4>
+          <div class="registro">
+            <strong>10:32 - J. Ramos</strong>
+            <p>Caída de fibra óptica detectada.</p>
+          </div>
+          <input type="text" placeholder="Agregar observación...">
+        </div>
+      </div>
+    </section>
+  </main>
 
-    </main>
-  </div>
+</div>
 
 </body>
 </html>

@@ -49,9 +49,7 @@
         <p class="nombre-usuario">Username</p>
         <p class="rol-usuario">Supervisor</p>
     </div>
-
   </div>
-
 </header>
 
 <div class="contenedor">
@@ -72,9 +70,42 @@
         </a>
 
         <!-- Incidencias -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/incidencias.jsp">
-            Incidencias
-        </a>
+        <div class="grupo-menu">
+
+          <input
+            type="checkbox"
+            id="control-incidencias"
+            class="control-submenu"
+          >
+
+          <label
+                  for="control-incidencias"
+                  class="titulo-grupo">
+
+            <span class="texto-grupo">
+                Incidencias
+            </span>
+
+            <span class="flecha-submenu"></span>
+
+          </label>
+
+
+          <div class="contenido-submenu">
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/visualizar.jsp"
+                    class="subopcion">
+                Visualizar
+            </a>
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historial_incidencias.jsp"
+                    class="subopcion">
+                Historial de incidencias
+            </a>
+          </div>
+        </div>
 
         <!-- Estado de la red -->
         <div class="grupo-menu">
@@ -115,14 +146,84 @@
         </div>
 
         <!-- Servicios y clientes -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/servicios_clientes.jsp">
-            Servicios y clientes
-        </a>
+        <div class="grupo-menu">
+
+          <input
+            type="checkbox"
+            id="control-servicios-clientes"
+            class="control-submenu"
+          >
+
+          <label
+                  for="control-servicios-clientes"
+                  class="titulo-grupo">
+
+            <span class="texto-grupo">
+                Servicios y clientes
+            </span>
+
+            <span class="flecha-submenu"></span>
+
+          </label>
+
+
+          <div class="contenido-submenu">
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/clientes.jsp"
+                    class="subopcion">
+                Clientes
+            </a>
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/servicios.jsp"
+                    class="subopcion">
+                Servicios
+            </a>
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/solicitudes.jsp"
+                    class="subopcion">
+                Solicitudes
+            </a>
+          </div>
+        </div>
 
         <!-- Mantenimientos -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/mantenimientos.jsp">
-            Mantenimientos
-        </a>
+        <div class="grupo-menu">
+
+          <input
+            type="checkbox"
+            id="control-mantenimientos"
+            class="control-submenu"
+          >
+
+          <label
+                  for="control-mantenimientos"
+                  class="titulo-grupo">
+
+            <span class="texto-grupo">
+                Mantenimientos
+            </span>
+
+            <span class="flecha-submenu"></span>
+
+          </label>
+
+          <div class="contenido-submenu">
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/programacion.jsp"
+                    class="subopcion">
+                Programación
+            </a>
+
+            <a
+                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historial_programados.jsp"
+                    class="subopcion">
+                Historial de programados
+            </a>
+          </div>
+        </div>
 
         <!-- Reportes -->
         <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/reportes.jsp">
@@ -139,28 +240,24 @@
     </div>
 
 
-      <!-- Conservamos tu configuración -->
-      <div class="configuracion">
+    <!-- parte baja -->
+    <div class="configuracion">
+      <nav>
+        <h4>
+          <a href="#">
+              Perfil
+          </a>
+        </h4>
 
-        <nav>
+        <h4>
+          <a href="#">
+              Cerrar sesión
+          </a>
+        </h4>
+      </nav>
+    </div>
+  </aside>
 
-          <h4>
-            <a href="#">
-                Perfil
-            </a>
-          </h4>
-
-          <h4>
-            <a href="#">
-                Cerrar sesión
-            </a>
-          </h4>
-
-        </nav>
-
-      </div>
-
-    </aside>
 
 
     <!-- Contenido principal -->
@@ -249,7 +346,62 @@
       </section>
 
       <!-- Incidencias -->
+      <section>
+        <h2>Incidencias activas</h2>
 
+        <div class="filtros">
+          <select>
+            <option>Todas las severidades</option>
+            <option>Alta</option>
+            <option>Crítica</option>
+            <option>Media</option>
+          </select>
+          <select>
+            <option>Todos los segmentos</option>
+            <option>LIM-VLP-01</option>
+            <option>LIM-VLP-02</option>
+            <option>LIM-GYE-01</option>
+          </select>
+        </div>
+
+        <table>
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Segmento</th>
+            <th>Severidad</th>
+            <th>Estado</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td><a href="incidencias-detalle.jsp">INC-014</a></td>
+            <td>LIM-VLP-02</td>
+            <td class="severidad-alta">Alta</td>
+            <td>En análisis</td>
+          </tr>
+          <tr>
+            <td><a href="incidencias-detalle.jsp">INC-013</a></td>
+            <td>LIM-VLP-02</td>
+            <td class="severidad-critica">Crítica</td>
+            <td>En reparación</td>
+          </tr>
+          <tr>
+            <td><a href="incidencias-detalle.jsp">INC-011</a></td>
+            <td>LIM-GYE-01</td>
+            <td class="severidad-media">Media</td>
+            <td>Reparación programada</td>
+          </tr>
+          <tr>
+            <td><a href="incidencias-detalle.jsp">INC-010</a></td>
+            <td>LIM-GYE-04</td>
+            <td class="severidad-alta">Alta</td>
+            <td>Restaurado</td>
+          </tr>
+          </tbody>
+        </table>
+        <p class="ayuda">Click en una fila para ver el detalle de la incidencia.</p>
+      </section>
     </main>
   </div>
 </body>
