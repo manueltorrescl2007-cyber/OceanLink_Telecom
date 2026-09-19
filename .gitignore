@@ -9,3 +9,4 @@ dist
 ./.smarttomcat
 ./web2
 /.smarttomcat/
+/.idea/
