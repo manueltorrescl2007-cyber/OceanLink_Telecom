@@ -1,0 +1,72 @@
+# 🚀 Guía de Configuración Local: Apache Tomcat 9 en IntelliJ IDEA Ultimate
+
+Esta guía detalla los pasos para levantar la aplicación web **OceanLink** localmente sin errores de servidor ni fallos en la detección de vistas `.jsp`.
+
+---
+
+## 🛠️ 1. Prerrequisitos
+* IntelliJ IDEA Ultimate Edition.
+* JDK 17 o superior instalado.
+* El repositorio del proyecto clonado localmente.
+
+---
+
+## 📥 2. Descarga de Apache Tomcat 9
+1. Ve a la página oficial de [Apache Tomcat 9 Downloads](https://tomcat.apache.org/download-90.cgi).
+2. En la sección **Core**, descarga el archivo **64-bit Windows Zip** (o el equivalente a tu SO).
+3. Descomprime la carpeta en una ruta fija sin espacios extraños (Ejemplo: `C:\apache-tomcat-9.0.122`).
+
+---
+
+## ⚙️ 3. Configurar el Servidor en IntelliJ
+1. En IntelliJ, abre **File** ➔ **Settings** (`Ctrl + Alt + S`).
+2. Navega a **Build, Execution, Deployment** ➔ **Application Servers**.
+3. Haz clic en el botón **+** y selecciona **Tomcat Server**.
+4. En el campo **Tomcat Home**, selecciona la ruta donde descomprimiste Tomcat (`C:\apache-tomcat-9.0.122`).
+5. Haz clic en **Apply** y **OK**.
+
+---
+
+## ⚠️ 4. Ajustar la Web Facet (Paso Crítico)
+> **Atención:** Si este paso no se realiza, IntelliJ mostrará el error *"Please configure Web Facet first!"* al intentar previsualizar archivos `.jsp` con los íconos flotantes del navegador.
+
+1. Abre **File** ➔ **Project Structure** (`Ctrl + Alt + Shift + S`).
+2. En la columna izquierda, ve a **Facets** y selecciona **Web (OceanLink-Telecom)**.
+3. En la sección **Web Resource Directories** (abajo a la derecha):
+   * Modifica la ruta existente para que **apunte directamente a la carpeta raíz del proyecto** (donde están alojadas las carpetas `network_operator`, `css`, `img`, etc.) y **NO** a `src/main/webapp`.
+   * Asegúrate de que el campo *Path Relative to Deployment Root* contenga solo una barra `/`.
+4. Haz clic en **Apply**.
+
+---
+
+## 📦 5. Crear el Artifact del Proyecto
+1. En la misma ventana de **Project Structure**, selecciona **Artifacts** en el panel izquierdo.
+2. Haz clic en el botón **+** ➔ **Web Application: Exploded** ➔ **From Modules...**
+3. Selecciona el módulo `OceanLink-Telecom` y presiona **OK**.
+4. Verifica que se haya generado el artefacto `OceanLink-Telecom:war exploded`.
+5. Haz clic en **Apply** y **OK**.
+
+---
+
+## 🖥️ 6. Crear la Configuración de Ejecución (Run Configuration)
+1. Ve al menú superior: **Run** ➔ **Edit Configurations...**
+2. Haz clic en el botón **+** (esquina superior izquierda) y selecciona **Tomcat Server** ➔ **Local** *(No seleccionar Smart Tomcat)*.
+3. **Pestaña Server:**
+   * **Application server:** Selecciona `Tomcat 9.0.122`.
+   * **URL:** Define la ruta base `http://localhost:8080/OceanLink_G2`.
+   * **On 'Update' action:** Selecciona `Update resources`.
+   * **On frame deactivation:** Selecciona `Update resources`.
+   *(Esto permite ver los cambios en HTML/CSS/JSP al presionar F5 en el navegador sin reiniciar el servidor).*
+4. **Pestaña Deployment:**
+   * Haz clic en **+** ➔ **Artifact...** y elige **`OceanLink-Telecom:war exploded`**.
+   * En **Application context** (campo inferior), escribe exactamente: `/OceanLink_G2`.
+5. Haz clic en **Apply** y **OK**.
+
+---
+
+## 🧪 7. Verificación y Prueba
+1. Selecciona la configuración recién creada en la barra superior derecha y presiona **Run (▶️)**.
+2. Espera a que la consola confirme el arranque con el mensaje: `Server startup in [XXXX] ms`.
+3. Abre cualquier archivo `.jsp` en el editor (ej. `network_operator/estado_red.jsp`).
+4. Pasa el cursor por la esquina superior derecha del editor de texto y haz clic en el ícono de **Chrome** o tu navegador de preferencia.
+5. **Resultado esperado:** El navegador abrirá directamente la ruta completa (`http://localhost:8080/OceanLink_G2/network_operator/estado_red.jsp`) procesando correctamente las vistas e inclusiones dinámicas `<jsp:include>`.

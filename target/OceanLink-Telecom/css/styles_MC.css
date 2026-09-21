@@ -1,0 +1,585 @@
+/* ==========================================================================
+   OCEANLINK - styles.css
+   Hoja de estilos global. Único archivo CSS del proyecto.
+   ========================================================================== */
+
+:root {
+  --color-primario: #0b3d5c;     /* azul marino - sidebar y textos importantes */
+  --color-acento: #1c8c9c;       /* azul-verdoso - elementos activos/resaltados */
+  --color-fondo: #f5f7fa;        /* fondo general de la página */
+  --color-texto: #1e293b;        /* texto principal */
+  --color-texto-claro: #64748b;  /* texto secundario (encabezados de tabla, etc.) */
+  --color-borde: #d9e1e8;        /* bordes de tablas, inputs, avatar */
+  --color-alta: #e8871e;
+  --color-critica: #d64545;
+  --color-media: #ecb84a;
+  --color-leve: #3aa66b;
+  --fuente-principal: Arial, Helvetica, sans-serif;
+
+  --sidebar-ancho: 260px;
+  --topbar-alto: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--fuente-principal);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-size: 14px;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ==========================================================================
+   LAYOUT GENERAL (Grid: sidebar fijo + contenido principal)
+   ========================================================================== */
+
+.app-layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-ancho) 1fr;
+  min-height: 100vh;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* evita overflow de tablas anchas */
+}
+
+.content-container {
+  padding: 28px 32px;
+  flex: 1;
+}
+
+/* ==========================================================================
+   SIDEBAR
+   ========================================================================== */
+
+.sidebar {
+  background-color: var(--color-primario);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 24px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  font-size: 22px;
+  font-weight: 700;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  letter-spacing: 0.5px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 0 0 0;
+}
+
+.sidebar-footer {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin-top: 12px;
+}
+
+.nav-label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 0 24px 8px 24px;
+}
+
+.nav-group-label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 16px 24px 6px 24px;
+}
+
+.nav-item {
+  display: block;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  border-left: 3px solid transparent;
+  transition: background-color 0.15s ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.nav-item.active {
+  background-color: rgba(28, 140, 156, 0.25);
+  border-left: 3px solid var(--color-acento);
+  font-weight: 700;
+}
+
+.nav-sublist {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-subitem {
+  display: block;
+  padding: 8px 24px 8px 36px;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.85);
+  border-left: 3px solid transparent;
+  transition: background-color 0.15s ease;
+}
+
+.nav-subitem:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.nav-subitem.active {
+  background-color: rgba(28, 140, 156, 0.25);
+  border-left: 3px solid var(--color-acento);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   TOPBAR / HEADER
+   ========================================================================== */
+
+.topbar {
+  height: var(--topbar-alto);
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--color-borde);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-primario);
+  margin: 0;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  display: inline-block;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.user-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.user-role {
+  font-size: 11.5px;
+  color: var(--color-texto-claro);
+}
+
+/* ==========================================================================
+   TARJETAS DE CONTENIDO
+   ========================================================================== */
+
+.card {
+  background-color: #ffffff;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-texto);
+  margin: 0 0 20px 0;
+}
+
+/* ==========================================================================
+   FORMULARIOS (vista: Nuevo mantenimiento)
+   ========================================================================== */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 28px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-texto);
+  margin-bottom: 6px;
+}
+
+.form-field label .required {
+  color: var(--color-critica);
+}
+
+.form-field input[type="text"],
+.form-field input[type="date"],
+.form-field select,
+.form-field textarea {
+  font-family: var(--fuente-principal);
+  font-size: 13.5px;
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  padding: 9px 12px;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.form-field input[type="text"]:focus,
+.form-field input[type="date"]:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: var(--color-acento);
+}
+
+.form-field textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.btn {
+  font-family: var(--fuente-principal);
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 10px 22px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-primary {
+  background-color: var(--color-primario);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-acento);
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: var(--color-primario);
+  border: 1px solid var(--color-borde);
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-acento);
+  color: var(--color-acento);
+}
+
+.inline-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.inline-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.inline-field select {
+  font-family: var(--fuente-principal);
+  font-size: 13.5px;
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  padding: 9px 12px;
+  min-width: 240px;
+  background-color: #ffffff;
+  outline: none;
+}
+
+.inline-field select:focus {
+  border-color: var(--color-acento);
+}
+
+/* ==========================================================================
+   TABLAS (vista: Fechas y duración / Historial)
+   ========================================================================== */
+
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.table-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.table-toolbar-icons {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--color-texto-claro);
+  font-size: 15px;
+}
+
+.table-toolbar-icons span {
+  cursor: pointer;
+}
+
+.table-icons-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-borde);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background-color: var(--color-fondo);
+  color: var(--color-texto-claro);
+  font-size: 14px;
+}
+
+.table-icons-row span {
+  cursor: pointer;
+}
+
+.table-icons-row + .data-table-wrapper {
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+}
+
+.data-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.data-table thead th {
+  background-color: var(--color-fondo);
+  color: var(--color-texto-claro);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-borde);
+  white-space: nowrap;
+}
+
+.data-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-borde);
+  font-size: 13.5px;
+  color: var(--color-texto);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr.row-empty td {
+  height: 34px;
+  color: transparent;
+}
+
+.data-table tbody tr:hover:not(.row-empty) {
+  background-color: rgba(28, 140, 156, 0.05);
+}
+
+/* Badges de prioridad / estado */
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.badge-leve { background-color: var(--color-leve); }
+.badge-media { background-color: var(--color-media); color: var(--color-texto); }
+.badge-alta { background-color: var(--color-alta); }
+.badge-critica { background-color: var(--color-critica); }
+
+.badge-finalizado { background-color: var(--color-alta); }
+.badge-programado { background-color: var(--color-texto-claro); }
+.badge-en-progreso { background-color: var(--color-acento); }
+.badge-testing { background-color: var(--color-media); color: var(--color-texto); }
+
+.badge-segmento {
+  background-color: rgba(58, 166, 107, 0.15);
+  color: var(--color-leve);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   STEPPER (vista: Estado)
+   ========================================================================== */
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 620px;
+  margin: 10px auto 30px auto;
+}
+
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  position: relative;
+}
+
+.stepper-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 17px;
+  left: 55%;
+  width: 90%;
+  height: 2px;
+  background-color: var(--color-borde);
+  z-index: 0;
+}
+
+.stepper-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--color-borde);
+  background-color: #ffffff;
+  z-index: 1;
+}
+
+.stepper-step.completed .stepper-circle,
+.stepper-step.active .stepper-circle {
+  border-color: var(--color-acento);
+  background-color: var(--color-acento);
+}
+
+.stepper-label {
+  font-size: 12.5px;
+  color: var(--color-texto-claro);
+  font-weight: 600;
+}
+
+.stepper-step.active .stepper-label,
+.stepper-step.completed .stepper-label {
+  color: var(--color-primario);
+}
+
+.bitacora {
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  min-height: 220px;
+  padding: 16px;
+  font-size: 13px;
+  color: var(--color-texto);
+  line-height: 1.9;
+  white-space: pre-line;
+}
+
+.bitacora-input {
+  margin-top: 14px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  font-family: var(--fuente-principal);
+  font-size: 13.5px;
+}
+
+/* ==========================================================================
+   FILTROS (vista: Historial)
+   ========================================================================== */
+
+.filters-bar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.filters-bar .form-field {
+  flex: 1;
+}

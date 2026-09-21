@@ -1,0 +1,859 @@
+:root {
+  --color-primario: #0b3d5c;
+  --color-acento: #1c8c9c;
+  --color-fondo: #f5f7fa;
+  --color-texto: #1e293b;
+  --color-texto-claro: #64748b;
+  --color-borde: #d9e1e8;
+
+  --color-disponible: #2fa36b;
+  --color-limitada: #ecb84a;
+  --color-insuficiente: #d64545;
+
+  --fuente-principal: Arial, Helvetica, sans-serif;
+}
+
+/* Configuración general */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-texto);
+  font-family: var(--fuente-principal);
+  background-color: var(--color-fondo);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select {
+  font-family: var(--fuente-principal);
+}
+
+/* Control del menú */
+
+.control-menu {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Barra superior */
+
+.barra-superior {
+  width: 100%;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+  background-color: white;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.zona-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.boton-menu {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primario);
+  font-size: 22px;
+  line-height: 1;
+  background-color: #e8edf2;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.boton-menu:hover {
+  background-color: #dce8ed;
+}
+
+.logo {
+  color: var(--color-acento);
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.foto-usuario {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  background-color: var(--color-primario);
+  border-radius: 50%;
+}
+
+.nombre-usuario {
+  color: var(--color-texto);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.rol-usuario {
+  margin-top: 1px;
+  color: var(--color-texto-claro);
+  font-size: 10px;
+}
+
+/* Estructura */
+
+.contenedor {
+  display: flex;
+  min-height: calc(100vh - 58px);
+}
+
+/* Barra lateral */
+
+.menu-lateral {
+  width: 220px;
+  min-width: 220px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 25px 24px;
+  color: white;
+  background-color: var(--color-primario);
+  overflow: hidden;
+  transition:
+    width 0.3s ease,
+    min-width 0.3s ease,
+    padding 0.3s ease;
+}
+
+.contenido-menu,
+.configuracion {
+  width: 172px;
+  min-width: 172px;
+}
+
+.menu-lateral h2 {
+  margin-bottom: 20px;
+  color: white;
+  font-size: 22px;
+  font-weight: normal;
+}
+
+.navegacion-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.navegacion-lateral > a,
+.titulo-grupo {
+  width: 100%;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 9px 12px;
+  color: white;
+  font-size: 15px;
+  font-weight: normal;
+  line-height: 18px;
+  background-color: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.navegacion-lateral > a:hover,
+.navegacion-lateral > a.activo,
+.titulo-grupo:hover {
+  color: white;
+  background-color: var(--color-acento);
+}
+
+/* Submenú */
+
+.grupo-menu {
+  width: 100%;
+}
+
+.control-submenu {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.titulo-grupo {
+  justify-content: space-between;
+  user-select: none;
+}
+
+.texto-grupo {
+  display: flex;
+  align-items: center;
+}
+
+.flecha-submenu {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  margin-right: 2px;
+  border-right: 2px solid white;
+  border-bottom: 2px solid white;
+  transform: rotate(45deg);
+  transform-origin: center;
+  transition: transform 0.25s ease;
+}
+
+.control-submenu:checked
++ .titulo-grupo
+.flecha-submenu {
+  transform: rotate(225deg);
+}
+
+.contenido-submenu {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 0.25s ease,
+    opacity 0.2s ease;
+}
+
+.control-submenu:checked ~ .contenido-submenu {
+  max-height: 100px;
+  opacity: 1;
+}
+
+.navegacion-lateral .subopcion {
+  position: relative;
+  width: calc(100% - 8px);
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  margin: 3px 0 0 8px;
+  padding: 8px 10px 8px 25px;
+  color: white;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.navegacion-lateral .subopcion::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  width: 4px;
+  height: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+.navegacion-lateral .subopcion:hover {
+  background-color: var(--color-acento);
+}
+
+/* Configuración */
+
+.configuracion h3 {
+  margin-bottom: 9px;
+  color: white;
+  font-size: 15px;
+  font-weight: normal;
+}
+
+.configuracion a {
+  display: block;
+  margin-top: 6px;
+  color: white;
+  font-size: 12px;
+}
+
+.configuracion a:hover {
+  text-decoration: underline;
+}
+
+.control-menu:checked
+~ .contenedor
+.menu-lateral {
+  width: 0;
+  min-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Contenido */
+
+.contenido-principal {
+  flex: 1;
+  min-width: 0;
+  padding: 32px;
+}
+
+.encabezado-panel {
+  margin-bottom: 25px;
+}
+
+.encabezado-panel h2 {
+  color: var(--color-primario);
+  font-size: 23px;
+}
+
+.encabezado-panel h1 {
+  margin-top: 3px;
+  color: var(--color-texto);
+  font-size: 34px;
+  font-weight: normal;
+}
+
+/* Distribución de reportes */
+
+.cuadricula-reportes {
+  display: grid;
+  grid-template-columns: minmax(380px, 0.9fr) minmax(440px, 1.1fr);
+  align-items: start;
+  gap: 24px;
+}
+
+.panel {
+  padding: 24px;
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  box-shadow: 0 2px 7px rgba(11, 61, 92, 0.08);
+}
+
+.panel-generador,
+.panel-generados {
+  min-height: 505px;
+}
+
+.titulo-panel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.titulo-panel h2 {
+  color: var(--color-primario);
+  font-size: 18px;
+}
+
+.titulo-panel p {
+  margin-top: 4px;
+  color: var(--color-texto-claro);
+  font-size: 12px;
+}
+
+.cantidad-reportes {
+  min-width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: var(--color-acento);
+  border-radius: 15px;
+}
+
+/* Formulario */
+
+.grupo-formulario {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+
+.grupo-formulario label,
+.titulo-campo {
+  color: var(--color-primario);
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.titulo-campo {
+  margin-bottom: 9px;
+}
+
+.grupo-formulario input,
+.grupo-formulario select {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  color: var(--color-texto);
+  font-size: 13px;
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  outline: none;
+}
+
+.grupo-formulario input:focus,
+.grupo-formulario select:focus {
+  border-color: var(--color-acento);
+  box-shadow: 0 0 0 3px rgba(28, 140, 156, 0.12);
+}
+
+.fila-formulario {
+  display: flex;
+  gap: 16px;
+}
+
+.grupo-opciones {
+  margin-bottom: 20px;
+  padding: 0;
+  border: none;
+}
+
+.grupo-opciones legend {
+  margin-bottom: 11px;
+  color: var(--color-primario);
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.lista-opciones {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 12px;
+}
+
+.severidades {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-texto);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.opcion input {
+  accent-color: var(--color-acento);
+}
+
+.mensaje-formulario {
+  min-height: 18px;
+  margin-bottom: 8px;
+  color: var(--color-insuficiente);
+  font-size: 12px;
+}
+
+.mensaje-formulario.correcto {
+  color: var(--color-disponible);
+}
+
+.boton-generar {
+  width: 100%;
+  padding: 11px 18px;
+  color: white;
+  font-size: 13px;
+  background-color: var(--color-primario);
+  border: 1px solid var(--color-primario);
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.boton-generar:hover {
+  background-color: var(--color-acento);
+  border-color: var(--color-acento);
+}
+
+/* Reportes generados */
+
+.lista-reportes {
+  max-height: 420px;
+  padding-right: 5px;
+  overflow-y: auto;
+}
+
+.lista-reportes::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lista-reportes::-webkit-scrollbar-thumb {
+  background-color: var(--color-borde);
+  border-radius: 10px;
+}
+
+.reporte {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: 7px;
+}
+
+.reporte:hover {
+  background-color: #f8fbfc;
+  border-color: #bdd4dd;
+}
+
+.icono-pdf {
+  width: 38px;
+  height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  background-color: var(--color-insuficiente);
+  border-radius: 5px;
+}
+
+.informacion-reporte {
+  min-width: 0;
+}
+
+.nombre-reporte {
+  overflow: hidden;
+  color: var(--color-primario);
+  font-size: 13px;
+  font-weight: bold;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fecha-reporte {
+  margin-top: 5px;
+  color: var(--color-texto-claro);
+  font-size: 11px;
+}
+
+.acciones-reporte {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.boton-accion {
+  padding: 7px 9px;
+  color: var(--color-primario);
+  font-size: 11px;
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.boton-accion:hover {
+  color: white;
+  background-color: var(--color-acento);
+  border-color: var(--color-acento);
+}
+
+.sin-reportes {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: var(--color-texto-claro);
+  text-align: center;
+}
+
+.icono-vacio {
+  width: 52px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  color: var(--color-texto-claro);
+  font-size: 12px;
+  font-weight: bold;
+  background-color: #edf3f6;
+  border-radius: 6px;
+}
+
+/* Modal */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: rgba(15, 23, 42, 0.62);
+}
+
+.modal.mostrar {
+  display: flex;
+}
+
+.contenido-modal {
+  width: 100%;
+  max-width: 900px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  background-color: white;
+  border-radius: 9px;
+  box-shadow: 0 18px 40px rgba(11, 61, 92, 0.25);
+}
+
+.encabezado-modal {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.encabezado-modal p {
+  color: var(--color-texto-claro);
+  font-size: 12px;
+}
+
+.encabezado-modal h2 {
+  margin-top: 3px;
+  color: var(--color-primario);
+  font-size: 19px;
+}
+
+.cerrar-modal {
+  padding: 0;
+  color: var(--color-texto-claro);
+  font-size: 28px;
+  line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.cerrar-modal:hover {
+  color: var(--color-insuficiente);
+}
+
+.visor-pdf {
+  width: 100%;
+  flex: 1;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+}
+
+.botones-modal {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
+.boton-descargar-modal {
+  padding: 10px 16px;
+  color: white;
+  font-size: 13px;
+  background-color: var(--color-primario);
+  border: 1px solid var(--color-primario);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.boton-descargar-modal:hover {
+  background-color: var(--color-acento);
+  border-color: var(--color-acento);
+}
+
+/* Responsive */
+
+@media (max-width: 1050px) {
+  .cuadricula-reportes {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .barra-superior {
+    padding: 0 18px;
+  }
+
+  .nombre-usuario,
+  .rol-usuario {
+    display: none;
+  }
+
+  .menu-lateral {
+    width: 165px;
+    min-width: 165px;
+    padding: 22px 14px;
+  }
+
+  .contenido-menu,
+  .configuracion {
+    width: 137px;
+    min-width: 137px;
+  }
+
+  .contenido-principal {
+    padding: 22px;
+  }
+
+  .fila-formulario {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .lista-opciones,
+  .severidades {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reporte {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .acciones-reporte {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
+
+/* Colores oficiales de la interfaz OceanLink */
+
+:root {
+  --color-primario: #0b3d5c;
+  --color-acento: #1c8c9c;
+  --color-fondo: #f5f7fa;
+  --color-texto: #1e293b;
+  --color-texto-claro: #64748b;
+  --color-borde: #d9e1e8;
+}
+
+/* Barra superior */
+
+.barra-superior {
+  height: 58px;
+  padding: 0 30px;
+  background-color: #ffffff !important;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+/* Logo OceanLink */
+
+.logo {
+  color: #1c8c9c !important;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Botón del menú */
+
+.boton-menu {
+  width: 36px;
+  height: 36px;
+  color: #0b3d5c !important;
+  background-color: #e8edf2 !important;
+}
+
+.boton-menu:hover {
+  color: #0b3d5c !important;
+  background-color: #dce8ed !important;
+}
+
+/* Foto del usuario */
+
+.foto-usuario {
+  background-color: #0b3d5c !important;
+}
+
+/* Barra lateral */
+
+.menu-lateral {
+  width: 220px;
+  min-width: 220px;
+  padding: 25px 24px;
+  color: white;
+  background-color: #0b3d5c !important;
+}
+
+/* Opciones del menú */
+
+.navegacion-lateral > a,
+.titulo-grupo,
+.navegacion-lateral .subopcion {
+  color: white !important;
+  background-color: transparent;
+}
+
+/* Hover y opción seleccionada */
+
+.navegacion-lateral > a:hover,
+.navegacion-lateral > a.activo,
+.titulo-grupo:hover,
+.navegacion-lateral .subopcion:hover,
+.navegacion-lateral .subopcion.activa {
+  color: white !important;
+  background-color: #1c8c9c !important;
+}
+
+/* Títulos principales */
+
+.encabezado-panel h2,
+.titulo-panel h2 {
+  color: #0b3d5c !important;
+}
+
+/* Botón generar */
+
+.boton-generar {
+  color: white;
+  background-color: #0b3d5c !important;
+  border-color: #0b3d5c !important;
+}
+
+.boton-generar:hover {
+  background-color: #1c8c9c !important;
+  border-color: #1c8c9c !important;
+}
+
+/* Contador */
+
+.cantidad-reportes {
+  color: white;
+  background-color: #1c8c9c !important;
+}

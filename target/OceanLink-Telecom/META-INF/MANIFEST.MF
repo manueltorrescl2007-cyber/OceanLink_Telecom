@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Created-By: IntelliJ IDEA
+Built-By: bimo9
+Build-Jdk: Oracle OpenJDK 26.0.2
+
