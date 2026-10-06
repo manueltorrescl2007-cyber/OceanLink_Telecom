@@ -65,7 +65,7 @@
 
         <!-- Dashboard -->
         <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/supervisor.jsp"
-           class="activo">
+           class="titulo-grupo">
             Dashboard general
         </a>
 
@@ -95,7 +95,7 @@
 
             <a
                     href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/visualizar.jsp"
-                    class="subopcion">
+                    class="subopcion" class="activo">
                 Visualizar
             </a>
 
@@ -226,12 +226,14 @@
         </div>
 
         <!-- Reportes -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/reportes.jsp">
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/reportes.jsp"
+        class="texto-grupo">
             Reportes
         </a>
 
         <!-- Históricos -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historicos.jsp">
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historicos.jsp"
+        class="texto-grupo">
             Históricos
         </a>
 
@@ -250,7 +252,7 @@
         </h4>
 
         <h4>
-          <a href="../../login.jsp">
+          <a href="#">
               Cerrar sesión
           </a>
         </h4>
