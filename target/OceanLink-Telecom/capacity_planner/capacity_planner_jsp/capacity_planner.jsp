@@ -5,130 +5,161 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Dashboard | OceanLink</title>
 
-    <link
-        rel="stylesheet"
-        href="${pageContext.request.contextPath}/css/capacity_planner/capacity_planner.css"
-    >
-    <link
-        rel="stylesheet"
-        href="../../css/capacity_planner/comun.css"
-    >
+    <!-- Estilos de las tarjetas del dashboard -->
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/capacity_planner/capacity_planner.css?v=2">
+
+    <!-- Estilos adicionales del Capacity Planner -->
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/capacity_planner/comun.css">
+
+    <!-- Estilos comunes de las barras. Se cargan al final. -->
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/barras.css">
 </head>
 
 <body>
 
-<!-- Barra superior -->
+<!-- Este checkbox permite abrir y cerrar el menú sin JavaScript.
+     El botón ☰ lo controla mediante for="controlMenu". -->
+<input type="checkbox"
+       id="controlMenu"
+       class="control-menu"
+       aria-label="Ocultar menú lateral">
+
+<!-- ==================================================
+     1. BARRA SUPERIOR
+     ================================================== -->
 <header class="barra-superior">
 
     <div class="zona-logo">
 
-        <!-- Control para ocultar o mostrar el menú -->
-        <label
-            for="controlMenu"
-            class="boton-menu"
-            title="Ocultar o mostrar menú"
-        >
-            ☰
-        </label>
+        <label for="controlMenu"
+               class="boton-menu"
+               title="Ocultar o mostrar menú">☰</label>
 
-        <a
-            href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp"
-            class="logo"
-        >
+        <!-- contextPath agrega la ruta base de la aplicación -->
+        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp"
+           class="logo">
             OceanLink
         </a>
-
     </div>
 
+    <!-- Datos de ejemplo. Después vendrán del usuario conectado. -->
     <div class="usuario">
 
-        <div class="foto-usuario">
-            CP
-        </div>
+        <div class="foto-usuario">CP</div>
 
         <div>
             <p class="nombre-usuario">Username</p>
             <p class="rol-usuario">Capacity Planner</p>
         </div>
-
     </div>
 
 </header>
 
-<!-- Checkbox invisible para controlar el menú sin JavaScript -->
-<input
-    type="checkbox"
-    id="controlMenu"
-    class="control-menu"
->
-
+<!-- Agrupa el menú lateral y el contenido principal -->
 <div class="contenedor">
 
-    <!-- Menú lateral -->
+    <!-- ==================================================
+         2. MENÚ LATERAL
+         ================================================== -->
     <aside class="menu-lateral">
 
         <div class="contenido-menu">
 
             <h2>Menú</h2>
 
-            <nav>
+            <nav class="navegacion-lateral"
+                 aria-label="Menú principal">
 
-                <a
-                    href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp"
-                    class="activo"
-                >
+                <!-- activo resalta la página que estamos viendo -->
+                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp"
+                   class="activo">
                     Dashboard
                 </a>
 
-                <a
-                    href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/clientes.jsp"
-                >
+                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/clientes.jsp">
                     Clientes
                 </a>
 
-                <a
-                    href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp"
-                >
+                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp">
                     Solicitudes
                 </a>
 
-                <a
-                    href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/rutas.jsp"
-                >
-                    Rutas
-                </a>
+                <!-- Infraestructura: agrupa las tres pantallas -->
+                <div class="grupo-menu">
 
-                <a
-                    href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/servicios.jsp"
-                >
+                    <!-- Controla la apertura del submenú -->
+                    <input type="checkbox"
+                           id="control-infraestructura"
+                           class="control-submenu">
+
+                    <!-- Al hacer clic, marca o desmarca el checkbox -->
+                    <label for="control-infraestructura"
+                           class="titulo-grupo">
+
+                        <span>Infraestructura</span>
+                        <span class="flecha-submenu"></span>
+
+                    </label>
+
+                    <!-- Opciones que aparecen al desplegar -->
+                    <div class="contenido-submenu">
+
+                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/rutas.jsp"
+                           class="subopcion">
+                            Rutas
+                        </a>
+
+                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/segmentos.jsp"
+                           class="subopcion">
+                            Segmentos
+                        </a>
+
+                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/landing_stations.jsp"
+                           class="subopcion">
+                            Landing stations
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/servicios.jsp">
                     Servicios
                 </a>
 
             </nav>
-
         </div>
 
+        <!-- Opciones inferiores del usuario -->
         <div class="configuracion">
+            <nav aria-label="Opciones del usuario">
 
-            <h3>Configuración</h3>
+                <!-- Pendiente: colocar la ruta real de Perfil -->
+                <a href="#">Perfil</a>
 
-            <a href="#">
-                Perfil
-            </a>
-            <!-- Cierre de sesión, redirección a login -->
-            <a href="../../login.jsp">
-                Cerrar sesión
-            </a>
+                <!-- Por ahora lleva al login.
+                     El cierre de sesión real se conectará después. -->
+                <a href="${pageContext.request.contextPath}/login.jsp"
+                   class="cerrar-sesion">
+                    Cerrar sesión
+                </a>
 
+            </nav>
         </div>
 
     </aside>
 
-    <!-- Contenido principal -->
+    <!-- ==================================================
+         3. CONTENIDO PRINCIPAL
+         ================================================== -->
     <main class="contenido-principal">
 
         <section class="encabezado-panel">
@@ -136,15 +167,18 @@
             <h1>Dashboard</h1>
         </section>
 
-        <!-- Tarjetas del dashboard -->
+        <!-- Las tres tarjetas conservan el diseño existente -->
         <section class="tarjetas">
 
-            <!-- Resumen -->
-            <article class="tarjeta">
+            <!-- ==========================================
+                 4. RESUMEN
+                 Los números son ejemplos para el mockup.
+                 Después se calcularán consultando MySQL.
+                 ========================================== -->
+            <article class="tarjeta tarjeta-resumen">
 
                 <h3>Resumen</h3>
 
-                <!-- Datos de prueba -->
                 <div class="fila">
                     <span>Solicitudes registradas</span>
                     <strong>12</strong>
@@ -161,254 +195,143 @@
                 </div>
 
                 <div class="fila">
+                    <span>Pendientes por capacidad</span>
+                    <strong>2</strong>
+                </div>
+
+                <div class="fila">
                     <span>Servicios activos</span>
                     <strong>2</strong>
                 </div>
 
             </article>
 
-            <!-- Estado de las rutas -->
-            <article class="tarjeta">
+            <!-- ==========================================
+                 5. UTILIZACIÓN DE SEGMENTOS
 
-                <h3>Estado de rutas por capacidad</h3>
+                 Propuesta de cálculo:
+                 (ocupada + reservada) / total * 100
 
-                <!-- Caso de prueba: ruta disponible -->
+                 Normal: menor al 80%.
+                 Alta: del 80% al 95%, inclusive.
+                 Crítica: mayor al 95%.
+
+                 Los conteos siguientes son ejemplos.
+                 ========================================== -->
+            <article class="tarjeta tarjeta-segmentos">
+
+                <h3>Estado de segmentos</h3>
+
                 <div class="fila">
-                    <span>8 disponibles</span>
-                    <span
-                        class="estado disponible"
-                        title="Disponible"
-                    ></span>
+                    <span>25 estables</span>
+                    <span class="estado disponible"
+                          aria-label="Normal"></span>
                 </div>
 
-                <!-- Caso de prueba: ruta limitada -->
                 <div class="fila">
-                    <span>3 limitadas</span>
-                    <span
-                        class="estado limitada"
-                        title="Limitada"
-                    ></span>
+                    <span>3 limitados</span>
+                    <span class="estado limitada"
+                          aria-label="Alta utilización"></span>
                 </div>
 
-                <!-- Caso de prueba: ruta insuficiente -->
                 <div class="fila">
-                    <span>2 insuficientes</span>
-                    <span
-                        class="estado insuficiente"
-                        title="Insuficiente"
-                    ></span>
+                    <span>2 críticos</span>
+                    <span class="estado insuficiente"
+                          aria-label="Utilización crítica"></span>
+                </div>
+
+                <div class="fila enlace-segmentos">
+                    <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/segmentos.jsp">
+                        Ver segmentos →
+                    </a>
                 </div>
 
             </article>
 
-            <!-- Acciones pendientes -->
+            <!-- ==========================================
+                 6. ACCIONES PENDIENTES
+
+                 Ya no se registran manualmente.
+                 Después se generarán según el estado
+                 de cada solicitud consultada en MySQL.
+
+                 Aquí mostramos ejemplos del resultado.
+                 ========================================== -->
             <article class="tarjeta acciones">
 
                 <div class="encabezado-acciones">
-
                     <h3>Acciones pendientes</h3>
 
-                    <span class="cantidad-acciones">
-                        4
-                    </span>
-
+                    <!-- Después mostrará el total obtenido
+                         de la consulta de solicitudes -->
+                    <span class="cantidad-acciones">4</span>
                 </div>
 
                 <ul class="lista-acciones">
 
-                    <!-- Caso de prueba 1 -->
-                    <li class="item-accion">
-
+                    <!-- Solicitud registrada -->
+                    <li>
                         <div class="informacion-accion">
-                            <strong>SOL-014</strong>
-                            <span>Verificar capacidad</span>
+
+                            <!-- Por ahora abre la lista de solicitudes -->
+                            <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp">
+                                <strong>SOL-014</strong>
+                            </a>
+
+                            <span>Evaluar solicitud</span>
                         </div>
-
-                        <span class="prioridad prioridad-critica">
-                            Crítica
-                        </span>
-
                     </li>
 
-                    <!-- Caso de prueba 2 -->
-                    <li class="item-accion">
-
+                    <!-- Solicitud en evaluación -->
+                    <li>
                         <div class="informacion-accion">
-                            <strong>SOL-018</strong>
-                            <span>Seleccionar ruta</span>
+
+                            <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp">
+                                <strong>SOL-018</strong>
+                            </a>
+
+                            <span>Revisar capacidad de segmentos</span>
                         </div>
-
-                        <span class="prioridad prioridad-alta">
-                            Alta
-                        </span>
-
                     </li>
 
-                    <!-- Caso de prueba 3 -->
-                    <li class="item-accion">
-
+                    <!-- Solicitud pendiente por capacidad -->
+                    <li>
                         <div class="informacion-accion">
-                            <strong>SOL-021</strong>
-                            <span>Confirmar reserva</span>
+
+                            <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp">
+                                <strong>SOL-021</strong>
+                            </a>
+
+                            <span>Revisar alternativas de capacidad</span>
                         </div>
-
-                        <span class="prioridad prioridad-media">
-                            Media
-                        </span>
-
                     </li>
 
-                    <!-- Caso de prueba 4 -->
-                    <li class="item-accion">
-
+                    <!-- Solicitud aprobada -->
+                    <li>
                         <div class="informacion-accion">
-                            <strong>SOL-022</strong>
-                            <span>Revisar disponibilidad</span>
+
+                            <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp">
+                                <strong>SOL-022</strong>
+                            </a>
+
+                            <span>Gestionar reserva de capacidad</span>
                         </div>
-
-                        <span class="prioridad prioridad-alta">
-                            Alta
-                        </span>
-
                     </li>
 
                 </ul>
 
-                <!-- Abre la ventana sin JavaScript -->
-                <button
-                    class="boton-nuevo"
-                    type="button"
-                    popovertarget="modalAccion"
-                >
-                    + Nuevo
-                </button>
+                <!-- Reemplaza el botón "+ Nuevo".
+                     Conserva su clase para usar el mismo diseño. -->
+                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp"
+                   class="boton-nuevo">
+                    Ver solicitudes
+                </a>
 
             </article>
 
         </section>
 
     </main>
-
-</div>
-
-<!-- Ventana para registrar una nueva acción -->
-<div
-    id="modalAccion"
-    class="modal"
-    popover
->
-
-    <div class="contenido-modal">
-
-        <div class="encabezado-modal">
-
-            <h2>Nueva acción pendiente</h2>
-
-            <button
-                class="cerrar-modal"
-                type="button"
-                popovertarget="modalAccion"
-                popovertargetaction="hide"
-                aria-label="Cerrar ventana"
-            >
-                &times;
-            </button>
-
-        </div>
-
-        <!--
-            Este formulario es visual.
-            Posteriormente se conectará con un Servlet.
-        -->
-        <form action="#" method="post">
-
-            <div class="grupo-formulario">
-
-                <label for="codigoAccion">
-                    Código
-                </label>
-
-                <input
-                    type="text"
-                    id="codigoAccion"
-                    name="codigo"
-                    placeholder="Ejemplo: SOL-023"
-                    maxlength="15"
-                    required
-                >
-
-            </div>
-
-            <div class="grupo-formulario">
-
-                <label for="descripcionAccion">
-                    Descripción de la acción
-                </label>
-
-                <input
-                    type="text"
-                    id="descripcionAccion"
-                    name="descripcion"
-                    placeholder="Ejemplo: Revisar disponibilidad de ruta"
-                    maxlength="80"
-                    required
-                >
-
-            </div>
-
-            <div class="grupo-formulario">
-
-                <label for="prioridadAccion">
-                    Prioridad
-                </label>
-
-                <select
-                    id="prioridadAccion"
-                    name="prioridad"
-                    required
-                >
-                    <option value="">
-                        Seleccione una prioridad
-                    </option>
-
-                    <option value="critica">
-                        Crítica
-                    </option>
-
-                    <option value="alta">
-                        Alta
-                    </option>
-
-                    <option value="media">
-                        Media
-                    </option>
-                </select>
-
-            </div>
-
-            <div class="botones-modal">
-
-                <button
-                    class="boton-cancelar"
-                    type="button"
-                    popovertarget="modalAccion"
-                    popovertargetaction="hide"
-                >
-                    Cancelar
-                </button>
-
-                <button
-                    class="boton-guardar"
-                    type="submit"
-                >
-                    Guardar acción
-                </button>
-
-            </div>
-
-        </form>
-
-    </div>
 
 </div>
 

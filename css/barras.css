@@ -1,0 +1,472 @@
+/* ==================================================
+   1. COLORES Y FUENTE DE OCEANLINK
+   ================================================== */
+
+:root {
+  /* Colores principales */
+  --color-primario: #0b3d5c;
+  --color-acento: #1c8c9c;
+  --color-fondo: #f5f7fa;
+  --color-texto: #1e293b;
+  --color-texto-claro: #64748b;
+  --color-borde: #d9e1e8;
+
+  /* Colores de estados y prioridades */
+  --color-disponible: #2fa36b;
+  --color-alta: #e8871e;
+  --color-critica: #d64545;
+  --color-media: #ecb84a;
+
+  /* Fuente principal */
+  --fuente-principal: Arial, Helvetica, sans-serif;
+}
+
+
+/* ==================================================
+   2. CONFIGURACIÓN GENERAL
+   ================================================== */
+
+/* Quita los espacios predeterminados.
+   Incluye el relleno y los bordes dentro del tamaño. */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-texto);
+  font-family: var(--fuente-principal);
+  background-color: var(--color-fondo);
+}
+
+/* Estilo general de los enlaces */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+
+/* ==================================================
+   3. BARRA SUPERIOR
+   ================================================== */
+
+.barra-superior {
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+  background-color: white;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+/* Agrupa el botón del menú y el logo */
+.zona-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Nombre OceanLink */
+.logo {
+  color: var(--color-acento);
+  font-size: 20px;
+  font-weight: bold;
+}
+
+
+/* ==================================================
+   4. BOTÓN DE LAS TRES RAYITAS
+   ================================================== */
+
+.boton-menu {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  color: var(--color-primario);
+  font-size: 22px;
+  line-height: 1;
+
+  background-color: #e8edf2;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+/* Color del botón al pasar el mouse */
+.boton-menu:hover {
+  color: var(--color-primario);
+  background-color: #dce8ed;
+}
+
+
+/* ==================================================
+   5. DATOS DEL USUARIO EN LA BARRA SUPERIOR
+   ================================================== */
+
+/* Agrupa el círculo, el nombre y el rol */
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* Círculo con las iniciales del usuario */
+.foto-usuario {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+  font-size: 12px;
+
+  border-radius: 50%;
+  background-color: var(--color-primario);
+}
+
+.nombre-usuario {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.rol-usuario {
+  margin-top: 1px;
+  color: var(--color-texto-claro);
+  font-size: 10px;
+}
+
+
+/* ==================================================
+   6. ESTRUCTURA DE LA PÁGINA
+   ================================================== */
+
+/* Coloca el menú lateral y el contenido uno al lado
+   del otro. Resta la altura de la barra superior. */
+.contenedor {
+  display: flex;
+  min-height: calc(100vh - 58px);
+}
+
+
+/* ==================================================
+   7. BARRA LATERAL
+   ================================================== */
+
+.menu-lateral {
+  width: 220px;
+  min-width: 220px;
+  flex-shrink: 0;
+
+  display: flex;
+  flex-direction: column;
+  padding: 25px 24px;
+
+  color: white;
+  background-color: var(--color-primario);
+  overflow: hidden;
+
+  /* Apertura y cierre suaves */
+  transition:
+    width 0.3s ease,
+    min-width 0.3s ease,
+    padding 0.3s ease;
+}
+
+/* Título "Menú" */
+.menu-lateral h2 {
+  margin-bottom: 20px;
+  font-size: 22px;
+  font-weight: normal;
+}
+
+/* Opciones colocadas una debajo de otra */
+.navegacion-lateral,
+.configuracion nav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Evita que los textos se compriman al cerrar */
+.contenido-menu,
+.configuracion {
+  min-width: 172px;
+}
+
+/* Tamaño y color de las opciones */
+.menu-lateral a,
+.titulo-grupo {
+  display: block;
+  padding: 9px 12px;
+
+  color: white;
+  font-size: 15px;
+  font-weight: normal;
+
+  border-radius: 6px;
+}
+
+/* Resalta la opción al pasar el mouse
+   o cuando corresponde a la página actual */
+.menu-lateral a:hover,
+.menu-lateral a.activo,
+.titulo-grupo:hover {
+  color: white;
+  background-color: var(--color-acento);
+}
+
+/* Evita el subrayado en ambas barras */
+.menu-lateral a,
+.menu-lateral a:hover,
+.barra-superior a,
+.barra-superior a:hover {
+  text-decoration: none;
+}
+
+
+/* ==================================================
+   8. SUBMENÚS CON CHECKBOX
+   ================================================== */
+
+/* Oculta el checkbox que controla cada grupo */
+.control-submenu {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Coloca el nombre y la flecha uno junto al otro */
+.titulo-grupo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Flecha que apunta hacia abajo */
+.flecha-submenu {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+
+  border-right: 2px solid white;
+  border-bottom: 2px solid white;
+
+  transform: rotate(45deg);
+  transition: transform 0.25s ease;
+}
+
+/* Gira la flecha cuando se abre el grupo */
+.control-submenu:checked + .titulo-grupo .flecha-submenu {
+  transform: rotate(225deg);
+}
+
+/* Submenú cerrado */
+.contenido-submenu {
+  max-height: 0;
+  margin-left: 8px;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+
+  transition:
+    max-height 0.3s ease,
+    opacity 0.2s ease,
+    visibility 0.3s ease;
+}
+
+/* Submenú abierto: espacio para las tres opciones */
+.control-submenu:checked ~ .contenido-submenu {
+  max-height: 180px;
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Opciones interiores */
+.navegacion-lateral .subopcion {
+  position: relative;
+  display: block;
+  margin-top: 3px;
+  padding: 8px 10px 8px 25px;
+
+  color: white;
+  font-size: 13px;
+  line-height: 18px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+/* Punto blanco junto a cada opción */
+.subopcion::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 12px;
+
+  width: 4px;
+  height: 4px;
+  background-color: white;
+  border-radius: 50%;
+
+  transform: translateY(-50%);
+}
+
+/* Resalta la opción al pasar el mouse */
+.navegacion-lateral .subopcion:hover,
+.navegacion-lateral .subopcion.activo {
+  color: white;
+  background-color: var(--color-acento);
+  text-decoration: none;
+}
+
+/* ==================================================
+   9. PERFIL Y CERRAR SESIÓN
+   ================================================== */
+
+/* Coloca estas opciones en la parte inferior */
+.configuracion {
+  margin-top: auto;
+  padding-top: 30px;
+}
+
+.configuracion a {
+  font-size: 12px;
+}
+
+/* Tamaño de los recuadros inferiores */
+.configuracion nav a {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 9px 12px;
+
+  font-size: 12px;
+  font-weight: normal;
+  border-radius: 6px;
+}
+
+/* Cerrar sesión se vuelve rojo al pasar el mouse */
+.configuracion a.cerrar-sesion:hover {
+  color: white;
+  background-color: var(--color-critica);
+  text-decoration: none;
+}
+
+
+/* ==================================================
+   10. CONTROL PARA ABRIR Y CERRAR EL MENÚ
+   ================================================== */
+
+/* Checkbox invisible que controla el botón ☰ */
+.control-menu {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* Al marcar el checkbox, el menú pierde su ancho.
+   ~ permite encontrar el contenedor aunque haya
+   otros elementos entre él y el checkbox. */
+.control-menu:checked ~ .contenedor .menu-lateral {
+  width: 0;
+  min-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+
+/* ==================================================
+   11. CONTENIDO PRINCIPAL Y TÍTULOS
+   ================================================== */
+
+/* Ocupa el espacio restante junto al menú */
+.contenido-principal {
+  flex: 1;
+  min-width: 0;
+  padding: 32px;
+}
+
+.encabezado-panel {
+  margin-bottom: 25px;
+}
+
+/* Nombre del rol o de la sección */
+.encabezado-panel h2 {
+  color: var(--color-primario);
+  font-size: 23px;
+}
+
+/* Título principal de la página */
+.encabezado-panel h1 {
+  margin-top: 3px;
+  font-size: 34px;
+  font-weight: normal;
+}
+
+
+/* ==================================================
+   12. AJUSTES PARA PANTALLAS PEQUEÑAS
+   Se aplican cuando el ancho es de 700px o menos.
+   ================================================== */
+
+@media (max-width: 700px) {
+  .barra-superior {
+    padding: 0 18px;
+  }
+
+  .menu-lateral {
+    width: 165px;
+    min-width: 165px;
+    padding: 22px 14px;
+  }
+
+  .contenido-menu,
+  .configuracion {
+    min-width: 137px;
+  }
+
+  .menu-lateral a,
+  .titulo-grupo {
+    font-size: 14px;
+  }
+
+  /* Mantiene el tamaño de Perfil y Cerrar sesión */
+  .configuracion nav a {
+    font-size: 12px;
+  }
+
+  .contenido-principal {
+    padding: 22px;
+  }
+
+  /* Permite cerrar el menú también en pantalla pequeña */
+  .control-menu:checked ~ .contenedor .menu-lateral {
+    width: 0;
+    min-width: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* Cambio suave de color en las opciones del menú */
+.menu-lateral a,
+.titulo-grupo {
+  transition: background-color 0.2s ease;
+}

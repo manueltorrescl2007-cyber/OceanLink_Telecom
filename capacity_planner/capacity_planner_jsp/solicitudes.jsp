@@ -1,852 +1,344 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.*" %>
-
+<%@ page import="java.util.ArrayList,java.time.LocalDateTime,java.time.format.DateTimeFormatter" %>
 <%!
-    private Map<String, String> crearSolicitud(
-            String id,
-            String cliente,
-            String origen,
-            String destino,
-            String capacidad,
-            String fecha,
-            String estado,
-            String justificacion) {
-
-        Map<String, String> solicitud = new LinkedHashMap<>();
-
-        solicitud.put("id", id);
-        solicitud.put("cliente", cliente);
-        solicitud.put("origen", origen);
-        solicitud.put("destino", destino);
-        solicitud.put("capacidad", capacidad);
-        solicitud.put("fecha", fecha);
-        solicitud.put("estado", estado);
-        solicitud.put("justificacion", justificacion);
-
-        return solicitud;
+    // Evita que los textos del formulario se interpreten como HTML.
+    private String texto(String valor) {
+        if (valor == null) return "";
+        return valor.replace("&", "&amp;").replace("<", "&lt;")
+                .replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;");
     }
-
-    private Map<String, String> buscarSolicitud(
-            List<Map<String, String>> solicitudes,
-            String id) {
-
-        if (id != null) {
-            for (Map<String, String> solicitud : solicitudes) {
-                if (id.equals(solicitud.get("id"))) {
-                    return solicitud;
-                }
-            }
+    // Busca el nombre que corresponde a un ID del SQL.
+    private String nombre(String[][] opciones, String id) {
+        for (String[] opcion : opciones) {
+            if (opcion[0].equals(id)) return opcion[1];
         }
-
-        return null;
+        return "";
+    }
+    // Busca una solicitud por su ID; -1 significa que no existe.
+    private int buscar(ArrayList<String[]> lista, String id) {
+        for (int i = 0; i < lista.size(); i++) {
+            if (lista.get(i)[0].equals(id)) return i;
+        }
+        return -1;
+    }
+    // Agrupa los estados solamente para mostrar sus colores.
+    private String color(String estado) {
+        if (estado.equals("Rechazada")) return "rechazada";
+        if (estado.equals("Aprobada") || estado.equals("Provisionada") || estado.equals("Activa")) return "aprobada";
+        return "pendiente";
     }
 %>
-
 <%
     request.setCharacterEncoding("UTF-8");
+    // 1. CATÁLOGOS DE PRUEBA: IDs del SQL; las estaciones muestran solo el lugar.
+    String[][] clientes = {{"1", "Claro"}, {"2", "Movistar"}, {"3", "Pacifico"}};
+    String[][] estaciones = {{"1", "Vancouver"}, {"2", "Seattle"}, {"3", "San Francisco"}, {"4", "Los Ángeles"}, {"5", "San Diego"}, {"6", "Tijuana"}, {"7", "Manzanillo"}, {"8", "Puerto Chiapas"}, {"9", "Puerto Quetzal"}, {"10", "Acajutla"}, {"11", "Puntarenas"}, {"12", "Balboa"}, {"13", "Buenaventura"}, {"14", "Manta"}, {"15", "Guayaquil"}, {"16", "Paita"}, {"17", "Lurín"}, {"18", "Arica"}, {"19", "Valparaíso"}, {"20", "Concepción"}};
+    String[] estados = {"Registrada", "En evaluacion", "Aprobada", "Provisionada",
+            "Activa", "Rechazada", "Pendiente por capacidad"};
 
-    List<Map<String, String>> solicitudes =
-            (List<Map<String, String>>) session.getAttribute("solicitudesDemo");
+    // El filtro conserva TODOS los estados del enum del SQL.
+    // Estos cuatro estados los gestiona el Capacity Planner desde Solicitudes.
+    String[] estadosPlanner = {"En evaluacion", "Aprobada", "Rechazada", "Pendiente por capacidad"};
 
+    // 2. DATOS TEMPORALES: solo se guardan en esta sesión, no en MySQL.
+    // Orden: id_solicitud, id_cliente, id_usuario, id_landing_origen,
+    // id_landing_destino, capacidad_solicitada, estado, justificacion, fecha_registro.
+    ArrayList<String[]> solicitudes = (ArrayList<String[]>) session.getAttribute("solicitudesPruebaSQL");
     if (solicitudes == null) {
-        solicitudes = new ArrayList<>();
-
-        solicitudes.add(crearSolicitud(
-                "SOL-001",
-                "Pacífico",
-                "Lima",
-                "Valparaíso",
-                "50 Gbps",
-                "15/09/2026",
-                "Pendiente",
-                "La empresa requiere ampliar su capacidad para brindar nuevos servicios."
-        ));
-
-        solicitudes.add(crearSolicitud(
-                "SOL-002",
-                "Mediterráneo",
-                "Callao",
-                "Barcelona",
-                "20 Gbps",
-                "16/09/2026",
-                "Aprobado",
-                "Se necesita una conexión internacional para las operaciones de la empresa."
-        ));
-
-        solicitudes.add(crearSolicitud(
-                "SOL-003",
-                "Atlántico",
-                "Lima",
-                "Miami",
-                "35 Gbps",
-                "17/09/2026",
-                "Desaprobado",
-                "La ruta seleccionada no dispone de capacidad suficiente actualmente."
-        ));
-
-        session.setAttribute("solicitudesDemo", solicitudes);
+        solicitudes = new ArrayList<String[]>();
+        solicitudes.add(new String[]{"1", "3", "4", "4", "17", "50", "Aprobada", "Ampliación de conectividad internacional.", "2026-10-06 08:00:00"});
+        solicitudes.add(new String[]{"2", "1", "4", "17", "19", "20", "En evaluacion", "Evaluar capacidad para nuevos servicios.", "2026-10-06 09:00:00"});
+        solicitudes.add(new String[]{"3", "2", "4", "15", "17", "30", "Registrada", "Conectar las operaciones de Ecuador y Perú.", "2026-10-06 10:00:00"});
+        session.setAttribute("solicitudesPruebaSQL", solicitudes);
+        session.setAttribute("siguienteSolicitudPrueba", 4);
     }
-
-    String accion = request.getParameter("accion");
-
-    if ("crear".equals(accion)) {
-        int numeroMayor = 0;
-
-        for (Map<String, String> solicitud : solicitudes) {
-            try {
-                int numero = Integer.parseInt(
-                        solicitud.get("id").replace("SOL-", "")
-                );
-
-                numeroMayor = Math.max(numeroMayor, numero);
-
-            } catch (NumberFormatException ignored) {
+    String error = "";
+    // 3. ACCIONES DE PRUEBA: más adelante este bloque pasa al Servlet.
+    // Los cambios se reciben por POST; los enlaces GET solo muestran información.
+    if ("POST".equals(request.getMethod())) {
+        String accion = request.getParameter("accion");
+        int indice = buscar(solicitudes, request.getParameter("id_solicitud"));
+        if ("crear".equals(accion) || "editar".equals(accion)) {
+            String cliente = request.getParameter("id_cliente");
+            String origen = request.getParameter("id_landing_origen");
+            String destino = request.getParameter("id_landing_destino");
+            String motivo = request.getParameter("justificacion");
+            int capacidad = 0;
+            try { capacidad = Integer.parseInt(request.getParameter("capacidad_solicitada")); }
+            catch (NumberFormatException e) { capacidad = 0; }
+            if (nombre(clientes, cliente).isEmpty() || nombre(estaciones, origen).isEmpty()
+                    || nombre(estaciones, destino).isEmpty() || origen.equals(destino)
+                    || capacidad <= 0 || motivo == null || motivo.trim().isEmpty()) {
+                error = "Seleccione un cliente, estaciones diferentes, capacidad positiva y justificación.";
+            } else if ("crear".equals(accion)) {
+                int id = (Integer) session.getAttribute("siguienteSolicitudPrueba");
+                String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                // Usuario 4 existe en el SQL. Al conectar, se obtiene del usuario autenticado.
+                solicitudes.add(new String[]{String.valueOf(id), cliente, "4", origen, destino,
+                        String.valueOf(capacidad), "Registrada", motivo.trim(), fecha});
+                session.setAttribute("siguienteSolicitudPrueba", id + 1);
+            } else if (indice >= 0) {
+                String[] s = solicitudes.get(indice);
+                s[1] = cliente; s[3] = origen; s[4] = destino;
+                s[5] = String.valueOf(capacidad); s[7] = motivo.trim();
+            } else { error = "No se encontró la solicitud."; }
+        } else if ("cambiarEstado".equals(accion) && indice >= 0) {
+            // Registrada se asigna al crear; Provisionada y Activa se gestionan en Servicios.
+            String estado = request.getParameter("estado");
+            String actual = solicitudes.get(indice)[6];
+            boolean valido = false;
+            for (String opcion : estadosPlanner) {
+                if (opcion.equals(estado)) valido = true;
             }
+            if (actual.equals("Provisionada") || actual.equals("Activa")) {
+                error = "Esta solicitud se gestiona desde Servicios.";
+            } else if (valido) {
+                solicitudes.get(indice)[6] = estado;
+            } else { error = "Seleccione un estado de evaluación válido."; }
+        } else if ("eliminar".equals(accion) && indice >= 0) {
+            // Solo borra la prueba local. MySQL deberá respetar los servicios asociados.
+            solicitudes.remove(indice);
+        } else { error = "Acción no válida."; }
+        if (error.isEmpty()) {
+            response.sendRedirect("solicitudes.jsp");
+            return;
         }
-
-        String nuevoId = String.format("SOL-%03d", numeroMayor + 1);
-
-        solicitudes.add(crearSolicitud(
-                nuevoId,
-                request.getParameter("cliente"),
-                request.getParameter("origen"),
-                request.getParameter("destino"),
-                request.getParameter("capacidad"),
-                request.getParameter("fecha"),
-                "Pendiente",
-                request.getParameter("justificacion")
-        ));
-
-        session.setAttribute("solicitudesDemo", solicitudes);
-
-        response.sendRedirect("solicitudes.jsp");
-        return;
     }
-
-    if ("cambiarEstado".equals(accion)) {
-        Map<String, String> solicitud = buscarSolicitud(
-                solicitudes,
-                request.getParameter("id")
-        );
-
-        if (solicitud != null) {
-            solicitud.put("estado", request.getParameter("estado"));
-        }
-
-        session.setAttribute("solicitudesDemo", solicitudes);
-
-        response.sendRedirect("solicitudes.jsp");
-        return;
-    }
-
-    if ("editar".equals(accion)) {
-        Map<String, String> solicitud = buscarSolicitud(
-                solicitudes,
-                request.getParameter("id")
-        );
-
-        if (solicitud != null) {
-            solicitud.put("cliente", request.getParameter("cliente"));
-            solicitud.put("origen", request.getParameter("origen"));
-            solicitud.put("destino", request.getParameter("destino"));
-            solicitud.put("capacidad", request.getParameter("capacidad"));
-            solicitud.put("fecha", request.getParameter("fecha"));
-            solicitud.put(
-                    "justificacion",
-                    request.getParameter("justificacion")
-            );
-        }
-
-        session.setAttribute("solicitudesDemo", solicitudes);
-
-        response.sendRedirect(
-                "solicitudes.jsp?detalle=" + request.getParameter("id")
-        );
-
-        return;
-    }
-
-    if ("eliminar".equals(accion)) {
-        String idEliminar = request.getParameter("id");
-
-        solicitudes.removeIf(
-                solicitud -> idEliminar.equals(solicitud.get("id"))
-        );
-
-        session.setAttribute("solicitudesDemo", solicitudes);
-
-        response.sendRedirect("solicitudes.jsp");
-        return;
-    }
-
+    // 4. FILTRO Y DETALLE: se controlan mediante parámetros de la URL.
     String filtro = request.getParameter("filtro");
-
-    if (filtro == null || filtro.isBlank()) {
-        filtro = "Todos";
+    boolean filtroValido = false;
+    for (String estado : estados) {
+        if (estado.equals(filtro)) filtroValido = true;
     }
-
-    Map<String, String> solicitudDetalle = buscarSolicitud(
-            solicitudes,
-            request.getParameter("detalle")
-    );
-
-    int cantidadVisible = 0;
-
-    for (Map<String, String> solicitud : solicitudes) {
-        if ("Todos".equals(filtro)
-                || filtro.equals(solicitud.get("estado"))) {
-
-            cantidadVisible++;
-        }
+    if (!filtroValido) filtro = "Todos";
+    int detalle = buscar(solicitudes, request.getParameter("detalle"));
+    int cantidad = 0;
+    for (String[] s : solicitudes) {
+        if (filtro.equals("Todos") || filtro.equals(s[6])) cantidad++;
     }
 %>
-
 <!doctype html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
-
-    <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitudes | OceanLink</title>
-
-    <link
-            rel="stylesheet"
-            href="../../css/capacity_planner/solicitudes.css"
-    >
-
-    <link
-        rel="stylesheet"
-        href="../../css/capacity_planner/comun.css"
-    >
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/solicitudes.css">
+    <!-- Las barras comunes se cargan al final. -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 </head>
-
 <body>
-
-<input
-        type="checkbox"
-        id="controlMenu"
-        class="control-menu"
->
-
+<!-- 5. BARRAS COMUNES: misma estructura que Clientes. -->
+<input type="checkbox" id="controlMenu" class="control-menu" >
 <header class="barra-superior">
-
     <div class="zona-logo">
-
-        <label
-                for="controlMenu"
-                class="boton-menu"
-                title="Mostrar u ocultar menú"
-        >
-            ☰
-        </label>
-
-        <a href="../../index.html" class="logo">
-            OceanLink
-        </a>
-
+        <label for="controlMenu" class="boton-menu" title="Ocultar o mostrar menú">☰</label>
+        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp" class="logo">OceanLink</a>
     </div>
-
     <div class="usuario">
-
-        <div class="foto-usuario">CP</div>
-
+        <div class="foto-usuario">
+            CP
+        </div>
         <div>
             <p class="nombre-usuario">Username</p>
             <p class="rol-usuario">Capacity Planner</p>
         </div>
-
     </div>
-
 </header>
-
 <div class="contenedor">
-
+    <!-- MENÚ LATERAL: Solicitudes es la opción activa de esta página -->
     <aside class="menu-lateral">
-
-        <div>
-
+        <div class="contenido-menu">
             <h2>Menú</h2>
-
-            <nav>
-                <a href="capacity_planner.jsp">Dashboard</a>
-                <a href="clientes.jsp">Clientes</a>
-
-                <a href="solicitudes.jsp" class="activo">
-                    Solicitudes
-                </a>
-
-                <a href="rutas.jsp">Rutas</a>
-                <a href="servicios.jsp">Servicios</a>
+            <nav class="navegacion-lateral" aria-label="Menú principal">
+                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/clientes.jsp">Clientes</a>
+                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp" class="activo">Solicitudes</a>
+                <!-- Checkbox y label abren Infraestructura sin JavaScript -->
+                <div class="grupo-menu">
+                    <input type="checkbox" id="control-infraestructura" class="control-submenu">
+                    <label for="control-infraestructura" class="titulo-grupo">
+                        <span>Infraestructura</span>
+                        <span class="flecha-submenu"></span>
+                    </label>
+                    <div class="contenido-submenu">
+                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/rutas.jsp" class="subopcion">Rutas</a>
+                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/segmentos.jsp" class="subopcion">Segmentos</a>
+                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/landing_stations.jsp" class="subopcion">Landing stations</a>
+                    </div>
+                </div>
+                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/servicios.jsp">Servicios</a>
             </nav>
-
         </div>
-
+        <!-- OPCIONES DEL USUARIO: barras.css las coloca abajo -->
         <div class="configuracion">
-            <h3>Configuración</h3>
-            <a href="#">Perfil</a>
-            <a href="../../login.jsp">Cerrar sesión</a>
+            <nav aria-label="Opciones del usuario">
+                <!-- Pendiente: colocar la dirección real de Perfil -->
+                <a href="#">Perfil</a>
+                <!-- Navega al login; el cierre real de sesión se conectará después -->
+                <a href="${pageContext.request.contextPath}/login.jsp" class="cerrar-sesion">Cerrar sesión</a>
+            </nav>
         </div>
-
     </aside>
-
+    <!-- CONTENIDO DE SOLICITUDES -->
     <main class="contenido-principal">
-
+        <!-- 6. ENCABEZADO Y FILTRO -->
         <section class="encabezado-panel">
-
-            <div>
-                <h2>Capacity Planner</h2>
-                <h1>Solicitudes</h1>
-            </div>
-
-            <button
-                    class="boton primario"
-                    type="button"
-                    popovertarget="modalNuevaSolicitud"
-            >
-                + Nueva solicitud
-            </button>
-
+            <div><h2>Capacity Planner</h2><h1>Solicitudes</h1></div>
+            <button class="boton primario" type="button" popovertarget="modalNuevaSolicitud">+ Nueva solicitud</button>
         </section>
-
+        <% if (!error.isEmpty()) { %><p class="mensaje-error" role="alert"><%= texto(error) %></p><% } %>
         <section class="barra-filtros">
-
-            <form
-                    method="get"
-                    action="solicitudes.jsp"
-                    class="formulario-filtro"
-            >
-
+            <form method="get" action="solicitudes.jsp" class="formulario-filtro">
                 <label for="filtroEstado">Estado:</label>
-
-                <select
-                        id="filtroEstado"
-                        name="filtro"
-                        onchange="this.form.submit()"
-                >
-                    <option
-                            value="Todos"
-                            <%= "Todos".equals(filtro)
-                                    ? "selected" : "" %>
-                    >
-                        Todos
-                    </option>
-
-                    <option
-                            value="Pendiente"
-                            <%= "Pendiente".equals(filtro)
-                                    ? "selected" : "" %>
-                    >
-                        Pendiente
-                    </option>
-
-                    <option
-                            value="Aprobado"
-                            <%= "Aprobado".equals(filtro)
-                                    ? "selected" : "" %>
-                    >
-                        Aprobado
-                    </option>
-
-                    <option
-                            value="Desaprobado"
-                            <%= "Desaprobado".equals(filtro)
-                                    ? "selected" : "" %>
-                    >
-                        Desaprobado
-                    </option>
-
+                <select id="filtroEstado" name="filtro">
+                    <option value="Todos">Todos</option>
+                    <% for (String estado : estados) { %>
+                    <option value="<%= estado %>" <%= estado.equals(filtro) ? "selected" : "" %>><%= estado %></option>
+                    <% } %>
                 </select>
-
+                <button class="boton secundario" type="submit">Filtrar</button>
             </form>
-
-            <span class="cantidad-solicitudes">
-                <%= cantidadVisible %> solicitudes
-            </span>
-
+            <span class="cantidad-solicitudes"><%= cantidad %> solicitudes</span>
         </section>
-
+        <!-- 7. TABLA: el ID abre el detalle sin JavaScript. -->
         <section class="tabla-contenedor">
-
             <table class="tabla-solicitudes">
-
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Origen</th>
-                    <th>Destino</th>
-                    <th>Capacidad</th>
-                    <th>Estado</th>
-                </tr>
-                </thead>
-
+                <thead><tr><th>ID</th><th>Cliente</th><th>Origen</th><th>Destino</th><th>Capacidad</th><th>Estado</th></tr></thead>
                 <tbody>
-
-                <%
-                    for (Map<String, String> solicitud : solicitudes) {
-
-                        if (!"Todos".equals(filtro)
-                                && !filtro.equals(solicitud.get("estado"))) {
-                            continue;
-                        }
-
-                        String claseEstado =
-                                solicitud.get("estado").toLowerCase();
-
-                        boolean estaSeleccionada =
-                                solicitudDetalle != null
-                                        && solicitud.get("id").equals(
-                                        solicitudDetalle.get("id")
-                                );
+                <% for (int i = 0; i < solicitudes.size(); i++) {
+                    String[] s = solicitudes.get(i);
+                    if (!filtro.equals("Todos") && !filtro.equals(s[6])) continue;
                 %>
-
-                <tr
-                        class="fila-solicitud <%= estaSeleccionada
-                                ? "fila-seleccionada" : "" %>"
-
-                        onclick="window.location.href=
-                                'solicitudes.jsp?detalle=<%= solicitud.get("id") %>'"
-                >
-
-                    <td class="id-solicitud">
-                        <%= solicitud.get("id") %>
-                    </td>
-
-                    <td><%= solicitud.get("cliente") %></td>
-                    <td><%= solicitud.get("origen") %></td>
-                    <td><%= solicitud.get("destino") %></td>
-                    <td><%= solicitud.get("capacidad") %></td>
-
-                    <td onclick="event.stopPropagation()">
-
-                        <form
-                                method="post"
-                                action="solicitudes.jsp"
-                                class="formulario-estado"
-                                onclick="event.stopPropagation()"
-                        >
-
-                            <input
-                                    type="hidden"
-                                    name="accion"
-                                    value="cambiarEstado"
-                            >
-
-                            <input
-                                    type="hidden"
-                                    name="id"
-                                    value="<%= solicitud.get("id") %>"
-                            >
-
-                            <select
-                                    name="estado"
-                                    class="selector-estado <%= claseEstado %>"
-                                    onchange="this.form.submit()"
-                                    onclick="event.stopPropagation()"
-                            >
-
-                                <option
-                                        value="Pendiente"
-                                        <%= "Pendiente".equals(
-                                                solicitud.get("estado")
-                                        ) ? "selected" : "" %>
-                                >
-                                    Pendiente
-                                </option>
-
-                                <option
-                                        value="Aprobado"
-                                        <%= "Aprobado".equals(
-                                                solicitud.get("estado")
-                                        ) ? "selected" : "" %>
-                                >
-                                    Aprobado
-                                </option>
-
-                                <option
-                                        value="Desaprobado"
-                                        <%= "Desaprobado".equals(
-                                                solicitud.get("estado")
-                                        ) ? "selected" : "" %>
-                                >
-                                    Desaprobado
-                                </option>
-
-                            </select>
-
-                        </form>
-
-                    </td>
-
+                <tr class="fila-solicitud <%= i == detalle ? "fila-seleccionada" : "" %>">
+                    <td><a class="id-solicitud" href="solicitudes.jsp?detalle=<%= s[0] %>&amp;filtro=<%= java.net.URLEncoder.encode(filtro, "UTF-8") %>">SOL-<%= s[0] %></a></td>
+                    <td><%= nombre(clientes, s[1]) %></td>
+                    <td><%= nombre(estaciones, s[3]) %></td>
+                    <td><%= nombre(estaciones, s[4]) %></td>
+                    <td><%= s[5] %> Gbps</td>
+                    <td><span class="etiqueta-estado <%= color(s[6]) %>"><%= s[6] %></span></td>
                 </tr>
-
                 <% } %>
-
-                <% if (cantidadVisible == 0) { %>
-
-                <tr>
-                    <td colspan="6" class="sin-resultados">
-                        No existen solicitudes con este estado.
-                    </td>
-                </tr>
-
-                <% } %>
-
+                <% if (cantidad == 0) { %><tr><td colspan="6" class="sin-resultados">No hay solicitudes con este estado.</td></tr><% } %>
                 </tbody>
-
             </table>
-
         </section>
-
-
-
-        <% if (solicitudDetalle != null) { %>
-
+        <!-- 8. DETALLE: datos, estado y edición de la solicitud seleccionada. -->
+        <% if (detalle >= 0) { String[] s = solicitudes.get(detalle); %>
         <section class="panel-detalle">
-
             <div class="encabezado-detalle">
-
-                <div>
-                    <span>Detalle de solicitud</span>
-                    <h2><%= solicitudDetalle.get("id") %></h2>
-                </div>
-
-                <a
-                        href="solicitudes.jsp"
-                        class="cerrar-detalle"
-                        title="Cerrar detalle"
-                >
-                    &times;
-                </a>
-
+                <div><span>Detalle de solicitud</span><h2>SOL-<%= s[0] %></h2></div>
+                <a href="solicitudes.jsp" class="cerrar-detalle" aria-label="Cerrar detalle">&times;</a>
             </div>
-
             <div class="cuadricula-detalle">
-
-                <div>
-                    <span>Cliente</span>
-
-                    <strong>
-                        <%= solicitudDetalle.get("cliente") %>
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Fecha de registro</span>
-
-                    <strong>
-                        <%= solicitudDetalle.get("fecha") %>
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Origen</span>
-
-                    <strong>
-                        <%= solicitudDetalle.get("origen") %>
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Destino</span>
-
-                    <strong>
-                        <%= solicitudDetalle.get("destino") %>
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Capacidad requerida</span>
-
-                    <strong>
-                        <%= solicitudDetalle.get("capacidad") %>
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Estado</span>
-
-                    <strong class="estado-detalle <%= solicitudDetalle
-                            .get("estado").toLowerCase() %>">
-
-                        <%= solicitudDetalle.get("estado") %>
-
-                    </strong>
-                </div>
-
+                <div><span>Cliente</span><strong><%= nombre(clientes, s[1]) %></strong></div>
+                <div><span>Fecha de registro</span><strong><%= s[8] %></strong></div>
+                <div><span>Registrada por</span><strong>Guillian Flores (prueba)</strong></div>
+                <div><span>Origen</span><strong><%= nombre(estaciones, s[3]) %></strong></div>
+                <div><span>Destino</span><strong><%= nombre(estaciones, s[4]) %></strong></div>
+                <div><span>Capacidad solicitada</span><strong><%= s[5] %> Gbps</strong></div>
             </div>
-
-            <div class="justificacion-detalle">
-
-                <span>Justificación</span>
-
-                <p>
-                    <%= solicitudDetalle.get("justificacion") %>
-                </p>
-
-            </div>
-
+            <div class="justificacion-detalle"><span>Justificación</span><p><%= texto(s[7]) %></p></div>
+            <!-- Estado actual: siempre visible, aunque lo gestione Servicios. -->
+            <p class="cambio-estado">Estado actual: <strong><%= s[6] %></strong></p>
+            <% if (!s[6].equals("Provisionada") && !s[6].equals("Activa")) { %>
+            <!-- El Planner solo cambia los estados relacionados con la evaluación. -->
+            <form method="post" action="solicitudes.jsp" class="formulario-filtro cambio-estado">
+                <input type="hidden" name="accion" value="cambiarEstado">
+                <input type="hidden" name="id_solicitud" value="<%= s[0] %>">
+                <label for="estadoSolicitud">Evaluación:</label>
+                <select id="estadoSolicitud" name="estado" required>
+                    <option value="">Seleccione un estado</option>
+                    <% for (String estado : estadosPlanner) { %>
+                    <option value="<%= estado %>" <%= estado.equals(s[6]) ? "selected" : "" %>><%= estado %></option>
+                    <% } %>
+                </select>
+                <button class="boton secundario" type="submit">Guardar estado</button>
+            </form>
+            <% } else { %>
+            <p class="cambio-estado"><a class="id-solicitud" href="servicios.jsp">Ver servicio</a></p>
+            <% } %>
             <div class="acciones-detalle">
-
-                <details
-                        id="editarSolicitud"
-                        class="editar-solicitud"
-                >
-
+                <details class="editar-solicitud">
                     <summary>Editar solicitud</summary>
-
-                    <form
-                            method="post"
-                            action="solicitudes.jsp"
-                            class="formulario-solicitud"
-                    >
-
-                        <input
-                                type="hidden"
-                                name="accion"
-                                value="editar"
-                        >
-
-                        <input
-                                type="hidden"
-                                name="id"
-                                value="<%= solicitudDetalle.get("id") %>"
-                        >
-
-                        <label>
-                            Cliente
-
-                            <input
-                                    type="text"
-                                    name="cliente"
-                                    value="<%= solicitudDetalle.get("cliente") %>"
-                                    required
-                            >
-                        </label>
-
-                        <label>
-                            Origen
-
-                            <input
-                                    type="text"
-                                    name="origen"
-                                    value="<%= solicitudDetalle.get("origen") %>"
-                                    required
-                            >
-                        </label>
-
-                        <label>
-                            Destino
-
-                            <input
-                                    type="text"
-                                    name="destino"
-                                    value="<%= solicitudDetalle.get("destino") %>"
-                                    required
-                            >
-                        </label>
-
-                        <label>
-                            Capacidad
-
-                            <input
-                                    type="text"
-                                    name="capacidad"
-                                    value="<%= solicitudDetalle.get("capacidad") %>"
-                                    required
-                            >
-                        </label>
-
-                        <label>
-                            Fecha
-
-                            <input
-                                    type="text"
-                                    name="fecha"
-                                    value="<%= solicitudDetalle.get("fecha") %>"
-                                    required
-                            >
-                        </label>
-
-                        <label class="ancho-completo">
-                            Justificación
-
-                            <textarea
-                                    name="justificacion"
-                                    required
-                            ><%= solicitudDetalle.get("justificacion") %></textarea>
-
-                        </label>
-
+                    <form method="post" action="solicitudes.jsp" class="formulario-solicitud">
+                        <input type="hidden" name="accion" value="editar">
+                        <input type="hidden" name="id_solicitud" value="<%= s[0] %>">
+                        <label>Cliente<select name="id_cliente" required>
+                            <% for (String[] opcion : clientes) { %>
+                            <option value="<%= opcion[0] %>" <%= opcion[0].equals(s[1]) ? "selected" : "" %>><%= opcion[1] %></option>
+                            <% } %>
+                        </select></label>
+                        <label>Estación de origen<select name="id_landing_origen" required>
+                            <% for (String[] opcion : estaciones) { %>
+                            <option value="<%= opcion[0] %>" <%= opcion[0].equals(s[3]) ? "selected" : "" %>><%= opcion[1] %></option>
+                            <% } %>
+                        </select></label>
+                        <label>Estación de destino<select name="id_landing_destino" required>
+                            <% for (String[] opcion : estaciones) { %>
+                            <option value="<%= opcion[0] %>" <%= opcion[0].equals(s[4]) ? "selected" : "" %>><%= opcion[1] %></option>
+                            <% } %>
+                        </select></label>
+                        <label>Capacidad solicitada (Gbps)<input type="number" name="capacidad_solicitada" min="1" max="2147483647" step="1" value="<%= texto(s[5]) %>" required></label>
+                        <!-- El ID, usuario y fecha se asignan automáticamente al registrar. -->
+                        <label class="ancho-completo">Justificación<textarea name="justificacion" required><%= texto(s[7]) %></textarea></label>
                         <div class="botones-formulario ancho-completo">
-
-                            <button
-                                    type="submit"
-                                    class="boton primario"
-                            >
-                                Guardar cambios
-                            </button>
-
+                            <button class="boton primario" type="submit">Guardar cambios</button>
                         </div>
-
                     </form>
-
                 </details>
-
-                <form
-                        method="post"
-                        action="solicitudes.jsp"
-                        class="formulario-eliminar"
-                        onsubmit="return confirm(
-                                '¿Está seguro de eliminar esta solicitud?'
-                        )"
-                >
-
-                    <input
-                            type="hidden"
-                            name="accion"
-                            value="eliminar"
-                    >
-
-                    <input
-                            type="hidden"
-                            name="id"
-                            value="<%= solicitudDetalle.get("id") %>"
-                    >
-
-                    <button
-                            type="submit"
-                            class="boton-eliminar-solicitud"
-                    >
-                        Eliminar solicitud
-                    </button>
-
-                </form>
-
+                <button class="boton-eliminar-solicitud" type="button" popovertarget="confirmarEliminar">Eliminar solicitud</button>
             </div>
-
         </section>
-
-        <% } %>
-
-    </main>
-
-</div>
-
-<div
-        id="modalNuevaSolicitud"
-        class="modal"
-        popover
->
-
-    <div class="encabezado-modal">
-
-        <h2>Nueva solicitud</h2>
-
-        <button
-                type="button"
-                class="cerrar-modal"
-                popovertarget="modalNuevaSolicitud"
-                popovertargetaction="hide"
-        >
-            &times;
-        </button>
-
-    </div>
-
-    <form
-            method="post"
-            action="solicitudes.jsp"
-            class="formulario-solicitud"
-    >
-
-        <input
-                type="hidden"
-                name="accion"
-                value="crear"
-        >
-
-        <label>
-            Cliente
-
-            <select name="cliente" required>
-                <option value="">Seleccione un cliente</option>
-                <option value="Pacífico">Pacífico</option>
-                <option value="Mediterráneo">Mediterráneo</option>
-                <option value="Atlántico">Atlántico</option>
-            </select>
-        </label>
-
-        <label>
-            Origen
-            <input type="text" name="origen" required>
-        </label>
-
-        <label>
-            Destino
-            <input type="text" name="destino" required>
-        </label>
-
-        <label>
-            Capacidad requerida
-
-            <input
-                    type="text"
-                    name="capacidad"
-                    placeholder="Ejemplo: 25 Gbps"
-                    required
-            >
-        </label>
-
-        <label>
-            Fecha de registro
-
-            <input
-                    type="date"
-                    name="fecha"
-                    required
-            >
-        </label>
-
-        <label class="ancho-completo">
-            Justificación
-
-            <textarea
-                    name="justificacion"
-                    placeholder="Indique el motivo de la solicitud"
-                    required
-            ></textarea>
-
-        </label>
-
-        <div class="botones-formulario ancho-completo">
-
-            <button
-                    type="button"
-                    class="boton secundario"
-                    popovertarget="modalNuevaSolicitud"
-                    popovertargetaction="hide"
-            >
-                Cancelar
-            </button>
-
-            <button
-                    type="submit"
-                    class="boton primario"
-            >
-                Guardar solicitud
-            </button>
-
+        <!-- Confirmación de borrado sin JavaScript. -->
+        <div id="confirmarEliminar" class="modal" popover>
+            <h2>Eliminar SOL-<%= s[0] %></h2>
+            <p class="aviso-prueba">¿Deseas eliminar esta solicitud de prueba?</p>
+            <form method="post" action="solicitudes.jsp" class="botones-formulario">
+                <input type="hidden" name="accion" value="eliminar">
+                <input type="hidden" name="id_solicitud" value="<%= s[0] %>">
+                <button class="boton secundario" type="button" popovertarget="confirmarEliminar" popovertargetaction="hide">Cancelar</button>
+                <button class="boton-eliminar-solicitud" type="submit">Eliminar</button>
+            </form>
         </div>
-
-    </form>
-
+        <% } %>
+    </main>
 </div>
-
+<!-- 9. NUEVA SOLICITUD: campos con los nombres de tu tabla SQL. -->
+<div id="modalNuevaSolicitud" class="modal" popover>
+    <div class="encabezado-modal">
+        <h2>Nueva solicitud</h2>
+        <button class="cerrar-modal" type="button" popovertarget="modalNuevaSolicitud" popovertargetaction="hide" aria-label="Cerrar">&times;</button>
+    </div>
+    <form method="post" action="solicitudes.jsp" class="formulario-solicitud">
+        <input type="hidden" name="accion" value="crear">
+        <label>Cliente<select name="id_cliente" required>
+            <option value="">Seleccione una opción</option>
+            <% for (String[] opcion : clientes) { %>
+            <option value="<%= opcion[0] %>"><%= opcion[1] %></option>
+            <% } %>
+        </select></label>
+        <label>Estación de origen<select name="id_landing_origen" required>
+            <option value="">Seleccione una opción</option>
+            <% for (String[] opcion : estaciones) { %>
+            <option value="<%= opcion[0] %>"><%= opcion[1] %></option>
+            <% } %>
+        </select></label>
+        <label>Estación de destino<select name="id_landing_destino" required>
+            <option value="">Seleccione una opción</option>
+            <% for (String[] opcion : estaciones) { %>
+            <option value="<%= opcion[0] %>"><%= opcion[1] %></option>
+            <% } %>
+        </select></label>
+        <label>Capacidad solicitada (Gbps)<input type="number" name="capacidad_solicitada" min="1" max="2147483647" step="1" value="" required></label>
+        <!-- El ID, usuario y fecha se asignan automáticamente al registrar. -->
+        <label class="ancho-completo">Justificación<textarea name="justificacion" required></textarea></label>
+        <div class="botones-formulario ancho-completo">
+            <button class="boton secundario" type="button" popovertarget="modalNuevaSolicitud" popovertargetaction="hide">Cancelar</button>
+            <button class="boton primario" type="submit">Guardar solicitud</button>
+        </div>
+    </form>
+</div>
 </body>
 </html>
+
