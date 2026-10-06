@@ -279,7 +279,7 @@
   width: 100%;
   padding: 11px 12px;
   color: var(--color-texto);
-  font-family: var(--fuente-principal);
+  font-family: var(--fuente-principal), sans-serif;
   background-color: white;
   border: 1px solid var(--color-borde);
   border-radius: 6px;
@@ -301,7 +301,7 @@
 .boton-cancelar,
 .boton-guardar {
   padding: 10px 15px;
-  font-family: var(--fuente-principal);
+  font-family: var(--fuente-principal), sans-serif;
   border-radius: 6px;
   cursor: pointer;
 }
