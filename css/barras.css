@@ -37,7 +37,7 @@
 body {
   min-height: 100vh;
   color: var(--color-texto);
-  font-family: var(--fuente-principal);
+  font-family: var(--fuente-principal), sans-serif;
   background-color: var(--color-fondo);
 }
 
