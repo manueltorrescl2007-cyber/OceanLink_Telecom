@@ -131,7 +131,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" >
     <title>Clientes | OceanLink</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/clientes.css" >
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/comun.css" >
     <!-- CSS compartido: colores, animaciones y tamaño de las barras -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 </head>
@@ -172,7 +171,7 @@
                     </label>
                     <div class="contenido-submenu">
                         <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/rutas.jsp" class="subopcion">Rutas</a>
-                        <a href="${pageContext.request.contextPath}/capacity_planner_jsp/segmentos.jsp" class="subopcion">Segmentos</a>
+                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/segmentos.jsp" class="subopcion">Segmentos</a>
                         <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/landing_stations.jsp" class="subopcion">Landing stations</a>
                     </div>
                 </div>

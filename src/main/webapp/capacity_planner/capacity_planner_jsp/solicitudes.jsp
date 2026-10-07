@@ -58,7 +58,17 @@
     if ("POST".equals(request.getMethod())) {
         String accion = request.getParameter("accion");
         int indice = buscar(solicitudes, request.getParameter("id_solicitud"));
-        if ("crear".equals(accion) || "editar".equals(accion)) {
+        // Servicios referencia esta solicitud: evita cambiar sus datos o borrarla.
+        ArrayList<String[]> vinculados = (ArrayList<String[]>) session.getAttribute("serviciosPruebaSQL");
+        boolean tieneServicios = false;
+        if (vinculados != null && indice >= 0) {
+            for (String[] servicio : vinculados) {
+                if (servicio[1].equals(solicitudes.get(indice)[0])) tieneServicios = true;
+            }
+        }
+        if (tieneServicios && ("editar".equals(accion) || "eliminar".equals(accion))) {
+            error = "La solicitud tiene servicios asociados; gestione primero sus servicios.";
+        } else if ("crear".equals(accion) || "editar".equals(accion)) {
             String cliente = request.getParameter("id_cliente");
             String origen = request.getParameter("id_landing_origen");
             String destino = request.getParameter("id_landing_destino");
@@ -123,7 +133,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitudes | OceanLink</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/solicitudes.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/solicitudes.css?v=2">
     <!-- Las barras comunes se cargan al final. -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 </head>
@@ -133,7 +143,7 @@
 <header class="barra-superior">
     <div class="zona-logo">
         <label for="controlMenu" class="boton-menu" title="Ocultar o mostrar menú">☰</label>
-        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp" class="logo">OceanLink</a>
+        <a href="capacity_planner.jsp" class="logo">OceanLink</a>
     </div>
     <div class="usuario">
         <div class="foto-usuario">
@@ -151,9 +161,9 @@
         <div class="contenido-menu">
             <h2>Menú</h2>
             <nav class="navegacion-lateral" aria-label="Menú principal">
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp">Dashboard</a>
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/clientes.jsp">Clientes</a>
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp" class="activo">Solicitudes</a>
+                <a href="capacity_planner.jsp">Dashboard</a>
+                <a href="clientes.jsp">Clientes</a>
+                <a href="solicitudes.jsp" class="activo">Solicitudes</a>
                 <!-- Checkbox y label abren Infraestructura sin JavaScript -->
                 <div class="grupo-menu">
                     <input type="checkbox" id="control-infraestructura" class="control-submenu">
@@ -162,12 +172,12 @@
                         <span class="flecha-submenu"></span>
                     </label>
                     <div class="contenido-submenu">
-                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/rutas.jsp" class="subopcion">Rutas</a>
-                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/segmentos.jsp" class="subopcion">Segmentos</a>
-                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/landing_stations.jsp" class="subopcion">Landing stations</a>
+                        <a href="rutas.jsp" class="subopcion">Rutas</a>
+                        <a href="segmentos.jsp" class="subopcion">Segmentos</a>
+                        <a href="landing_stations.jsp" class="subopcion">Landing stations</a>
                     </div>
                 </div>
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/servicios.jsp">Servicios</a>
+                <a href="servicios.jsp">Servicios</a>
             </nav>
         </div>
         <!-- OPCIONES DEL USUARIO: barras.css las coloca abajo -->
@@ -183,9 +193,9 @@
     <!-- CONTENIDO DE SOLICITUDES -->
     <main class="contenido-principal">
         <!-- 6. ENCABEZADO Y FILTRO -->
-        <section class="encabezado-panel">
+        <section class="encabezado-panel" id="encabezadoSolicitudes">
             <div><h2>Capacity Planner</h2><h1>Solicitudes</h1></div>
-            <button class="boton primario" type="button" popovertarget="modalNuevaSolicitud">+ Nueva solicitud</button>
+            <button id="botonNuevaSolicitud" class="boton primario" type="button" popovertarget="modalNuevaSolicitud">+ Nueva solicitud</button>
         </section>
         <% if (!error.isEmpty()) { %><p class="mensaje-error" role="alert"><%= texto(error) %></p><% } %>
         <section class="barra-filtros">
@@ -211,7 +221,7 @@
                     if (!filtro.equals("Todos") && !filtro.equals(s[6])) continue;
                 %>
                 <tr class="fila-solicitud <%= i == detalle ? "fila-seleccionada" : "" %>">
-                    <td><a class="id-solicitud" href="solicitudes.jsp?detalle=<%= s[0] %>&amp;filtro=<%= java.net.URLEncoder.encode(filtro, "UTF-8") %>" >SOL-<%= s[0] %></a></td>
+                    <td><a class="id-solicitud" href="solicitudes.jsp?detalle=<%= s[0] %>&amp;filtro=<%= java.net.URLEncoder.encode(filtro, "UTF-8") %>">SOL-<%= s[0] %></a></td>
                     <td><%= nombre(clientes, s[1]) %></td>
                     <td><%= nombre(estaciones, s[3]) %></td>
                     <td><%= nombre(estaciones, s[4]) %></td>
@@ -341,4 +351,3 @@
 </div>
 </body>
 </html>
-

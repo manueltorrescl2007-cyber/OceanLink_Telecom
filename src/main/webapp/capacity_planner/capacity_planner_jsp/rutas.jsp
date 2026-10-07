@@ -1,871 +1,354 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.*" %>
-
+<%@ page import="java.util.ArrayList" %>
 <%!
-    private Map<String, String> crearRuta(
-            String id,
-            String origen,
-            String destino,
-            String segmentos,
-            String capacidadTotal,
-            String capacidadUtilizada) {
-
-        Map<String, String> ruta = new LinkedHashMap<>();
-
-        ruta.put("id", id);
-        ruta.put("origen", origen);
-        ruta.put("destino", destino);
-        ruta.put("segmentos", segmentos);
-        ruta.put("capacidadTotal", capacidadTotal);
-        ruta.put("capacidadUtilizada", capacidadUtilizada);
-
-        return ruta;
+    // Escapa texto escrito por el usuario antes de mostrarlo en HTML.
+    private String texto(String valor) {
+        return valor == null ? "" : valor.replace("&", "&amp;").replace("<", "&lt;")
+                .replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;");
     }
-
-    private Map<String, String> buscarRuta(
-            List<Map<String, String>> rutas,
-            String id) {
-
-        if (id != null) {
-            for (Map<String, String> ruta : rutas) {
-                if (id.equals(ruta.get("id"))) {
-                    return ruta;
+    // Busca una fila por su ID; devuelve -1 cuando no existe.
+    private int buscar(String[][] datos, String id) {
+        for (int i = 0; i < datos.length; i++) if (datos[i][0].equals(id)) return i;
+        return -1;
+    }
+    // La capacidad disponible es la menor capacidad libre de sus segmentos.
+    // No se suma: el tráfico debe atravesar todos los segmentos de la ruta.
+    private int disponible(String codigos, String[][] segmentos) {
+        int menor = Integer.MAX_VALUE;
+        for (String codigo : codigos.split(",")) {
+            for (String[] segmento : segmentos) {
+                if (segmento[1].equals(codigo.trim())) {
+                    int libre = Integer.parseInt(segmento[4]) - Integer.parseInt(segmento[5]) - Integer.parseInt(segmento[6]);
+                    if (libre < menor) menor = libre;
                 }
             }
         }
-
-        return null;
-    }
-
-    private double convertirNumero(String valor) {
-        try {
-            return Double.parseDouble(valor);
-        } catch (Exception error) {
-            return 0;
-        }
-    }
-
-    private double capacidadDisponible(Map<String, String> ruta) {
-        double capacidadTotal =
-                convertirNumero(ruta.get("capacidadTotal"));
-
-        double capacidadUtilizada =
-                convertirNumero(ruta.get("capacidadUtilizada"));
-
-        return capacidadTotal - capacidadUtilizada;
-    }
-
-    private double porcentajeUtilizado(Map<String, String> ruta) {
-        double capacidadTotal =
-                convertirNumero(ruta.get("capacidadTotal"));
-
-        double capacidadUtilizada =
-                convertirNumero(ruta.get("capacidadUtilizada"));
-
-        if (capacidadTotal <= 0) {
-            return 0;
-        }
-
-        return (capacidadUtilizada / capacidadTotal) * 100;
-    }
-
-    private String obtenerEstado(Map<String, String> ruta) {
-        double porcentaje = porcentajeUtilizado(ruta);
-
-        if (porcentaje > 100) {
-            return "Insuficiente";
-        }
-
-        if (porcentaje > 70) {
-            return "Limitada";
-        }
-
-        return "Disponible";
-    }
-
-    private String claseEstado(Map<String, String> ruta) {
-        return obtenerEstado(ruta).toLowerCase();
-    }
-
-    private String mostrarCapacidad(double capacidad) {
-        if (capacidad == Math.floor(capacidad)) {
-            return String.format("%.0f", capacidad);
-        }
-
-        return String.format("%.2f", capacidad);
+        return menor == Integer.MAX_VALUE ? 0 : Math.max(0, menor);
     }
 %>
-
 <%
     request.setCharacterEncoding("UTF-8");
-
-    List<Map<String, String>> rutas =
-            (List<Map<String, String>>) session.getAttribute("rutasDemo");
-
+    // 1. CATÁLOGOS: IDs y datos copiados del SQL, sin consultar MySQL.
+    // Landing stations: ID y ciudad.
+    String[][] estaciones = {
+        {"1", "Vancouver"},
+        {"2", "Seattle"},
+        {"3", "San Francisco"},
+        {"4", "Los Ángeles"},
+        {"5", "San Diego"},
+        {"6", "Tijuana"},
+        {"7", "Manzanillo"},
+        {"8", "Puerto Chiapas"},
+        {"9", "Puerto Quetzal"},
+        {"10", "Acajutla"},
+        {"11", "Puntarenas"},
+        {"12", "Balboa"},
+        {"13", "Buenaventura"},
+        {"14", "Manta"},
+        {"15", "Guayaquil"},
+        {"16", "Paita"},
+        {"17", "Lurín"},
+        {"18", "Arica"},
+        {"19", "Valparaíso"},
+        {"20", "Concepción"}
+    };
+    // Segmentos: ID, código, inicio, final, total, ocupada, reservada, estado.
+    String[][] segmentos = {
+        {"1", "VAN-SEA-01", "1", "2", "200", "0", "0", "Operativo"},
+        {"2", "SEA-SFO-01", "2", "3", "200", "0", "0", "Operativo"},
+        {"3", "SFO-LAX-01", "3", "4", "400", "0", "0", "Operativo"},
+        {"4", "LAX-SDG-01", "4", "5", "400", "0", "0", "Operativo"},
+        {"5", "SDG-TIJ-01", "5", "6", "200", "0", "0", "Operativo"},
+        {"6", "TIJ-MAN-01", "6", "7", "200", "0", "0", "Operativo"},
+        {"7", "MAN-PCH-01", "7", "8", "100", "0", "0", "Operativo"},
+        {"8", "PCH-PQZ-01", "8", "9", "100", "0", "0", "Operativo"},
+        {"9", "PQZ-ACJ-01", "9", "10", "100", "0", "0", "Operativo"},
+        {"10", "ACJ-PUN-01", "10", "11", "100", "0", "0", "Operativo"},
+        {"11", "PUN-BAL-01", "11", "12", "200", "0", "0", "Operativo"},
+        {"12", "BAL-BUE-01", "12", "13", "200", "0", "0", "Operativo"},
+        {"13", "BUE-MAN-01", "13", "14", "200", "0", "0", "Operativo"},
+        {"14", "MAN-GYE-01", "14", "15", "200", "0", "0", "Operativo"},
+        {"15", "GYE-PAI-01", "15", "16", "200", "0", "0", "Operativo"},
+        {"16", "PAI-LUR-01", "16", "17", "400", "0", "0", "Operativo"},
+        {"17", "LUR-ARI-01", "17", "18", "200", "0", "0", "Operativo"},
+        {"18", "ARI-VAL-01", "18", "19", "200", "0", "0", "Operativo"},
+        {"19", "VAL-CON-01", "19", "20", "100", "0", "0", "Operativo"},
+        {"20", "LAX-BAL-01", "4", "12", "400", "0", "0", "Operativo"},
+        {"21", "SFO-BUE-01", "3", "13", "400", "0", "0", "Operativo"},
+        {"22", "LAX-LUR-01", "4", "17", "600", "0", "0", "Operativo"},
+        {"23", "BAL-LUR-01", "12", "17", "400", "0", "0", "Operativo"},
+        {"24", "BAL-GYE-01", "12", "15", "400", "0", "0", "Operativo"},
+        {"25", "LUR-VAL-01", "17", "19", "400", "0", "0", "Operativo"},
+        {"26", "MAN-BAL-01", "7", "12", "200", "0", "0", "Operativo"},
+        {"27", "SEA-LAX-01", "2", "4", "200", "0", "0", "Operativo"},
+        {"28", "SDG-MAN-01", "5", "7", "200", "0", "0", "Operativo"},
+        {"29", "GYE-LUR-01", "15", "17", "300", "0", "0", "Operativo"},
+        {"30", "ARI-CON-01", "18", "20", "100", "0", "0", "Operativo"}
+    };
+    // Rutas: ID, nombre, origen, destino, estado y códigos ordenados.
+    // Los códigos representan la relación ruta_segmentos y su campo orden.
+    String[][] ejemplos = {
+        {"1", "VAN-BAL-R01", "1", "12", "activa", "VAN-SEA-01, SEA-SFO-01, SFO-LAX-01, LAX-BAL-01"},
+        {"2", "LAX-BAL-R01", "4", "12", "activa", "LAX-BAL-01"},
+        {"3", "SFO-BAL-R01", "3", "12", "activa", "SFO-LAX-01, LAX-BAL-01"},
+        {"4", "LAX-LUR-R01", "4", "17", "activa", "LAX-LUR-01"},
+        {"5", "LAX-GYE-R01", "4", "15", "activa", "LAX-BAL-01, BAL-GYE-01"},
+        {"6", "SFO-BUE-R01", "3", "13", "activa", "SFO-BUE-01"},
+        {"7", "VAN-LUR-R01", "1", "17", "activa", "VAN-SEA-01, SEA-SFO-01, SFO-LAX-01, LAX-LUR-01"},
+        {"8", "BAL-LUR-R01", "12", "17", "activa", "BAL-LUR-01"},
+        {"9", "BAL-GYE-R01", "12", "15", "activa", "BAL-GYE-01"},
+        {"10", "BAL-BUE-R01", "12", "13", "activa", "BAL-BUE-01"},
+        {"11", "BUE-LUR-R01", "13", "17", "activa", "BUE-MAN-01, MAN-GYE-01, GYE-PAI-01, PAI-LUR-01"},
+        {"12", "GYE-LUR-R01", "15", "17", "activa", "GYE-LUR-01"},
+        {"13", "LUR-VAL-R01", "17", "19", "activa", "LUR-VAL-01"},
+        {"14", "LUR-CON-R01", "17", "20", "activa", "LUR-VAL-01, VAL-CON-01"},
+        {"15", "GYE-VAL-R01", "15", "19", "activa", "GYE-LUR-01, LUR-VAL-01"},
+        {"16", "VAN-CON-R01", "1", "20", "activa", "VAN-SEA-01, SEA-SFO-01, SFO-LAX-01, LAX-SDG-01, SDG-TIJ-01, TIJ-MAN-01, MAN-PCH-01, PCH-PQZ-01, PQZ-ACJ-01, ACJ-PUN-01, PUN-BAL-01, BAL-BUE-01, BUE-MAN-01, MAN-GYE-01, GYE-PAI-01, PAI-LUR-01, LUR-ARI-01, ARI-VAL-01, VAL-CON-01"},
+        {"17", "LAX-VAL-R01", "4", "19", "activa", "LAX-LUR-01, LUR-VAL-01"},
+        {"18", "LAX-CON-R01", "4", "20", "activa", "LAX-LUR-01, LUR-VAL-01, VAL-CON-01"},
+        {"19", "SFO-LUR-R01", "3", "17", "activa", "SFO-BUE-01, BUE-MAN-01, MAN-GYE-01, GYE-PAI-01, PAI-LUR-01"},
+        {"20", "BAL-VAL-R01", "12", "19", "activa", "BAL-LUR-01, LUR-VAL-01"}
+    };
+    // 2. SESIÓN: Rutas tiene sus propios datos, sin modificar otras páginas.
+    ArrayList<String[]> rutas = (ArrayList<String[]>) session.getAttribute("rutasMockupIndependiente");
     if (rutas == null) {
-        rutas = new ArrayList<>();
-
-        /* Caso disponible: utilización menor al 70% */
-        rutas.add(crearRuta(
-                "RUT-001",
-                "Lima",
-                "Valparaíso",
-                "2",
-                "100",
-                "50"
-        ));
-
-        /* Caso limitado: utilización mayor al 70% */
-        rutas.add(crearRuta(
-                "RUT-002",
-                "Callao",
-                "Barcelona",
-                "5",
-                "50",
-                "42"
-        ));
-
-        /* Caso insuficiente: utilización mayor al 100% */
-        rutas.add(crearRuta(
-                "RUT-003",
-                "Lima",
-                "Miami",
-                "4",
-                "30",
-                "36"
-        ));
-
-        session.setAttribute("rutasDemo", rutas);
+        rutas = new ArrayList<String[]>();
+        for (String[] ruta : ejemplos) rutas.add(ruta);
+        session.setAttribute("rutasMockupIndependiente", rutas);
     }
-
-    String accion = request.getParameter("accion");
-
-    /* Registrar ruta */
-
-    if ("crear".equals(accion)) {
-        int numeroMayor = 0;
-
-        for (Map<String, String> ruta : rutas) {
-            try {
-                int numero = Integer.parseInt(
-                        ruta.get("id").replace("RUT-", "")
-                );
-
-                numeroMayor = Math.max(numeroMayor, numero);
-
-            } catch (NumberFormatException ignored) {
+    String error = "";
+    String[] valor = {"", "", "", "", "activa", ""};
+    boolean formulario = "nuevo".equals(request.getParameter("ventana"));
+    int editar = -1;
+    for (int i = 0; i < rutas.size(); i++) {
+        if (rutas.get(i)[0].equals(request.getParameter("editar"))) {
+            editar = i; valor = rutas.get(i).clone(); formulario = true;
+        }
+    }
+    // 3. ACCIONES DE PRUEBA: después se moverán al servlet.
+    if ("POST".equals(request.getMethod())) {
+        String accion = request.getParameter("accion");
+        String id = request.getParameter("id_ruta");
+        int indice = -1;
+        for (int i = 0; i < rutas.size(); i++) if (rutas.get(i)[0].equals(id)) indice = i;
+        if ("eliminar".equals(accion) && indice >= 0) {
+            rutas.remove(indice);
+            response.sendRedirect("rutas.jsp"); return;
+        }
+        if ("guardar".equals(accion)) {
+            String nombre = request.getParameter("nombre");
+            String origen = request.getParameter("id_landing_origen");
+            String destino = request.getParameter("id_landing_destino");
+            String estado = request.getParameter("estado_ruta");
+            String codigos = request.getParameter("segmentos");
+            nombre = nombre == null ? "" : nombre.trim();
+            codigos = codigos == null ? "" : codigos.trim();
+            valor = new String[]{id, nombre, origen, destino, estado, codigos};
+            formulario = true; editar = indice;
+            if (nombre.isEmpty() || nombre.length() > 100 || buscar(estaciones, origen) < 0 || buscar(estaciones, destino) < 0 || origen.equals(destino)) {
+                error = "Ingrese un nombre de hasta 100 caracteres y seleccione un origen y destino diferentes.";
+            } else if (!"activa".equals(estado) && !"inactiva".equals(estado)) {
+                error = "Seleccione un estado válido.";
+            } else {
+                // Revisa que los segmentos existan y formen un recorrido continuo.
+                String actual = origen;
+                String[] partes = codigos.split(",", -1);
+                ArrayList<String> usados = new ArrayList<String>();
+                for (String parte : partes) {
+                    String codigo = parte.trim();
+                    int seleccionado = -1;
+                    for (int i = 0; i < segmentos.length; i++) if (segmentos[i][1].equals(codigo)) seleccionado = i;
+                    if (seleccionado < 0 || usados.contains(codigo)) {
+                        error = "Use códigos de segmentos existentes, sin repetirlos."; break;
+                    }
+                    String[] segmento = segmentos[seleccionado];
+                    if (!segmento[2].equals(actual)) {
+                        error = "Los segmentos deben ir en orden y conectar el origen con el destino."; break;
+                    }
+                    actual = segmento[3]; usados.add(codigo);
+                }
+                if (error.isEmpty() && !actual.equals(destino)) error = "El último segmento debe terminar en el destino seleccionado.";
+                for (String[] ruta : rutas) {
+                    if (!ruta[0].equals(id) && ruta[1].equalsIgnoreCase(nombre)) error = "Ya existe una ruta con ese nombre.";
+                }
+            }
+            if (error.isEmpty()) {
+                if (indice >= 0) rutas.set(indice, valor);
+                else {
+                    int siguiente = 1;
+                    for (String[] ruta : rutas) if (Integer.parseInt(ruta[0]) >= siguiente) siguiente = Integer.parseInt(ruta[0]) + 1;
+                    valor[0] = String.valueOf(siguiente); rutas.add(valor);
+                }
+                response.sendRedirect("rutas.jsp?guardado=1&detalle=" + valor[0]); return;
             }
         }
-
-        String nuevoId = String.format(
-                "RUT-%03d",
-                numeroMayor + 1
-        );
-
-        rutas.add(crearRuta(
-                nuevoId,
-                request.getParameter("origen"),
-                request.getParameter("destino"),
-                request.getParameter("segmentos"),
-                request.getParameter("capacidadTotal"),
-                request.getParameter("capacidadUtilizada")
-        ));
-
-        session.setAttribute("rutasDemo", rutas);
-
-        response.sendRedirect("rutas.jsp");
-        return;
     }
-
-    /* Editar ruta */
-
-    if ("editar".equals(accion)) {
-        Map<String, String> ruta = buscarRuta(
-                rutas,
-                request.getParameter("id")
-        );
-
-        if (ruta != null) {
-            ruta.put("origen", request.getParameter("origen"));
-            ruta.put("destino", request.getParameter("destino"));
-            ruta.put("segmentos", request.getParameter("segmentos"));
-
-            ruta.put(
-                    "capacidadTotal",
-                    request.getParameter("capacidadTotal")
-            );
-
-            ruta.put(
-                    "capacidadUtilizada",
-                    request.getParameter("capacidadUtilizada")
-            );
-        }
-
-        session.setAttribute("rutasDemo", rutas);
-
-        response.sendRedirect(
-                "rutas.jsp?detalle=" + request.getParameter("id")
-        );
-
-        return;
-    }
-
-    /* Eliminar ruta */
-
-    if ("eliminar".equals(accion)) {
-        String idEliminar = request.getParameter("id");
-
-        rutas.removeIf(
-                ruta -> idEliminar.equals(ruta.get("id"))
-        );
-
-        session.setAttribute("rutasDemo", rutas);
-
-        response.sendRedirect("rutas.jsp");
-        return;
-    }
-
+    // 4. FILTRO Y DETALLE: funcionan al recargar esta misma página.
     String filtro = request.getParameter("filtro");
-
-    if (filtro == null || filtro.isBlank()) {
-        filtro = "Todos";
-    }
-
-    Map<String, String> rutaDetalle = buscarRuta(
-            rutas,
-            request.getParameter("detalle")
-    );
-
-    int cantidadVisible = 0;
-
-    for (Map<String, String> ruta : rutas) {
-        String estadoRuta = obtenerEstado(ruta);
-
-        if ("Todos".equals(filtro)
-                || filtro.equals(estadoRuta)) {
-
-            cantidadVisible++;
-        }
+    if (filtro == null) filtro = "Todas";
+    int cantidad = 0; int detalle = -1;
+    for (int i = 0; i < rutas.size(); i++) {
+        if (filtro.equals("Todas") || filtro.equals(rutas.get(i)[4])) cantidad++;
+        if (rutas.get(i)[0].equals(request.getParameter("detalle"))) detalle = i;
     }
 %>
-
 <!doctype html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
-
-    <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rutas | OceanLink</title>
-
-    <link
-            rel="stylesheet"
-            href="../../css/capacity_planner/rutas.css"
-    >
-
-    <link
-        rel="stylesheet"
-        href="../../css/capacity_planner/comun.css"
-    >
-
+    <!-- Las barras comunes se cargan después del CSS propio. -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/rutas.css?v=4">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 </head>
-
-<body>
-
-<input
-        type="checkbox"
-        id="controlMenu"
-        class="control-menu"
->
-
+<body class="vista-rutas">
+<input type="checkbox" id="controlMenu" class="control-menu" >
 <header class="barra-superior">
-
     <div class="zona-logo">
-
-        <label
-                for="controlMenu"
-                class="boton-menu"
-                title="Mostrar u ocultar menú"
-        >
-            ☰
-        </label>
-
-        <a href="../../index.html" class="logo">
-            OceanLink
-        </a>
-
+        <label for="controlMenu" class="boton-menu" title="Ocultar o mostrar menú">☰</label>
+        <a href="capacity_planner.jsp" class="logo">OceanLink</a>
     </div>
-
     <div class="usuario">
-
-        <div class="foto-usuario">CP</div>
-
+        <div class="foto-usuario">
+            CP
+        </div>
         <div>
             <p class="nombre-usuario">Username</p>
             <p class="rol-usuario">Capacity Planner</p>
         </div>
-
     </div>
-
 </header>
-
 <div class="contenedor">
-
+    <!-- MENÚ LATERAL: Servicios es la opción activa de esta página -->
     <aside class="menu-lateral">
-
-        <div>
-
+        <div class="contenido-menu">
             <h2>Menú</h2>
-
-            <nav>
+            <nav class="navegacion-lateral" aria-label="Menú principal">
                 <a href="capacity_planner.jsp">Dashboard</a>
                 <a href="clientes.jsp">Clientes</a>
                 <a href="solicitudes.jsp">Solicitudes</a>
-
-                <a href="rutas.jsp" class="activo">
-                    Rutas
-                </a>
-
+                <!-- Checkbox y label abren Infraestructura sin JavaScript -->
+                <div class="grupo-menu">
+                    <input type="checkbox" id="control-infraestructura" class="control-submenu" checked>
+                    <label for="control-infraestructura" class="titulo-grupo">
+                        <span>Infraestructura</span>
+                        <span class="flecha-submenu"></span>
+                    </label>
+                    <div class="contenido-submenu">
+                        <a href="rutas.jsp" class="subopcion activo">Rutas</a>
+                        <a href="segmentos.jsp" class="subopcion">Segmentos</a>
+                        <a href="landing_stations.jsp" class="subopcion">Landing stations</a>
+                    </div>
+                </div>
                 <a href="servicios.jsp">Servicios</a>
             </nav>
-
         </div>
-
+        <!-- OPCIONES DEL USUARIO: barras.css las coloca abajo -->
         <div class="configuracion">
-            <h3>Configuración</h3>
-            <a href="#">Perfil</a>
-            <a href="../../login.jsp">Cerrar sesión</a>
+            <nav aria-label="Opciones del usuario">
+                <!-- Pendiente: colocar la dirección real de Perfil -->
+                <a href="#">Perfil</a>
+                <!-- Navega al login; el cierre real de sesión se conectará después -->
+                <a href="${pageContext.request.contextPath}/login.jsp" class="cerrar-sesion">Cerrar sesión</a>
+            </nav>
         </div>
-
     </aside>
 
-    <main class="contenido-principal">
-
-        <section class="encabezado-panel">
-
-            <div>
-                <h2>Capacity Planner</h2>
-                <h1>Rutas</h1>
-            </div>
-
-            <button
-                    class="boton primario"
-                    type="button"
-                    popovertarget="modalNuevaRuta"
-            >
-                + Asignar ruta
-            </button>
-
+    <!-- 5. TABLA PRINCIPAL -->
+    <main class="contenido-principal pagina-rutas">
+        <section class="encabezado-pagina">
+            <div class="encabezado-panel"><h2>Capacity Planner</h2><h1>Rutas</h1></div>
+            <a class="boton primario" href="rutas.jsp?ventana=nuevo">+ Nueva ruta</a>
         </section>
-
-        <section class="barra-filtros">
-
-            <form
-                    method="get"
-                    action="rutas.jsp"
-                    class="formulario-filtro"
-            >
-
-                <label for="filtroEstado">Estado:</label>
-
-                <select
-                        id="filtroEstado"
-                        name="filtro"
-                        onchange="this.form.submit()"
-                >
-
-                    <option
-                            value="Todos"
-                            <%= "Todos".equals(filtro)
-                                    ? "selected" : "" %>
-                    >
-                        Todos
-                    </option>
-
-                    <option
-                            value="Disponible"
-                            <%= "Disponible".equals(filtro)
-                                    ? "selected" : "" %>
-                    >
-                        Disponible
-                    </option>
-
-                    <option
-                            value="Limitada"
-                            <%= "Limitada".equals(filtro)
-                                    ? "selected" : "" %>
-                    >
-                        Limitada
-                    </option>
-
-                    <option
-                            value="Insuficiente"
-                            <%= "Insuficiente".equals(filtro)
-                                    ? "selected" : "" %>
-                    >
-                        Insuficiente
-                    </option>
-
+        <% if ("1".equals(request.getParameter("guardado"))) { %><p class="mensaje-exito">Ruta guardada.</p><% } %>
+        <section class="barra-herramientas">
+            <form method="get" action="rutas.jsp" class="formulario-filtro">
+                <label for="filtro">Estado:</label>
+                <select id="filtro" name="filtro">
+                    <option value="Todas">Todas</option>
+                    <option value="activa" <%= filtro.equals("activa") ? "selected" : "" %>>Activa</option>
+                    <option value="inactiva" <%= filtro.equals("inactiva") ? "selected" : "" %>>Inactiva</option>
                 </select>
-
+                <button class="boton secundario" type="submit">Filtrar</button>
             </form>
-
-            <span class="cantidad-rutas">
-                <%= cantidadVisible %> rutas
-            </span>
-
+            <span><%= cantidad %> rutas</span>
         </section>
-
-        <section class="tabla-contenedor">
-
-            <table class="tabla-rutas">
-
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Origen</th>
-                    <th>Destino</th>
-                    <th>Segmentos</th>
-                    <th>Capacidad disponible</th>
-                    <th>Estado</th>
-                </tr>
-                </thead>
-
-                <tbody>
-
-                <%
-                    for (Map<String, String> ruta : rutas) {
-
-                        String estadoRuta = obtenerEstado(ruta);
-
-                        if (!"Todos".equals(filtro)
-                                && !filtro.equals(estadoRuta)) {
-                            continue;
-                        }
-
-                        double disponible =
-                                capacidadDisponible(ruta);
-
-                        boolean seleccionada =
-                                rutaDetalle != null
-                                        && ruta.get("id").equals(
-                                        rutaDetalle.get("id")
-                                );
-                %>
-
-                <tr
-                        class="fila-ruta <%= seleccionada
-                                ? "fila-seleccionada" : "" %>"
-
-                        onclick="window.location.href=
-                                'rutas.jsp?detalle=<%= ruta.get("id") %>'"
-                >
-
-                    <td class="id-ruta">
-                        <%= ruta.get("id") %>
-                    </td>
-
-                    <td><%= ruta.get("origen") %></td>
-                    <td><%= ruta.get("destino") %></td>
-                    <td><%= ruta.get("segmentos") %></td>
-
-                    <td>
-                        <%= mostrarCapacidad(disponible) %> Gbps
-                    </td>
-
-                    <td>
-
-                        <span class="estado-ruta <%= claseEstado(ruta) %>">
-
-                            <span class="punto-estado"></span>
-
-                            <%= estadoRuta %>
-
-                        </span>
-
-                    </td>
-
-                </tr>
-
-                <% } %>
-
-                <% if (cantidadVisible == 0) { %>
-
-                <tr>
-                    <td colspan="6" class="sin-resultados">
-                        No existen rutas con este estado.
-                    </td>
-                </tr>
-
-                <% } %>
-
-                </tbody>
-
-            </table>
-
+        <section class="contenedor-tabla">
+            <table><thead><tr><th>ID</th><th>Nombre</th><th>Origen</th><th>Destino</th><th>Segmentos</th><th>Capacidad disponible</th><th>Estado</th></tr></thead>
+            <tbody>
+            <% for (String[] ruta : rutas) { if (filtro.equals("Todas") || filtro.equals(ruta[4])) { %>
+            <tr>
+                <td><a class="enlace-ruta" href="rutas.jsp?detalle=<%= ruta[0] %>">RUT-<%= ruta[0] %></a></td>
+                <td><%= texto(ruta[1]) %></td>
+                <td><%= estaciones[buscar(estaciones, ruta[2])][1] %></td>
+                <td><%= estaciones[buscar(estaciones, ruta[3])][1] %></td>
+                <td><%= ruta[5].split(",").length %></td>
+                <td><%= disponible(ruta[5], segmentos) %> Gbps</td>
+                <td><span class="estado <%= ruta[4] %>"><%= ruta[4].equals("activa") ? "Activa" : "Inactiva" %></span></td>
+            </tr>
+            <% } } %>
+            <% if (cantidad == 0) { %><tr><td colspan="7">No hay rutas con este estado.</td></tr><% } %>
+            </tbody></table>
         </section>
-
-        <% if (rutaDetalle != null) {
-
-            double totalDetalle =
-                    convertirNumero(
-                            rutaDetalle.get("capacidadTotal")
-                    );
-
-            double utilizadaDetalle =
-                    convertirNumero(
-                            rutaDetalle.get("capacidadUtilizada")
-                    );
-
-            double disponibleDetalle =
-                    capacidadDisponible(rutaDetalle);
-
-            double porcentajeDetalle =
-                    porcentajeUtilizado(rutaDetalle);
-
-            String estadoDetalle =
-                    obtenerEstado(rutaDetalle);
-        %>
-
+        <!-- 6. DETALLE: muestra los segmentos en el orden del recorrido. -->
+        <% if (detalle >= 0) { String[] ruta = rutas.get(detalle); int orden = 1; %>
         <section class="panel-detalle">
-
-            <div class="encabezado-detalle">
-
-                <div>
-                    <span>Detalle de ruta</span>
-                    <h2><%= rutaDetalle.get("id") %></h2>
-                </div>
-
-                <a
-                        href="rutas.jsp"
-                        class="cerrar-detalle"
-                        title="Cerrar detalle"
-                >
-                    &times;
-                </a>
-
+            <div class="encabezado-detalle"><h2><%= texto(ruta[1]) %></h2><a href="rutas.jsp" aria-label="Cerrar detalle">&times;</a></div>
+            <p class="resumen-ruta"><%= estaciones[buscar(estaciones, ruta[2])][1] %> → <%= estaciones[buscar(estaciones, ruta[3])][1] %></p>
+            <h3>Segmentos de la ruta</h3>
+            <div class="contenedor-tabla">
+                <table><thead><tr><th>Orden</th><th>Segmento</th><th>Total</th><th>Ocupada</th><th>Reservada</th><th>Estado</th></tr></thead><tbody>
+                <% for (String codigo : ruta[5].split(",")) { for (String[] segmento : segmentos) { if (segmento[1].equals(codigo.trim())) { %>
+                <tr><td><%= orden++ %></td><td><%= segmento[1] %></td><td><%= segmento[4] %> Gbps</td><td><%= segmento[5] %> Gbps</td><td><%= segmento[6] %> Gbps</td><td><%= segmento[7] %></td></tr>
+                <% } } } %>
+                </tbody></table>
             </div>
-
-            <div class="cuadricula-detalle">
-
-                <div>
-                    <span>Origen</span>
-                    <strong>
-                        <%= rutaDetalle.get("origen") %>
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Destino</span>
-                    <strong>
-                        <%= rutaDetalle.get("destino") %>
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Número de segmentos</span>
-                    <strong>
-                        <%= rutaDetalle.get("segmentos") %>
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Capacidad total</span>
-
-                    <strong>
-                        <%= mostrarCapacidad(totalDetalle) %> Gbps
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Capacidad utilizada</span>
-
-                    <strong>
-                        <%= mostrarCapacidad(utilizadaDetalle) %> Gbps
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Capacidad disponible</span>
-
-                    <strong>
-                        <%= mostrarCapacidad(disponibleDetalle) %> Gbps
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Porcentaje utilizado</span>
-
-                    <strong>
-                        <%= mostrarCapacidad(porcentajeDetalle) %>%
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Estado automático</span>
-
-                    <strong class="texto-estado <%= claseEstado(rutaDetalle) %>">
-                        <%= estadoDetalle %>
-                    </strong>
-                </div>
-
+            <p class="ayuda">Disponible = menor valor de (total − ocupada − reservada) entre los segmentos.</p>
+            <div class="acciones">
+                <a class="boton secundario" href="rutas.jsp?editar=<%= ruta[0] %>">Editar ruta</a>
+                <button class="boton peligro" type="button" popovertarget="confirmar-eliminar">Eliminar ruta</button>
             </div>
-
-            <div class="aviso-automatico">
-                El estado se calcula automáticamente según la capacidad
-                utilizada y no puede modificarse manualmente.
-            </div>
-
-            <div class="acciones-detalle">
-
-                <details
-                        id="editarRuta"
-                        class="editar-ruta"
-                >
-
-                    <summary>Editar ruta</summary>
-
-                    <form
-                            method="post"
-                            action="rutas.jsp"
-                            class="formulario-ruta"
-                    >
-
-                        <input
-                                type="hidden"
-                                name="accion"
-                                value="editar"
-                        >
-
-                        <input
-                                type="hidden"
-                                name="id"
-                                value="<%= rutaDetalle.get("id") %>"
-                        >
-
-                        <label>
-                            Origen
-
-                            <input
-                                    type="text"
-                                    name="origen"
-                                    value="<%= rutaDetalle.get("origen") %>"
-                                    required
-                            >
-                        </label>
-
-                        <label>
-                            Destino
-
-                            <input
-                                    type="text"
-                                    name="destino"
-                                    value="<%= rutaDetalle.get("destino") %>"
-                                    required
-                            >
-                        </label>
-
-                        <label>
-                            Segmentos
-
-                            <input
-                                    type="number"
-                                    name="segmentos"
-                                    min="1"
-                                    value="<%= rutaDetalle.get("segmentos") %>"
-                                    required
-                            >
-                        </label>
-
-                        <label>
-                            Capacidad total en Gbps
-
-                            <input
-                                    type="number"
-                                    name="capacidadTotal"
-                                    min="1"
-                                    step="0.01"
-                                    value="<%= rutaDetalle.get("capacidadTotal") %>"
-                                    required
-                            >
-                        </label>
-
-                        <label>
-                            Capacidad utilizada en Gbps
-
-                            <input
-                                    type="number"
-                                    name="capacidadUtilizada"
-                                    min="0"
-                                    step="0.01"
-                                    value="<%= rutaDetalle.get("capacidadUtilizada") %>"
-                                    required
-                            >
-                        </label>
-
-                        <div class="botones-formulario ancho-completo">
-
-                            <button
-                                    type="submit"
-                                    class="boton primario"
-                            >
-                                Guardar cambios
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                </details>
-
-                <form
-                        method="post"
-                        action="rutas.jsp"
-                        class="formulario-eliminar"
-                        onsubmit="return confirm(
-                                '¿Está seguro de eliminar esta ruta?'
-                        )"
-                >
-
-                    <input
-                            type="hidden"
-                            name="accion"
-                            value="eliminar"
-                    >
-
-                    <input
-                            type="hidden"
-                            name="id"
-                            value="<%= rutaDetalle.get("id") %>"
-                    >
-
-                    <button
-                            type="submit"
-                            class="boton-eliminar"
-                    >
-                        Eliminar ruta
-                    </button>
-
+            <!-- Confirmación de eliminación sin JavaScript. -->
+            <div id="confirmar-eliminar" class="confirmacion" popover>
+                <h2>Eliminar ruta</h2><p>¿Deseas eliminar <%= texto(ruta[1]) %>?</p>
+                <form method="post" action="rutas.jsp" class="acciones">
+                    <input type="hidden" name="id_ruta" value="<%= ruta[0] %>">
+                    <button class="boton secundario" type="button" popovertarget="confirmar-eliminar" popovertargetaction="hide">Volver</button>
+                    <button class="boton peligro" name="accion" value="eliminar" type="submit">Eliminar</button>
                 </form>
-
             </div>
-
         </section>
-
         <% } %>
-
     </main>
-
 </div>
-
-<!-- Ventana para asignar una ruta -->
-
-<div
-        id="modalNuevaRuta"
-        class="modal"
-        popover
->
-
-    <div class="encabezado-modal">
-
-        <h2>Asignar nueva ruta</h2>
-
-        <button
-                type="button"
-                class="cerrar-modal"
-                popovertarget="modalNuevaRuta"
-                popovertargetaction="hide"
-        >
-            &times;
-        </button>
-
-    </div>
-
-    <form
-            method="post"
-            action="rutas.jsp"
-            class="formulario-ruta"
-    >
-
-        <input
-                type="hidden"
-                name="accion"
-                value="crear"
-        >
-
-        <label>
-            Origen
-            <input type="text" name="origen" required>
-        </label>
-
-        <label>
-            Destino
-            <input type="text" name="destino" required>
-        </label>
-
-        <label>
-            Número de segmentos
-
-            <input
-                    type="number"
-                    name="segmentos"
-                    min="1"
-                    required
-            >
-        </label>
-
-        <label>
-            Capacidad total en Gbps
-
-            <input
-                    type="number"
-                    name="capacidadTotal"
-                    min="1"
-                    step="0.01"
-                    required
-            >
-        </label>
-
-        <label>
-            Capacidad utilizada en Gbps
-
-            <input
-                    type="number"
-                    name="capacidadUtilizada"
-                    min="0"
-                    step="0.01"
-                    value="0"
-                    required
-            >
-        </label>
-
-        <div class="botones-formulario ancho-completo">
-
-            <button
-                    type="button"
-                    class="boton secundario"
-                    popovertarget="modalNuevaRuta"
-                    popovertargetaction="hide"
-            >
-                Cancelar
-            </button>
-
-            <button
-                    type="submit"
-                    class="boton primario"
-            >
-                Guardar ruta
-            </button>
-
-        </div>
-
-    </form>
-
+<!-- 7. FORMULARIO: campos de rutas y relación con segmentos. -->
+<% if (formulario) { %>
+<div class="modal">
+    <section class="contenido-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal">
+        <div class="encabezado-detalle"><h2 id="titulo-modal"><%= editar >= 0 ? "Editar ruta" : "Nueva ruta" %></h2><a href="rutas.jsp" aria-label="Cerrar formulario">&times;</a></div>
+        <% if (!error.isEmpty()) { %><p class="mensaje-error" role="alert"><%= error %></p><% } %>
+        <form method="post" action="rutas.jsp">
+            <input type="hidden" name="accion" value="guardar">
+            <input type="hidden" name="id_ruta" value="<%= texto(valor[0]) %>">
+            <div class="grupo-formulario"><label for="nombre">Nombre de la ruta</label><input id="nombre" name="nombre" maxlength="100" value="<%= texto(valor[1]) %>" placeholder="Ejemplo: LAX-LUR-R02" required></div>
+            <div class="cuadricula-formulario">
+                <div class="grupo-formulario"><label for="origen">Origen</label><select id="origen" name="id_landing_origen" required><option value="">Seleccione</option>
+                    <% for (String[] estacion : estaciones) { %><option value="<%= estacion[0] %>" <%= estacion[0].equals(valor[2]) ? "selected" : "" %>><%= estacion[1] %></option><% } %>
+                </select></div>
+                <div class="grupo-formulario"><label for="destino">Destino</label><select id="destino" name="id_landing_destino" required><option value="">Seleccione</option>
+                    <% for (String[] estacion : estaciones) { %><option value="<%= estacion[0] %>" <%= estacion[0].equals(valor[3]) ? "selected" : "" %>><%= estacion[1] %></option><% } %>
+                </select></div>
+            </div>
+            <div class="grupo-formulario"><label for="segmentos">Segmentos en orden, separados por comas</label><textarea id="segmentos" name="segmentos" rows="3" placeholder="Ejemplo: LAX-LUR-01, LUR-VAL-01" required><%= texto(valor[5]) %></textarea></div>
+            <details class="catalogo"><summary>Ver segmentos disponibles</summary>
+                <% for (String[] segmento : segmentos) { %><p><strong><%= segmento[1] %></strong>: <%= estaciones[buscar(estaciones, segmento[2])][1] %> → <%= estaciones[buscar(estaciones, segmento[3])][1] %></p><% } %>
+            </details>
+            <div class="grupo-formulario"><label for="estado-ruta">Estado</label><select id="estado-ruta" name="estado_ruta"><option value="activa" <%= "activa".equals(valor[4]) ? "selected" : "" %>>Activa</option><option value="inactiva" <%= "inactiva".equals(valor[4]) ? "selected" : "" %>>Inactiva</option></select></div>
+            <div class="acciones"><a class="boton secundario" href="rutas.jsp">Volver</a><button class="boton primario" type="submit">Guardar ruta</button></div>
+        </form>
+    </section>
 </div>
-
+<% } %>
 </body>
 </html>

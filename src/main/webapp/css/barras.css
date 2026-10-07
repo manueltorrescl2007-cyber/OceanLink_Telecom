@@ -470,3 +470,8 @@ a {
 .titulo-grupo {
   transition: background-color 0.2s ease;
 }
+
+/* Mismo espaciado que el menú de Capacity Planner */
+.menu-lateral nav a {
+  line-height: 1.35;
+}
