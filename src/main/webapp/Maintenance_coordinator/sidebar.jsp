@@ -11,45 +11,87 @@
         activePage = "";
     }
 %>
-<aside class="sidebar">
-    <div class="sidebar-logo">Oceanlink</div>
+<aside class="menu-lateral">
+  <div class="contenido-menu">
+      <h2>Menú</h2>
+    <nav class="navegacion-lateral">
 
-    <nav class="sidebar-nav">
-        <span class="nav-label">Menú</span>
 
         <a href="nuevo_mantenimiento.jsp"
-           class="nav-item <%= "nuevo".equals(activePage) ? "active" : "" %>">
+           class="<%= "nuevo".equals(activePage) ? "activo" : "" %>">
             Nuevo mantenimiento
         </a>
 
-        <span class="nav-group-label">Mantenimientos</span>
-        <ul class="nav-sublist">
-            <li>
-                <a href="fechas_duracion.jsp"
-                   class="nav-subitem <%= "fechas".equals(activePage) ? "active" : "" %>">
-                    Fechas y duración
-                </a>
-            </li>
-            <li>
-                <a href="estado.jsp"
-                   class="nav-subitem <%= "estado".equals(activePage) ? "active" : "" %>">
-                    Estado
-                </a>
-            </li>
-            <li>
-                <a href="historial.jsp"
-                   class="nav-subitem <%= "historial".equals(activePage) ? "active" : "" %>">
-                    Historial
-                </a>
-            </li>
-        </ul>
+
+      <!-- Grupo de mantenimientos -->
+      <div class="grupo-menu">
+
+        <!-- Control del submenu -->
+        <input
+          type="checkbox"
+          id="control-mantenimientos"
+          class="control-submenu"
+        >
+
+        <!-- titulo del grupo -->
+        <label
+          for="control-mantenimientos"
+          class="titulo-grupo"
+        >
+          <span>Mantenimientos</span>
+
+          <span class="flecha-submenu"></span>
+        </label>
+
+        <!-- opciones del menu lateral -->
+        <div class="contenido-submenu">
+
+          <a
+            href="fechas_duracion.jsp"
+            class="subopcion <%= "fechas".equals(activePage) ? "activo" : "" %>"
+          >
+            Fechas y duración
+          </a>
+
+          <a
+            href="estado.jsp"
+            class="subopcion <%= "estado".equals(activePage) ? "activo" : "" %>"
+          >
+            Estado
+          </a>
+
+          <a
+            href="historial.jsp"
+            class="subopcion <%= "historial".equals(activePage) ? "activo" : "" %>"
+          >
+            Historial
+          </a>
+
+        </div>
+
+      </div>
+
+    </nav>
+  </div>
+
+  <!-- Configuración -->
+  <div class="configuracion">
+
+    <nav>
+
+      <a href="#">
+        Perfil
+      </a>
+
+      <a
+        href="${pageContext.request.contextPath}/login.jsp"
+        class="cerrar-sesion"
+      >
+        Cerrar sesión
+      </a>
+
     </nav>
 
-    <div class="sidebar-footer">
-        <span class="nav-group-label">Configuración</span>
-        <ul class="nav-sublist">
-            <li><a href="perfil.jsp" class="nav-subitem">Perfil</a></li>
-            <li><a href="../login.jsp" class="nav-subitem">Cerrar sesión</a></li>
-        </ul>
-    </div>
+  </div>
+
 </aside>

@@ -5,21 +5,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oceanlink - Nuevo mantenimiento</title>
-    <link rel="stylesheet" href="../css/styles_MC.css">
+    <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/barras.css">
+
+    <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/styles_MC.css">
 </head>
 <body>
 
-<div class="app-layout">
+<jsp:include page="header.jsp">
+  <jsp:param name="pageTitle" value="Registro y actualizaci&oacute;n de actividades de mantenimiento" />
+</jsp:include>
+
+<div class="contenedor">
 
     <jsp:include page="sidebar.jsp">
         <jsp:param name="activePage" value="nuevo" />
     </jsp:include>
 
-    <div class="main-content">
+    <main class="contenido-principal">
 
-        <jsp:include page="header.jsp">
-            <jsp:param name="pageTitle" value="Registro y actualizaci&oacute;n de actividades de mantenimiento" />
-        </jsp:include>
+
 
         <div class="content-container">
             <div class="card">
@@ -85,7 +91,7 @@
             </div>
         </div>
 
-    </div>
+    </main>
 </div>
 
 </body>

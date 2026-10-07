@@ -8,19 +8,53 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
     request.setCharacterEncoding("UTF-8");
-    String pageTitle = request.getParameter("pageTitle");
-    if (pageTitle == null) {
-        pageTitle = "Oceanlink";
-    }
 %>
-<header class="topbar">
-    <meta charset="UTF-8">
-    <h1 class="topbar-title"><%= pageTitle %></h1>
-    <div class="user-badge">
-        <span class="avatar-circle"></span>
-        <div class="user-info">
-            <span class="user-name">Username</span>
-            <span class="user-role">Maintenance coordinator</span>
-        </div>
+<!-- Control del menú lateral -->
+<input
+  type="checkbox"
+  id="controlMenu"
+  class="control-menu"
+>
+
+<header class="barra-superior">
+
+  <!-- Logo y botón del menú -->
+  <div class="zona-logo">
+
+    <label
+      for="controlMenu"
+      class="boton-menu"
+    >
+      ☰
+    </label>
+
+    <a
+      href="nuevo_mantenimiento.jsp"
+      class="logo"
+    >
+      OceanLink
+    </a>
+
+  </div>
+
+  <!-- Información del usuario -->
+  <div class="usuario">
+
+    <div class="foto-usuario">
+      MC
     </div>
+
+    <div>
+      <p class="nombre-usuario">
+        Username
+      </p>
+
+      <p class="rol-usuario">
+        Maintenance Coordinator
+      </p>
+
+    </div>
+
+  </div>
+
 </header>

@@ -6,7 +6,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oceanlink - Estado</title>
-    <link rel="stylesheet" href="../css/styles_MC.css">
+    <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/barras.css">
+
+    <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/styles_MC.css">
 </head>
 <body>
 
@@ -24,17 +28,19 @@
     int indiceActual = pasos.indexOf(estadoActual);
 %>
 
-<div class="app-layout">
+<jsp:include page="header.jsp">
+  <jsp:param name="pageTitle" value="Registro y actualizaci&oacute;n de actividades de mantenimiento" />
+</jsp:include>
+
+<div class="contenedor">
 
     <jsp:include page="sidebar.jsp">
         <jsp:param name="activePage" value="estado" />
     </jsp:include>
 
-    <div class="main-content">
 
-        <jsp:include page="header.jsp">
-            <jsp:param name="pageTitle" value="Registro y actualizaci&oacute;n de actividades de mantenimiento" />
-        </jsp:include>
+
+    <main class="contenido-principal">
 
         <div class="content-container">
             <div class="card">
@@ -71,9 +77,9 @@
 
                 <div class="bitacora">BITACORA DE INTERVENCIÓN
 
-14:42 - Técnico llegó al sitio de inserción
-14:46 - Inicio de revisión de conectores ópticos
-15:09 - Detección de degradación leve en fibra secundaria, se procede a reemplazarlo</div>
+                  14:42 - Técnico llegó al sitio de inserción
+                  14:46 - Inicio de revisión de conectores ópticos
+                  15:09 - Detección de degradación leve en fibra secundaria, se procede a reemplazarlo</div>
 
                 <form action="RegistrarIncidenciaServlet" method="post">
                     <input type="text"
@@ -84,8 +90,7 @@
 
             </div>
         </div>
-
-    </div>
+    </main>
 </div>
 
 </body>
