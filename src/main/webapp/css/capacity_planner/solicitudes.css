@@ -1,3 +1,6 @@
+/* SOLICITUDES: filtros, tabla, detalles y formularios.
+   Cargar barras.css después de este archivo. */
+
 /* Colores propios de Clientes; los demás están en barras.css */
 :root {
   --color-rojo: #d64545;
@@ -565,3 +568,34 @@
   background-position: right 12px center;
 }
 @media (max-width: 700px) { .formulario-filtro { flex-wrap: wrap; } }
+
+/* Botón Nueva solicitud: misma posición y estilo que Nuevo servicio. */
+#encabezadoSolicitudes {
+  align-items: center;
+}
+
+#botonNuevaSolicitud {
+  display: inline-block;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 10px 16px;
+  color: white;
+  background-color: #1c8c9c;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+  line-height: normal;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#botonNuevaSolicitud:hover {
+  background-color: #1c8c9c;
+  border-color: transparent;
+  transform: translateY(-2px);
+}

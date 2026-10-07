@@ -1,1595 +1,252 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.ArrayList" %>
-<%@ page import="java.util.LinkedHashMap" %>
-<%@ page import="java.util.Map" %>
-
-<%!
-    private Map<String, String> crearServicio(
-            String id,
-            String cliente,
-            String origen,
-            String destino,
-            String capacidad,
-            String ruta,
-            String estado,
-            String fecha,
-            String riesgo) {
-
-        Map<String, String> servicio = new LinkedHashMap<>();
-
-        servicio.put("id", id);
-        servicio.put("cliente", cliente);
-        servicio.put("origen", origen);
-        servicio.put("destino", destino);
-        servicio.put("capacidad", capacidad);
-        servicio.put("ruta", ruta);
-        servicio.put("estado", estado);
-        servicio.put("fecha", fecha);
-        servicio.put("riesgo", riesgo);
-
-        return servicio;
-    }
-
-    private double convertirNumero(String valor) {
-
-        try {
-            return Double.parseDouble(valor);
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-%>
-
 <%
-    request.setCharacterEncoding("UTF-8");
-
-    /*
-     * Clientes registrados desde clientes.jsp.
-     */
-    ArrayList<Map<String, String>> clientesDisponibles =
-            (ArrayList<Map<String, String>>)
-                    session.getAttribute("clientes");
-
-    /*
-     * Clientes de prueba si todavía no se abrió clientes.jsp.
-     */
-    if (clientesDisponibles == null) {
-
-        clientesDisponibles = new ArrayList<>();
-
-        Map<String, String> cliente1 = new LinkedHashMap<>();
-        cliente1.put("id", "CLI-001");
-        cliente1.put("nombre", "Pacífico");
-        clientesDisponibles.add(cliente1);
-
-        Map<String, String> cliente2 = new LinkedHashMap<>();
-        cliente2.put("id", "CLI-002");
-        cliente2.put("nombre", "Atlántico");
-        clientesDisponibles.add(cliente2);
-
-        Map<String, String> cliente3 = new LinkedHashMap<>();
-        cliente3.put("id", "CLI-003");
-        cliente3.put("nombre", "Mediterráneo");
-        clientesDisponibles.add(cliente3);
-    }
-
-    /*
-     * Capacidad máxima de cada ruta.
-     */
-    Map<String, Double> capacidadRutas =
-            new LinkedHashMap<>();
-
-    capacidadRutas.put("RUT-001", 100.0);
-    capacidadRutas.put("RUT-002", 50.0);
-    capacidadRutas.put("RUT-003", 30.0);
-
-    /*
-     * Lista de servicios guardada en la sesión.
-     */
-    ArrayList<Map<String, String>> servicios =
-            (ArrayList<Map<String, String>>)
-                    session.getAttribute("servicios");
-
-    /*
-     * Casos de prueba iniciales.
-     */
+    // DATOS DE EJEMPLO: independientes de las demás páginas y de MySQL.
+    // Campos: ID, solicitud, ruta, capacidad, fecha de activación, estado.
+    // Cliente, origen y destino son datos que luego se obtendrán de la solicitud.
+    String[][] ejemplos = {
+        {"1", "1", "LAX-LUR-R01", "50", "06/10/2026 10:30", "Activo", "Pacifico", "Los Ángeles", "Lurín"},
+        {"2", "2", "LUR-VAL-R01", "20", "Sin activar", "Pendiente", "Claro", "Lurín", "Valparaíso"},
+        {"3", "3", "GYE-LUR-R01", "30", "06/10/2026 12:00", "Suspendido", "Movistar", "Guayaquil", "Lurín"}
+    };
+    // La sesión conserva únicamente los servicios de este mockup.
+    String[][] servicios = (String[][]) session.getAttribute("serviciosMockupIndependiente");
     if (servicios == null) {
-
-        servicios = new ArrayList<>();
-
-        servicios.add(crearServicio(
-                "SER-001",
-                "Pacífico",
-                "Lima",
-                "Valparaíso",
-                "50",
-                "RUT-001",
-                "Activo",
-                "2026-09-12",
-                "Posible aumento del tráfico durante horas punta."
-        ));
-
-        servicios.add(crearServicio(
-                "SER-002",
-                "Mediterráneo",
-                "Lima",
-                "Valparaíso",
-                "45",
-                "RUT-001",
-                "Activo",
-                "2026-09-13",
-                "La ruta se encuentra cerca de su capacidad máxima."
-        ));
-
-        servicios.add(crearServicio(
-                "SER-003",
-                "Atlántico",
-                "Callao",
-                "Barcelona",
-                "20",
-                "RUT-002",
-                "Activo",
-                "2026-09-14",
-                "Posible congestión durante mantenimientos programados."
-        ));
-
-        servicios.add(crearServicio(
-                "SER-004",
-                "Mediterráneo",
-                "Lima",
-                "Valparaíso",
-                "10",
-                "RUT-001",
-                "Límite",
-                "2026-09-17",
-                "No puede activarse porque la ruta ya está al límite."
-        ));
-
-        session.setAttribute("servicios", servicios);
+        servicios = ejemplos;
+        session.setAttribute("serviciosMockupIndependiente", servicios);
     }
+    String error = "";
 
-    /*
-     * Convertimos estados antiguos a Límite.
-     */
-    for (Map<String, String> servicio : servicios) {
-
-        String estadoAnterior = servicio.get("estado");
-
-        if ("Pendiente".equals(estadoAnterior)
-                || "Provisionado".equals(estadoAnterior)) {
-
-            servicio.put("estado", "Límite");
+    // GUARDADO DE PRUEBA HABILITADO: recibe el formulario y agrega una fila al arreglo.
+    if ("POST".equals(request.getMethod()) && "guardar".equals(request.getParameter("accion"))) {
+        String solicitud = request.getParameter("id_solicitud");
+        String ruta = request.getParameter("id_ruta");
+        int capacidad = 0;
+        try {
+            capacidad = Integer.parseInt(request.getParameter("capacidad_asignada"));
+        } catch (NumberFormatException e) {
+            // Si no es un número entero válido, queda en cero.
         }
 
-        if (servicio.get("riesgo") == null) {
-            servicio.put("riesgo", "");
+        // Opciones de ejemplo: solicitud, ruta compatible, cliente, origen y destino.
+        String[][] opciones = {
+            {"1", "4", "Pacifico", "Los Ángeles", "Lurín", "LAX-LUR-R01"},
+            {"2", "13", "Claro", "Lurín", "Valparaíso", "LUR-VAL-R01"},
+            {"3", "12", "Movistar", "Guayaquil", "Lurín", "GYE-LUR-R01"}
+        };
+        int seleccion = -1;
+        for (int i = 0; i < opciones.length; i++) {
+            if (opciones[i][0].equals(solicitud)) seleccion = i;
         }
-    }
-
-    /*
-     * Procesamiento de los formularios.
-     */
-    if ("POST".equalsIgnoreCase(request.getMethod())) {
-
-        String accion = request.getParameter("accion");
-
-        /*
-         * Crear o editar servicio.
-         */
-        if ("guardar".equals(accion)) {
-
-            String id = request.getParameter("idServicio");
-            String cliente = request.getParameter("cliente");
-            String origen = request.getParameter("origen");
-            String destino = request.getParameter("destino");
-            String capacidad = request.getParameter("capacidad");
-            String ruta = request.getParameter("ruta");
-            String estadoSolicitado =
-                    request.getParameter("estado");
-            String fecha = request.getParameter("fecha");
-            String riesgo = request.getParameter("riesgo");
-
-            boolean nuevoServicio =
-                    id == null || id.trim().isEmpty();
-
-            /*
-             * Generación automática de ID.
-             */
-            if (nuevoServicio) {
-
-                int siguienteNumero = 1;
-
-                for (Map<String, String> servicio : servicios) {
-
-                    String numeroTexto =
-                            servicio.get("id")
-                                    .replace("SER-", "");
-
-                    try {
-
-                        int numero =
-                                Integer.parseInt(numeroTexto);
-
-                        if (numero >= siguienteNumero) {
-                            siguienteNumero = numero + 1;
-                        }
-
-                    } catch (NumberFormatException ignored) {
-                    }
-                }
-
-                id = String.format(
-                        "SER-%03d",
-                        siguienteNumero
-                );
+        if (seleccion < 0 || capacidad <= 0) {
+            error = "Seleccione una solicitud e ingrese una capacidad entera mayor que cero.";
+        } else if (!opciones[seleccion][1].equals(ruta)) {
+            error = "Seleccione una ruta que coincida con el origen y destino de la solicitud.";
+        } else {
+            // Busca el siguiente ID y copia los servicios al arreglo más grande.
+            int siguienteId = 1;
+            String[][] nuevos = new String[servicios.length + 1][];
+            for (int i = 0; i < servicios.length; i++) {
+                nuevos[i] = servicios[i];
+                int id = Integer.parseInt(servicios[i][0]);
+                if (id >= siguienteId) siguienteId = id + 1;
             }
-
-            double capacidadSolicitada =
-                    convertirNumero(capacidad);
-
-            double capacidadOcupada = 0;
-
-            /*
-             * Se suman únicamente los servicios activos
-             * que pertenecen a la misma ruta.
-             *
-             * Los servicios Límite y Cancelados no consumen
-             * capacidad.
-             */
-            for (Map<String, String> servicio : servicios) {
-
-                boolean mismoServicio =
-                        id.equals(servicio.get("id"));
-
-                boolean mismaRuta =
-                        ruta.equals(servicio.get("ruta"));
-
-                boolean servicioActivo =
-                        "Activo".equals(
-                                servicio.get("estado")
-                        );
-
-                if (!mismoServicio
-                        && mismaRuta
-                        && servicioActivo) {
-
-                    capacidadOcupada += convertirNumero(
-                            servicio.get("capacidad")
-                    );
-                }
-            }
-
-            double capacidadMaxima =
-                    capacidadRutas.getOrDefault(
-                            ruta,
-                            100.0
-                    );
-
-            double limitePreventivo =
-                    capacidadMaxima * 0.90;
-
-            String estadoFinal = estadoSolicitado;
-
-            /*
-             * Regla de capacidad:
-             *
-             * Si la ruta ya tiene 90 % o más ocupado,
-             * no se activa otro servicio.
-             *
-             * Tampoco se activa si la nueva capacidad
-             * supera el máximo permitido.
-             */
-            if ("Activo".equals(estadoSolicitado)
-                    && (capacidadOcupada >= limitePreventivo
-                    || capacidadOcupada
-                    + capacidadSolicitada
-                    > capacidadMaxima)) {
-
-                estadoFinal = "Límite";
-            }
-
-            Map<String, String> servicioEncontrado = null;
-
-            for (Map<String, String> servicio : servicios) {
-
-                if (id.equals(servicio.get("id"))) {
-                    servicioEncontrado = servicio;
-                    break;
-                }
-            }
-
-            /*
-             * Crear nuevo servicio.
-             */
-            if (servicioEncontrado == null) {
-
-                servicios.add(crearServicio(
-                        id,
-                        cliente,
-                        origen,
-                        destino,
-                        capacidad,
-                        ruta,
-                        estadoFinal,
-                        fecha,
-                        riesgo
-                ));
-
-            /*
-             * Editar servicio existente.
-             */
-            } else {
-
-                servicioEncontrado.put(
-                        "cliente",
-                        cliente
-                );
-
-                servicioEncontrado.put(
-                        "origen",
-                        origen
-                );
-
-                servicioEncontrado.put(
-                        "destino",
-                        destino
-                );
-
-                servicioEncontrado.put(
-                        "capacidad",
-                        capacidad
-                );
-
-                servicioEncontrado.put(
-                        "ruta",
-                        ruta
-                );
-
-                servicioEncontrado.put(
-                        "estado",
-                        estadoFinal
-                );
-
-                servicioEncontrado.put(
-                        "fecha",
-                        fecha
-                );
-
-                servicioEncontrado.put(
-                        "riesgo",
-                        riesgo
-                );
-            }
-
-            session.setAttribute(
-                    "servicios",
-                    servicios
-            );
-
-            response.sendRedirect(
-                    request.getContextPath()
-                            + request.getServletPath()
-                            + "?servicio="
-                            + id
-            );
-
-            return;
-        }
-
-        /*
-         * Eliminar servicio.
-         */
-        if ("eliminar".equals(accion)) {
-
-            String id =
-                    request.getParameter("idServicio");
-
-            for (int i = 0;
-                 i < servicios.size();
-                 i++) {
-
-                if (id.equals(
-                        servicios.get(i).get("id"))) {
-
-                    servicios.remove(i);
-                    break;
-                }
-            }
-
-            session.setAttribute(
-                    "servicios",
-                    servicios
-            );
-
-            response.sendRedirect(
-                    request.getContextPath()
-                            + request.getServletPath()
-            );
-
-            return;
-        }
-
-        /*
-         * Cambiar estado.
-         */
-        if ("cambiarEstado".equals(accion)) {
-
-            String id =
-                    request.getParameter("idServicio");
-
-            String nuevoEstado =
-                    request.getParameter("nuevoEstado");
-
-            for (Map<String, String> servicio : servicios) {
-
-                if (!id.equals(servicio.get("id"))) {
-                    continue;
-                }
-
-                /*
-                 * Cancelar un servicio libera su capacidad.
-                 */
-                if ("Cancelado".equals(nuevoEstado)) {
-
-                    servicio.put(
-                            "estado",
-                            "Cancelado"
-                    );
-
-                    break;
-                }
-
-                /*
-                 * Intentar activar el servicio.
-                 */
-                if ("Activo".equals(nuevoEstado)) {
-
-                    String ruta = servicio.get("ruta");
-
-                    double capacidadOcupada = 0;
-
-                    for (Map<String, String> otro
-                            : servicios) {
-
-                        boolean esOtroServicio =
-                                !id.equals(
-                                        otro.get("id")
-                                );
-
-                        boolean mismaRuta =
-                                ruta.equals(
-                                        otro.get("ruta")
-                                );
-
-                        boolean servicioActivo =
-                                "Activo".equals(
-                                        otro.get("estado")
-                                );
-
-                        if (esOtroServicio
-                                && mismaRuta
-                                && servicioActivo) {
-
-                            capacidadOcupada +=
-                                    convertirNumero(
-                                            otro.get(
-                                                    "capacidad"
-                                            )
-                                    );
-                        }
-                    }
-
-                    double capacidadSolicitada =
-                            convertirNumero(
-                                    servicio.get(
-                                            "capacidad"
-                                    )
-                            );
-
-                    double capacidadMaxima =
-                            capacidadRutas.getOrDefault(
-                                    ruta,
-                                    100.0
-                            );
-
-                    double limitePreventivo =
-                            capacidadMaxima * 0.90;
-
-                    if (capacidadOcupada
-                            >= limitePreventivo
-                            || capacidadOcupada
-                            + capacidadSolicitada
-                            > capacidadMaxima) {
-
-                        servicio.put(
-                                "estado",
-                                "Límite"
-                        );
-
-                    } else {
-
-                        servicio.put(
-                                "estado",
-                                "Activo"
-                        );
-                    }
-
-                    break;
-                }
-            }
-
-            session.setAttribute(
-                    "servicios",
-                    servicios
-            );
-
-            response.sendRedirect(
-                    request.getContextPath()
-                            + request.getServletPath()
-                            + "?servicio="
-                            + id
-            );
-
+            String[] opcion = opciones[seleccion];
+            nuevos[servicios.length] = new String[] {
+                String.valueOf(siguienteId), solicitud, opcion[5], String.valueOf(capacidad),
+                "Sin activar", "Pendiente", opcion[2], opcion[3], opcion[4]
+            };
+            session.setAttribute("serviciosMockupIndependiente", nuevos);
+            // Evita guardar otra vez cuando se actualiza el navegador.
+            response.sendRedirect("servicios.jsp?guardado=1&servicio=" + siguienteId);
             return;
         }
     }
-
-    /*
-     * Filtro.
-     */
-    String filtroEstado =
-            request.getParameter("estado");
-
-    if (filtroEstado == null
-            || filtroEstado.trim().isEmpty()) {
-
-        filtroEstado = "Todos";
+    // Los cuatro estados permitidos en servicios.estado del SQL.
+    String[] estados = {"Pendiente", "Activo", "Suspendido", "Cancelado"};
+    String filtro = request.getParameter("estado");
+    if (filtro == null) filtro = "Todos";
+    int detalle = -1;
+    int cantidad = 0;
+    for (int i = 0; i < servicios.length; i++) {
+        if (servicios[i][0].equals(request.getParameter("servicio"))) detalle = i;
+        if (filtro.equals("Todos") || filtro.equals(servicios[i][5])) cantidad++;
     }
-
-    /*
-     * Servicio seleccionado.
-     */
-    String idSeleccionado =
-            request.getParameter("servicio");
-
-    String ventana =
-            request.getParameter("ventana");
-
-    Map<String, String> servicioSeleccionado = null;
-    Map<String, String> servicioEditar = null;
-
-    int cantidadVisible = 0;
-
-    for (Map<String, String> servicio : servicios) {
-
-        if ("Todos".equals(filtroEstado)
-                || filtroEstado.equals(
-                        servicio.get("estado")
-                )) {
-
-            cantidadVisible++;
-        }
-
-        if (idSeleccionado != null
-                && idSeleccionado.equals(
-                        servicio.get("id")
-                )) {
-
-            servicioSeleccionado = servicio;
-        }
-
-        if ("editar".equals(ventana)
-                && idSeleccionado != null
-                && idSeleccionado.equals(
-                        servicio.get("id")
-                )) {
-
-            servicioEditar = servicio;
-        }
-    }
-
-    boolean mostrarFormulario =
-            "nuevo".equals(ventana)
-                    || "editar".equals(ventana);
+    boolean nuevo = "nuevo".equals(request.getParameter("ventana")) || !error.isEmpty();
 %>
-
 <!doctype html>
 <html lang="es">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Servicios | OceanLink</title>
-
-    <link
-        rel="stylesheet"
-        href="../../css/capacity_planner/servicios.css"
-    >
-
-    <link
-        rel="stylesheet"
-        href="../../css/capacity_planner/comun.css"
-    >
-
+    <!-- Primero los estilos de esta página y después las barras compartidas. -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/servicios.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 </head>
-
 <body>
-
-<input
-    type="checkbox"
-    id="controlMenu"
-    class="control-menu"
->
-
-<!-- Barra superior -->
-
+<!-- BARRAS COMUNES: Infraestructura agrupa rutas, segmentos y landing stations. -->
+<input type="checkbox" id="controlMenu" class="control-menu" >
 <header class="barra-superior">
-
     <div class="zona-logo">
-
-        <label
-            for="controlMenu"
-            class="boton-menu"
-        >
-            ☰
-        </label>
-
-        <a
-            href="capacity_planner.jsp"
-            class="logo"
-        >
-            OceanLink
-        </a>
-
+        <label for="controlMenu" class="boton-menu" title="Ocultar o mostrar menú">☰</label>
+        <a href="capacity_planner.jsp" class="logo">OceanLink</a>
     </div>
-
     <div class="usuario">
-
         <div class="foto-usuario">
             CP
         </div>
-
         <div>
-            <p class="nombre-usuario">
-                Username
-            </p>
-
-            <p class="rol-usuario">
-                Capacity Planner
-            </p>
+            <p class="nombre-usuario">Username</p>
+            <p class="rol-usuario">Capacity Planner</p>
         </div>
-
     </div>
-
 </header>
-
 <div class="contenedor">
-
-    <!-- Menú lateral -->
-
+    <!-- MENÚ LATERAL: Servicios es la opción activa de esta página -->
     <aside class="menu-lateral">
-
-        <div>
-
+        <div class="contenido-menu">
             <h2>Menú</h2>
-
-            <nav>
-
-                <a href="capacity_planner.jsp">
-                    Dashboard
-                </a>
-
-                <a href="clientes.jsp">
-                    Clientes
-                </a>
-
-                <a href="solicitudes.jsp">
-                    Solicitudes
-                </a>
-
-                <a href="rutas.jsp">
-                    Rutas
-                </a>
-
-                <a
-                    href="servicios.jsp"
-                    class="activo"
-                >
-                    Servicios
-                </a>
-
+            <nav class="navegacion-lateral" aria-label="Menú principal">
+                <a href="capacity_planner.jsp">Dashboard</a>
+                <a href="clientes.jsp">Clientes</a>
+                <a href="solicitudes.jsp">Solicitudes</a>
+                <!-- Checkbox y label abren Infraestructura sin JavaScript -->
+                <div class="grupo-menu">
+                    <input type="checkbox" id="control-infraestructura" class="control-submenu">
+                    <label for="control-infraestructura" class="titulo-grupo">
+                        <span>Infraestructura</span>
+                        <span class="flecha-submenu"></span>
+                    </label>
+                    <div class="contenido-submenu">
+                        <a href="rutas.jsp" class="subopcion">Rutas</a>
+                        <a href="segmentos.jsp" class="subopcion">Segmentos</a>
+                        <a href="landing_stations.jsp" class="subopcion">Landing stations</a>
+                    </div>
+                </div>
+                <a href="servicios.jsp" class="activo">Servicios</a>
             </nav>
-
         </div>
-
+        <!-- OPCIONES DEL USUARIO: barras.css las coloca abajo -->
         <div class="configuracion">
-
-            <h3>Configuración</h3>
-
-            <a href="#">
-                Perfil
-            </a>
-
-            <a href="../../login.jsp">
-                Cerrar sesión
-            </a>
-
+            <nav aria-label="Opciones del usuario">
+                <!-- Pendiente: colocar la dirección real de Perfil -->
+                <a href="#">Perfil</a>
+                <!-- Navega al login; el cierre real de sesión se conectará después -->
+                <a href="${pageContext.request.contextPath}/login.jsp" class="cerrar-sesion">Cerrar sesión</a>
+            </nav>
         </div>
-
     </aside>
-
-    <!-- Contenido principal -->
-
+    <!-- CONTENIDO PRINCIPAL -->
     <main class="contenido-principal pagina-servicios">
-
         <section class="encabezado-pagina">
-
-            <div class="encabezado-panel">
-
-                <h2>Capacity Planner</h2>
-                <h1>Servicios</h1>
-
-            </div>
-
-            <a
-                href="servicios.jsp?ventana=nuevo"
-                class="boton-nuevo"
-            >
-                + Nuevo servicio
-            </a>
-
+            <div class="encabezado-panel"><h2>Capacity Planner</h2><h1>Servicios</h1></div>
+            <a class="boton primario" href="servicios.jsp?ventana=nuevo">+ Nuevo servicio</a>
         </section>
-
-        <!-- Filtro -->
-
-        <section class="barra-herramientas">
-
-            <form
-                method="get"
-                action="servicios.jsp"
-                class="formulario-filtro"
-            >
-
-                <label for="estado">
-                    Estado:
-                </label>
-
-                <select
-                    id="estado"
-                    name="estado"
-                    onchange="this.form.submit()"
-                >
-
-                    <option
-                        value="Todos"
-                        <%= "Todos".equals(
-                                filtroEstado
-                        ) ? "selected" : "" %>
-                    >
-                        Todos
-                    </option>
-
-                    <option
-                        value="Activo"
-                        <%= "Activo".equals(
-                                filtroEstado
-                        ) ? "selected" : "" %>
-                    >
-                        Activo
-                    </option>
-
-                    <option
-                        value="Límite"
-                        <%= "Límite".equals(
-                                filtroEstado
-                        ) ? "selected" : "" %>
-                    >
-                        Límite
-                    </option>
-
-                    <option
-                        value="Cancelado"
-                        <%= "Cancelado".equals(
-                                filtroEstado
-                        ) ? "selected" : "" %>
-                    >
-                        Cancelado
-                    </option>
-
-                </select>
-
-            </form>
-
-            <span class="cantidad-registros">
-
-                <%= cantidadVisible %>
-
-                <%= cantidadVisible == 1
-                        ? "servicio"
-                        : "servicios" %>
-
-            </span>
-
-        </section>
-
-        <!-- Tabla -->
-
-        <section class="contenedor-tabla">
-
-            <table class="tabla-servicios">
-
-                <thead>
-
-                <tr>
-                    <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Origen</th>
-                    <th>Destino</th>
-                    <th>Capacidad</th>
-                    <th>Ruta</th>
-                    <th>Estado</th>
-                </tr>
-
-                </thead>
-
-                <tbody>
-
-                <%
-                    for (Map<String, String> servicio
-                            : servicios) {
-
-                        boolean visible =
-                                "Todos".equals(
-                                        filtroEstado
-                                )
-                                || filtroEstado.equals(
-                                        servicio.get(
-                                                "estado"
-                                        )
-                                );
-
-                        if (!visible) {
-                            continue;
-                        }
-
-                        boolean seleccionado =
-                                servicio.get("id")
-                                        .equals(
-                                                idSeleccionado
-                                        );
-
-                        String claseEstado =
-                                servicio.get("estado")
-                                        .toLowerCase()
-                                        .replace("í", "i")
-                                        .replace(" ", "-");
-                %>
-
-                <tr
-                    class="fila-servicio
-                    <%= seleccionado
-                            ? "seleccionada"
-                            : "" %>"
-
-                    onclick="window.location.href=
-                    'servicios.jsp?estado=<%= filtroEstado %>&servicio=<%= servicio.get("id") %>'"
-                >
-
-                    <td>
-                        <strong>
-                            <%= servicio.get("id") %>
-                        </strong>
-                    </td>
-
-                    <td>
-                        <%= servicio.get("cliente") %>
-                    </td>
-
-                    <td>
-                        <%= servicio.get("origen") %>
-                    </td>
-
-                    <td>
-                        <%= servicio.get("destino") %>
-                    </td>
-
-                    <td>
-                        <%= servicio.get("capacidad") %>
-                        Gbps
-                    </td>
-
-                    <td>
-                        <%= servicio.get("ruta") %>
-                    </td>
-
-                    <td>
-
-                        <div
-                            class="estado-servicio
-                            <%= claseEstado %>"
-                        >
-
-                            <span class="punto-estado"></span>
-
-                            <span>
-                                <%= servicio.get("estado") %>
-                            </span>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-                <% } %>
-
-                <% if (cantidadVisible == 0) { %>
-
-                <tr>
-                    <td
-                        colspan="7"
-                        class="sin-resultados"
-                    >
-                        No existen servicios con ese estado.
-                    </td>
-                </tr>
-
-                <% } %>
-
-                </tbody>
-
-            </table>
-
-        </section>
-
-        <!-- Detalle -->
-
-        <% if (servicioSeleccionado != null) {
-
-            String claseDetalle =
-                    servicioSeleccionado.get("estado")
-                            .toLowerCase()
-                            .replace("í", "i")
-                            .replace(" ", "-");
-        %>
-
-        <section class="panel-detalle">
-
-            <div class="encabezado-detalle">
-
-                <div>
-
-                    <p>Detalle del servicio</p>
-
-                    <h2>
-                        <%= servicioSeleccionado.get("id") %>
-                    </h2>
-
-                </div>
-
-                <a
-                    href="servicios.jsp"
-                    class="cerrar-detalle"
-                >
-                    &times;
-                </a>
-
-            </div>
-
-            <div class="contenido-detalle">
-
-                <div class="dato-detalle">
-
-                    <span>Cliente</span>
-
-                    <strong>
-                        <%= servicioSeleccionado
-                                .get("cliente") %>
-                    </strong>
-
-                </div>
-
-                <div class="dato-detalle">
-
-                    <span>Fecha de registro</span>
-
-                    <strong>
-                        <%= servicioSeleccionado
-                                .get("fecha") %>
-                    </strong>
-
-                </div>
-
-                <div class="dato-detalle">
-
-                    <span>Ruta asignada</span>
-
-                    <strong>
-                        <%= servicioSeleccionado
-                                .get("ruta") %>
-                    </strong>
-
-                </div>
-
-                <div class="dato-detalle">
-
-                    <span>Capacidad contratada</span>
-
-                    <strong>
-                        <%= servicioSeleccionado
-                                .get("capacidad") %>
-                        Gbps
-                    </strong>
-
-                </div>
-
-                <div class="dato-detalle">
-
-                    <span>Origen</span>
-
-                    <strong>
-                        <%= servicioSeleccionado
-                                .get("origen") %>
-                    </strong>
-
-                </div>
-
-                <div class="dato-detalle">
-
-                    <span>Destino</span>
-
-                    <strong>
-                        <%= servicioSeleccionado
-                                .get("destino") %>
-                    </strong>
-
-                </div>
-
-                <div class="dato-detalle">
-
-                    <span>Estado</span>
-
-                    <strong
-                        class="texto-estado
-                        <%= claseDetalle %>"
-                    >
-                        <%= servicioSeleccionado
-                                .get("estado") %>
-                    </strong>
-
-                </div>
-
-            </div>
-
-            <!-- Riesgos -->
-
-            <div class="apartado-riesgos">
-
-                <span>Riesgos</span>
-
-                <p>
-                    <%
-                        String riesgoSeleccionado =
-                                servicioSeleccionado
-                                        .get("riesgo");
-
-                        if (riesgoSeleccionado == null
-                                || riesgoSeleccionado
-                                .trim().isEmpty()) {
-                    %>
-
-                    No se registraron riesgos para este servicio.
-
-                    <% } else { %>
-
-                    <%= riesgoSeleccionado %>
-
-                    <% } %>
-                </p>
-
-            </div>
-
-            <!-- Acciones -->
-
-            <div class="acciones-detalle">
-
-                <a
-                    href="servicios.jsp?servicio=<%= servicioSeleccionado.get("id") %>"
-                    class="boton secundario"
-                >
-                    Editar servicio
-                </a>
-
-                <% if (!"Activo".equals(
-                        servicioSeleccionado
-                                .get("estado"))) { %>
-
-                <form
-                    method="post"
-                    action="servicios.jsp"
-                >
-
-                    <input
-                        type="hidden"
-                        name="accion"
-                        value="cambiarEstado"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="idServicio"
-                        value="<%= servicioSeleccionado.get("id") %>"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="nuevoEstado"
-                        value="Activo"
-                    >
-
-                    <button
-                        type="submit"
-                        class="boton primario"
-                    >
-                        Intentar activar
-                    </button>
-
-                </form>
-
-                <% } %>
-
-                <% if (!"Cancelado".equals(
-                        servicioSeleccionado
-                                .get("estado"))) { %>
-
-                <form
-                    method="post"
-                    action="servicios.jsp"
-                    onsubmit="return confirm(
-                    '¿Seguro que desea cancelar este servicio?'
-                    )"
-                >
-
-                    <input
-                        type="hidden"
-                        name="accion"
-                        value="cambiarEstado"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="idServicio"
-                        value="<%= servicioSeleccionado.get("id") %>"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="nuevoEstado"
-                        value="Cancelado"
-                    >
-
-                    <button
-                        type="submit"
-                        class="boton cancelar"
-                    >
-                        Cancelar servicio
-                    </button>
-
-                </form>
-
-                <% } %>
-
-                <form
-                    method="post"
-                    action="servicios.jsp"
-                    onsubmit="return confirm(
-                    '¿Seguro que desea eliminar este servicio?'
-                    )"
-                >
-
-                    <input
-                        type="hidden"
-                        name="accion"
-                        value="eliminar"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="idServicio"
-                        value="<%= servicioSeleccionado.get("id") %>"
-                    >
-
-                    <button
-                        type="submit"
-                        class="boton peligro"
-                    >
-                        Eliminar servicio
-                    </button>
-
-                </form>
-
-            </div>
-
-        </section>
-
+        <% if ("1".equals(request.getParameter("guardado"))) { %>
+        <p role="status" style="margin-bottom: 16px; color: #237b51;">Servicio guardado. Ya aparece en la tabla como Pendiente.</p>
         <% } %>
-
+        <!-- FILTRO: recarga únicamente esta página. -->
+        <section class="barra-herramientas">
+            <form method="get" action="servicios.jsp" class="formulario-filtro">
+                <label for="estado">Estado:</label>
+                <select id="estado" name="estado">
+                    <option value="Todos">Todos</option>
+                    <% for (String estado : estados) { %>
+                    <option value="<%= estado %>" <%= estado.equals(filtro) ? "selected" : "" %>><%= estado %></option>
+                    <% } %>
+                </select>
+                <button class="boton secundario" type="submit">Filtrar</button>
+            </form>
+            <span><%= cantidad %> servicios</span>
+        </section>
+        <!-- TABLA: pulsa el ID para abrir el detalle. -->
+        <section class="contenedor-tabla">
+            <table>
+                <thead><tr><th>ID</th><th>Cliente</th><th>Origen</th><th>Destino</th><th>Capacidad</th><th>Ruta</th><th>Estado</th></tr></thead>
+                <tbody>
+                <% for (String[] servicio : servicios) {
+                    if (filtro.equals("Todos") || filtro.equals(servicio[5])) { %>
+                <tr>
+                    <td><a class="enlace-servicio" href="servicios.jsp?servicio=<%= servicio[0] %>">SER-<%= servicio[0] %></a></td>
+                    <td><%= servicio[6] %></td><td><%= servicio[7] %></td><td><%= servicio[8] %></td>
+                    <td><%= servicio[3] %> Gbps</td><td><%= servicio[2] %></td>
+                    <td><span class="estado <%= servicio[5].toLowerCase() %>"><%= servicio[5] %></span></td>
+                </tr>
+                <% } } %>
+                <% if (cantidad == 0) { %><tr><td colspan="7">No hay servicios con este estado.</td></tr><% } %>
+                </tbody>
+            </table>
+        </section>
+        <!-- DETALLE: solo muestra datos, no modifica Solicitudes. -->
+        <% if (detalle >= 0) { String[] servicio = servicios[detalle]; %>
+        <section class="panel-detalle">
+            <div class="encabezado-detalle"><h2>Detalle de SER-<%= servicio[0] %></h2><a href="servicios.jsp" aria-label="Cerrar detalle">&times;</a></div>
+            <div class="datos-detalle">
+                <div><span>Solicitud asociada</span><strong>SOL-<%= servicio[1] %></strong></div>
+                <div><span>Cliente</span><strong><%= servicio[6] %></strong></div>
+                <div><span>Ruta asignada</span><strong><%= servicio[2] %></strong></div>
+                <div><span>Capacidad asignada</span><strong><%= servicio[3] %> Gbps</strong></div>
+                <div><span>Fecha de activación</span><strong><%= servicio[4] %></strong></div>
+                <div><span>Estado</span><strong><%= servicio[5] %></strong></div>
+                <div><span>Origen</span><strong><%= servicio[7] %></strong></div>
+                <div><span>Destino</span><strong><%= servicio[8] %></strong></div>
+            </div>
+            <!-- Las acciones se habilitarán cuando exista el servlet. -->
+            <div class="acciones">
+                <button class="boton secundario" disabled title="Se conectará con el servlet">Editar</button>
+                <% if (servicio[5].equals("Activo")) { %>
+                <button class="boton secundario" disabled title="Se conectará con el servlet">Suspender</button>
+                <% } else if (!servicio[5].equals("Cancelado")) { %>
+                <button class="boton primario" disabled title="Se conectará con el servlet">Activar</button>
+                <% } %>
+                <button class="boton peligro" disabled title="Se conectará con el servlet">Cancelar servicio</button>
+            </div>
+        </section>
+        <% } %>
     </main>
-
 </div>
-
-<!-- Formulario nuevo o editar -->
-
-<%
-    if (mostrarFormulario) {
-
-        boolean editando =
-                servicioEditar != null;
-
-        String valorId =
-                editando
-                        ? servicioEditar.get("id")
-                        : "";
-
-        String valorCliente =
-                editando
-                        ? servicioEditar.get("cliente")
-                        : "";
-
-        String valorOrigen =
-                editando
-                        ? servicioEditar.get("origen")
-                        : "";
-
-        String valorDestino =
-                editando
-                        ? servicioEditar.get("destino")
-                        : "";
-
-        String valorCapacidad =
-                editando
-                        ? servicioEditar.get("capacidad")
-                        : "";
-
-        String valorRuta =
-                editando
-                        ? servicioEditar.get("ruta")
-                        : "RUT-001";
-
-        String valorEstado =
-                editando
-                        ? servicioEditar.get("estado")
-                        : "Activo";
-
-        String valorFecha =
-                editando
-                        ? servicioEditar.get("fecha")
-                        : "2026-09-17";
-
-        String valorRiesgo =
-                editando
-                        ? servicioEditar.get("riesgo")
-                        : "";
-%>
-
-<div class="modal mostrar">
-
-    <div class="contenido-modal">
-
-        <div class="encabezado-modal">
-
-            <h2>
-                <%= editando
-                        ? "Editar servicio"
-                        : "Nuevo servicio" %>
-            </h2>
-
-            <a
-                href="servicios.jsp"
-                class="cerrar-modal"
-            >
-                &times;
-            </a>
-
-        </div>
-
-        <form
-            method="post"
-            action="servicios.jsp"
-        >
-
-            <input
-                type="hidden"
-                name="accion"
-                value="guardar"
-            >
-
-            <input
-                type="hidden"
-                name="idServicio"
-                value="<%= valorId %>"
-            >
-
-            <div class="cuadricula-formulario">
-
-                <!-- Cliente -->
-
-                <div class="grupo-formulario">
-
-                    <label for="cliente">
-                        Cliente
-                    </label>
-
-                    <select
-                        id="cliente"
-                        name="cliente"
-                        required
-                    >
-
-                        <option value="">
-                            Seleccione un cliente
-                        </option>
-
-                        <%
-                            for (Map<String, String> cliente
-                                    : clientesDisponibles) {
-
-                                String nombreCliente =
-                                        cliente.get("nombre");
-
-                                if (nombreCliente == null) {
-                                    nombreCliente =
-                                            cliente.get("empresa");
-                                }
-
-                                if (nombreCliente == null) {
-                                    continue;
-                                }
-
-                                boolean clienteElegido =
-                                        nombreCliente.equals(
-                                                valorCliente
-                                        );
-                        %>
-
-                        <option
-                            value="<%= nombreCliente %>"
-                            <%= clienteElegido
-                                    ? "selected"
-                                    : "" %>
-                        >
-
-                            <%= cliente.get("id") != null
-                                    ? cliente.get("id") + " - "
-                                    : "" %>
-
-                            <%= nombreCliente %>
-
-                        </option>
-
-                        <% } %>
-
-                    </select>
-
-                </div>
-
-                <!-- Fecha -->
-
-                <div class="grupo-formulario">
-
-                    <label for="fecha">
-                        Fecha de registro
-                    </label>
-
-                    <input
-                        type="date"
-                        id="fecha"
-                        name="fecha"
-                        value="<%= valorFecha %>"
-                        required
-                    >
-
-                </div>
-
-                <!-- Origen -->
-
-                <div class="grupo-formulario">
-
-                    <label for="origen">
-                        Origen
-                    </label>
-
-                    <input
-                        type="text"
-                        id="origen"
-                        name="origen"
-                        value="<%= valorOrigen %>"
-                        required
-                    >
-
-                </div>
-
-                <!-- Destino -->
-
-                <div class="grupo-formulario">
-
-                    <label for="destino">
-                        Destino
-                    </label>
-
-                    <input
-                        type="text"
-                        id="destino"
-                        name="destino"
-                        value="<%= valorDestino %>"
-                        required
-                    >
-
-                </div>
-
-                <!-- Capacidad -->
-
-                <div class="grupo-formulario">
-
-                    <label for="capacidad">
-                        Capacidad solicitada (Gbps)
-                    </label>
-
-                    <input
-                        type="number"
-                        id="capacidad"
-                        name="capacidad"
-                        min="1"
-                        step="0.01"
-                        value="<%= valorCapacidad %>"
-                        required
-                    >
-
-                </div>
-
-                <!-- Ruta -->
-
-                <div class="grupo-formulario">
-
-                    <label for="ruta">
-                        Ruta
-                    </label>
-
-                    <select
-                        id="ruta"
-                        name="ruta"
-                        required
-                    >
-
-                        <option
-                            value="RUT-001"
-                            <%= "RUT-001".equals(
-                                    valorRuta
-                            ) ? "selected" : "" %>
-                        >
-                            RUT-001 - Lima / Valparaíso
-                        </option>
-
-                        <option
-                            value="RUT-002"
-                            <%= "RUT-002".equals(
-                                    valorRuta
-                            ) ? "selected" : "" %>
-                        >
-                            RUT-002 - Callao / Barcelona
-                        </option>
-
-                        <option
-                            value="RUT-003"
-                            <%= "RUT-003".equals(
-                                    valorRuta
-                            ) ? "selected" : "" %>
-                        >
-                            RUT-003 - Lima / Miami
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <!-- Estado -->
-
-                <div class="grupo-formulario">
-
-                    <label for="estadoServicio">
-                        Estado
-                    </label>
-
-                    <select
-                        id="estadoServicio"
-                        name="estado"
-                        required
-                    >
-
-                        <option
-                            value="Activo"
-                            <%= "Activo".equals(
-                                    valorEstado
-                            ) ? "selected" : "" %>
-                        >
-                            Activo
-                        </option>
-
-                        <option
-                            value="Límite"
-                            <%= "Límite".equals(
-                                    valorEstado
-                            ) ? "selected" : "" %>
-                        >
-                            Límite
-                        </option>
-
-                        <option
-                            value="Cancelado"
-                            <%= "Cancelado".equals(
-                                    valorEstado
-                            ) ? "selected" : "" %>
-                        >
-                            Cancelado
-                        </option>
-
-                    </select>
-
-                </div>
-
+<!-- FORMULARIO DE EJEMPLO: los campos corresponden a Servicios en el SQL. -->
+<% if (nuevo) { %>
+<div class="modal">
+    <section class="contenido-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal">
+        <div class="encabezado-detalle"><h2 id="titulo-modal">Nuevo servicio</h2><a href="servicios.jsp" aria-label="Cerrar formulario">&times;</a></div>
+        <form method="post" action="servicios.jsp">
+            <input type="hidden" name="accion" value="guardar">
+            <% if (!error.isEmpty()) { %><p class="mensaje-error" role="alert"><%= error %></p><% } %>
+            <div class="grupo-formulario">
+                <label for="solicitud">Solicitud aprobada</label>
+                <!-- Opciones ficticias; no se consultan datos de solicitudes.jsp. -->
+                <select id="solicitud" name="id_solicitud" required>
+                    <option value="">Seleccione una solicitud</option>
+                    <option value="1">SOL-1 · Pacifico · Los Ángeles → Lurín</option>
+                    <option value="2">SOL-2 · Claro · Lurín → Valparaíso</option>
+                    <option value="3">SOL-3 · Movistar · Guayaquil → Lurín</option>
+                </select>
             </div>
-
-            <!-- Riesgos -->
-
-            <div class="grupo-formulario ancho-completo">
-
-                <label for="riesgo">
-                    Riesgos del servicio
-                </label>
-
-                <textarea
-                    id="riesgo"
-                    name="riesgo"
-                    rows="4"
-                    maxlength="300"
-                    placeholder="Describa los posibles riesgos que puede presentar el servicio..."
-                ><%= valorRiesgo != null
-                        ? valorRiesgo
-                        : "" %></textarea>
-
+            <div class="grupo-formulario">
+                <label for="ruta">Ruta</label>
+                <!-- Nombres e IDs de rutas existentes en el SQL. -->
+                <select id="ruta" name="id_ruta" required>
+                    <option value="">Seleccione una ruta</option>
+                    <option value="4">LAX-LUR-R01</option>
+                    <option value="13">LUR-VAL-R01</option>
+                    <option value="12">GYE-LUR-R01</option>
+                </select>
             </div>
-
-            <div class="botones-modal">
-
-                <a
-                    href="servicios.jsp"
-                    class="boton-cancelar"
-                >
-                    Cancelar
-                </a>
-
-                <button
-                    type="submit"
-                    class="boton-guardar"
-                >
-                    Guardar servicio
-                </button>
-
+            <div class="grupo-formulario">
+                <label for="capacidad">Capacidad asignada (Gbps)</label>
+                <input id="capacidad" name="capacidad_asignada" type="number" min="1" step="1" required>
             </div>
-
+            <!-- El SQL usa Pendiente por defecto; la fecha se genera al activar. -->
+            <p class="ayuda">Estado inicial: Pendiente. Fecha de activación: sin activar.</p>
+            <div class="acciones">
+                <a class="boton secundario" href="servicios.jsp">Volver</a>
+                <button class="boton primario" type="submit">Guardar servicio</button>
+            </div>
         </form>
-
-    </div>
-
+    </section>
 </div>
-
 <% } %>
-
 </body>
 </html>
+

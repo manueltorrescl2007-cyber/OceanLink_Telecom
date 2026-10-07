@@ -14,10 +14,6 @@
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/capacity_planner/capacity_planner.css?v=2">
 
-    <!-- Estilos adicionales del Capacity Planner -->
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/capacity_planner/comun.css">
-
     <!-- Estilos comunes de las barras. Se cargan al final. -->
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
