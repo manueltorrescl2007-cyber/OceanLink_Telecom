@@ -164,7 +164,7 @@
     <title>OceanLink | Dashboard</title>
 
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/supervisor/supervisor.css?v=2">
+          href="${pageContext.request.contextPath}/css/supervisor/usuarios.css?v=2">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
 </head>

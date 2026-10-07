@@ -40,7 +40,7 @@
                title="Ocultar o mostrar menú">☰</label>
 
         <!-- contextPath agrega la ruta base de la aplicación -->
-        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp"
+        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner.jsp"
            class="logo">
             OceanLink
         </a>
@@ -75,16 +75,16 @@
                  aria-label="Menú principal">
 
                 <!-- activo resalta la página que estamos viendo -->
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp"
+                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner.jsp"
                    class="activo">
                     Dashboard
                 </a>
 
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/clientes.jsp">
+                <a href="${pageContext.request.contextPath}/capacity_planner/clientes.jsp">
                     Clientes
                 </a>
 
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp">
+                <a href="${pageContext.request.contextPath}/capacity_planner/solicitudes.jsp">
                     Solicitudes
                 </a>
 
@@ -108,17 +108,17 @@
                     <!-- Opciones que aparecen al desplegar -->
                     <div class="contenido-submenu">
 
-                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/rutas.jsp"
+                        <a href="${pageContext.request.contextPath}/capacity_planner/rutas.jsp"
                            class="subopcion">
                             Rutas
                         </a>
 
-                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/segmentos.jsp"
+                        <a href="${pageContext.request.contextPath}/capacity_planner/segmentos.jsp"
                            class="subopcion">
                             Segmentos
                         </a>
 
-                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/landing_stations.jsp"
+                        <a href="${pageContext.request.contextPath}/capacity_planner/landing_stations.jsp"
                            class="subopcion">
                             Landing stations
                         </a>
@@ -127,7 +127,7 @@
 
                 </div>
 
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/servicios.jsp">
+                <a href="${pageContext.request.contextPath}/capacity_planner/servicios.jsp">
                     Servicios
                 </a>
 
@@ -237,7 +237,7 @@
                 </div>
 
                 <div class="fila enlace-segmentos">
-                    <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/segmentos.jsp">
+                    <a href="${pageContext.request.contextPath}/capacity_planner/segmentos.jsp">
                         Ver segmentos →
                     </a>
                 </div>
@@ -270,7 +270,7 @@
                         <div class="informacion-accion">
 
                             <!-- Por ahora abre la lista de solicitudes -->
-                            <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp">
+                            <a href="${pageContext.request.contextPath}/capacity_planner/solicitudes.jsp">
                                 <strong>SOL-014</strong>
                             </a>
 
@@ -282,7 +282,7 @@
                     <li>
                         <div class="informacion-accion">
 
-                            <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp">
+                            <a href="${pageContext.request.contextPath}/capacity_planner/solicitudes.jsp">
                                 <strong>SOL-018</strong>
                             </a>
 
@@ -294,7 +294,7 @@
                     <li>
                         <div class="informacion-accion">
 
-                            <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp">
+                            <a href="${pageContext.request.contextPath}/capacity_planner/solicitudes.jsp">
                                 <strong>SOL-021</strong>
                             </a>
 
@@ -306,7 +306,7 @@
                     <li>
                         <div class="informacion-accion">
 
-                            <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp">
+                            <a href="${pageContext.request.contextPath}/capacity_planner/solicitudes.jsp">
                                 <strong>SOL-022</strong>
                             </a>
 
@@ -318,7 +318,7 @@
 
                 <!-- Reemplaza el botón "+ Nuevo".
                      Conserva su clase para usar el mismo diseño. -->
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp"
+                <a href="${pageContext.request.contextPath}/capacity_planner/solicitudes.jsp"
                    class="boton-nuevo">
                     Ver solicitudes
                 </a>

@@ -18,7 +18,7 @@ response.sendRedirect(request.getContextPath() + "/Maintenance_coordinator/nuevo
 return;
 
 } else if (user.equals("capacity_planner") && pass.equals("capacity_planner")) {
-  response.sendRedirect(request.getContextPath() + "/capacity_planner/capacity_planner_jsp/capacity_planner.jsp");
+  response.sendRedirect(request.getContextPath() + "/capacity_planner/capacity_planner.jsp");
   return;
 
 } else if (user.equals("supervisor") && pass.equals("supervisor")) {

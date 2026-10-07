@@ -139,7 +139,7 @@
 <header class="barra-superior">
     <div class="zona-logo">
         <label for="controlMenu" class="boton-menu" title="Ocultar o mostrar menú">☰</label>
-        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp" class="logo">OceanLink</a>
+        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner.jsp" class="logo">OceanLink</a>
     </div>
     <div class="usuario">
         <div class="foto-usuario">
@@ -159,9 +159,9 @@
         <div class="contenido-menu">
             <h2>Menú</h2>
             <nav class="navegacion-lateral" aria-label="Menú principal">
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/capacity_planner.jsp">Dashboard</a>
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/clientes.jsp" class="activo">Clientes</a>
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/solicitudes.jsp">Solicitudes</a>
+                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner.jsp">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/capacity_planner/clientes.jsp" class="activo">Clientes</a>
+                <a href="${pageContext.request.contextPath}/capacity_planner/solicitudes.jsp">Solicitudes</a>
                 <!-- Checkbox y label abren Infraestructura sin JavaScript -->
                 <div class="grupo-menu">
                     <input type="checkbox" id="control-infraestructura" class="control-submenu">
@@ -170,12 +170,12 @@
                         <span class="flecha-submenu"></span>
                     </label>
                     <div class="contenido-submenu">
-                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/rutas.jsp" class="subopcion">Rutas</a>
-                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/segmentos.jsp" class="subopcion">Segmentos</a>
-                        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/landing_stations.jsp" class="subopcion">Landing stations</a>
+                        <a href="${pageContext.request.contextPath}/capacity_planner/rutas.jsp" class="subopcion">Rutas</a>
+                        <a href="${pageContext.request.contextPath}/capacity_planner/segmentos.jsp" class="subopcion">Segmentos</a>
+                        <a href="${pageContext.request.contextPath}/capacity_planner/landing_stations.jsp" class="subopcion">Landing stations</a>
                     </div>
                 </div>
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner_jsp/servicios.jsp">Servicios</a>
+                <a href="${pageContext.request.contextPath}/capacity_planner/servicios.jsp">Servicios</a>
             </nav>
         </div>
         <!-- OPCIONES DEL USUARIO: barras.css las coloca abajo -->
