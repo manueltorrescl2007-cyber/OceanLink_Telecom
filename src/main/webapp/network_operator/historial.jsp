@@ -2,92 +2,98 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>OceanLink - Historial de Incidencias</title>
-  <link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OceanLink - Historial de Incidencias</title>
+    <%-- 1. Estilos comunes (barra superior y menú lateral) --%>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
+    <%-- 2. Estilos del contenido del Network Operator --%>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css">
 </head>
 <body>
-<% request.setAttribute("activePage", "historial"); %>
+
+<%-- Pieza 1: barra superior --%>
+<jsp:include page="header.jsp" />
+
 <div class="contenedor">
 
-  <jsp:include page="slidebar_netoperator.jsp" />
+    <%-- Pieza 2: menú lateral (resalta la opción actual) --%>
+    <jsp:include page="sidebar.jsp">
+        <jsp:param name="activePage" value="historial" />
+    </jsp:include>
 
-  <!-- ===== CONTENIDO PRINCIPAL ===== -->
-  <main class="contenido">
+    <%-- Pieza 3: contenido de la página --%>
+    <main class="contenido-principal">
 
-    <header class="topbar">
-      <h2>Historial de incidencias</h2>
-      <div class="usuario">
-        <div class="avatar"></div>
-        <div>
-          <strong>Username</strong><br>
-          <small>Network Operator</small>
-        </div>
-      </div>
-    </header>
+        <section class="encabezado-panel">
+            <h2>Incidencias</h2>
+            <h1>Historial de incidencias</h1>
+        </section>
 
-    <section>
-      <h3>Filtrar</h3>
+        <section class="card">
+            <h2 class="card-title">Filtrar</h2>
 
-      <div class="filtros">
-        <input type="date">
-        <input type="date">
-        <select>
-          <option>Severidad</option>
-          <option>Alta</option>
-          <option>Crítica</option>
-          <option>Media</option>
-        </select>
-        <select>
-          <option>Segmento</option>
-          <option>LIM-VLP-01</option>
-          <option>LIM-VLP-02</option>
-          <option>LIM-GYE-01</option>
-          <option>LIM-GYE-04</option>
-        </select>
-      </div>
+            <div class="filtros">
+                <input type="date">
+                <input type="date">
+                <select>
+                    <option>Severidad</option>
+                    <option>Alta</option>
+                    <option>Crítica</option>
+                    <option>Media</option>
+                </select>
+                <select>
+                    <option>Segmento</option>
+                    <option>LIM-VLP-01</option>
+                    <option>LIM-VLP-02</option>
+                    <option>LIM-GYE-01</option>
+                    <option>LIM-GYE-04</option>
+                </select>
+            </div>
 
-      <table>
-        <thead>
-        <tr>
-          <th>ID</th>
-          <th>Segmento</th>
-          <th>Severidad</th>
-          <th>Cerrada el</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td><a href="incidencias-detalle.html">INC-009</a></td>
-          <td>LIM-VLP-01</td>
-          <td class="severidad-media">Media</td>
-          <td>18 ago 2026</td>
-        </tr>
-        <tr>
-          <td><a href="incidencias-detalle.html">INC-013</a></td>
-          <td>LIM-VLP-02</td>
-          <td class="severidad-critica">Crítica</td>
-          <td>13 jul 2026</td>
-        </tr>
-        <tr>
-          <td><a href="incidencias-detalle.html">INC-011</a></td>
-          <td>LIM-GYE-01</td>
-          <td class="severidad-media">Media</td>
-          <td>25 ago 2025</td>
-        </tr>
-        <tr>
-          <td><a href="incidencias-detalle.html">INC-010</a></td>
-          <td>LIM-GYE-04</td>
-          <td class="severidad-alta">Alto</td>
-          <td>5 jul 2025</td>
-        </tr>
-        </tbody>
-      </table>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Segmento</th>
+                            <th>Severidad</th>
+                            <th>Cerrada el</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a href="incidencias-detalle.jsp">INC-009</a></td>
+                            <td>LIM-VLP-01</td>
+                            <td class="severidad-media">Media</td>
+                            <td>18 ago 2026</td>
+                        </tr>
+                        <tr>
+                            <td><a href="incidencias-detalle.jsp">INC-013</a></td>
+                            <td>LIM-VLP-02</td>
+                            <td class="severidad-critica">Crítica</td>
+                            <td>13 jul 2026</td>
+                        </tr>
+                        <tr>
+                            <td><a href="incidencias-detalle.jsp">INC-011</a></td>
+                            <td>LIM-GYE-01</td>
+                            <td class="severidad-media">Media</td>
+                            <td>25 ago 2025</td>
+                        </tr>
+                        <tr>
+                            <td><a href="incidencias-detalle.jsp">INC-010</a></td>
+                            <td>LIM-GYE-04</td>
+                            <td class="severidad-alta">Alta</td>
+                            <td>5 jul 2025</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-      <p class="ayuda">Click en una fila para ver el detalle de la incidencia.</p>
-    </section>
+            <p class="ayuda">Haz clic en el ID para ver el detalle de la incidencia.</p>
+        </section>
 
-  </main>
+    </main>
 
 </div>
 
