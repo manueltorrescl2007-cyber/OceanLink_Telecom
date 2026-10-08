@@ -26,7 +26,7 @@ return;
   return;
 
 } else if (user.equals("admin") && pass.equals("admin")) {
-  response.sendRedirect(request.getContextPath() + "/supervisor/usuarios.jsp");
+  response.sendRedirect(request.getContextPath() + "/UsuarioServlet");
   return;
 
 } else {
