@@ -305,8 +305,9 @@
       <!-- Mapa interactivo (con fe) -->
       <section class="mapa-interactivo">
           <div>
-              <img src="${pageContext.request.contextPath}/img/mapa.png"
-                   alt="Mapa interactivo">
+              <img src="${pageContext.request.contextPath}/img/mapa_red.svg"
+                   alt="Mapa de la red OceanLink: landing stations y segmentos en la costa del Pacífico"
+                   style="display:block; max-width:100%; max-height:620px; height:auto; margin:0 auto;">
           </div>
       </section>
 

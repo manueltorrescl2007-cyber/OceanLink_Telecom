@@ -18,17 +18,47 @@ public class UsuarioDao extends BaseDao {
           + "FROM usuarios u "
           + "INNER JOIN roles_usuario r ON u.id_rol = r.id_rol ";
 
-    /* ========== READ: lista de todos los usuarios ========== */
+    /* ========== READ: lista de todos los usuarios (sin filtros) ========== */
     public ArrayList<Usuario> listarUsuarios() {
+        return listarUsuarios(-1, null);
+    }
+
+    /* ========== READ: lista filtrada por rol y/o estado ==========
+     * idRol  : -1 = todos los roles
+     * estado : null o "" = todos los estados ("activo" / "inactivo")
+     */
+    public ArrayList<Usuario> listarUsuarios(int idRol, String estado) {
         ArrayList<Usuario> lista = new ArrayList<>();
-        String sql = SELECT_USUARIO + "ORDER BY u.id_usuario";
+
+        boolean filtrarRol = idRol > 0;
+        boolean filtrarEstado = estado != null && !estado.isEmpty();
+
+        // "WHERE 1 = 1" siempre es verdadero: permite ir agregando "AND ..." sin preocuparse
+        StringBuilder sql = new StringBuilder(SELECT_USUARIO + "WHERE 1 = 1 ");
+        if (filtrarRol) {
+            sql.append("AND u.id_rol = ? ");
+        }
+        if (filtrarEstado) {
+            sql.append("AND u.estado = ? ");
+        }
+        sql.append("ORDER BY u.id_usuario");
 
         try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
 
-            while (rs.next()) {
-                lista.add(fetchUsuario(rs));
+            // Los ? se llenan en el mismo orden en que se agregaron
+            int indice = 1;
+            if (filtrarRol) {
+                pstmt.setInt(indice++, idRol);
+            }
+            if (filtrarEstado) {
+                pstmt.setString(indice++, estado);
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(fetchUsuario(rs));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

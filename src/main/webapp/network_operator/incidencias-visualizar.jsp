@@ -59,25 +59,25 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><a href="incidencias-detalle.jsp">INC-014</a></td>
+                            <td><a href="incidencias-detalle.jsp?id=INC-014">INC-014</a></td>
                             <td>LIM-VLP-02</td>
                             <td class="severidad-alta">Alta</td>
                             <td>En análisis</td>
                         </tr>
                         <tr>
-                            <td><a href="incidencias-detalle.jsp">INC-013</a></td>
+                            <td><a href="incidencias-detalle.jsp?id=INC-013">INC-013</a></td>
                             <td>LIM-VLP-02</td>
                             <td class="severidad-critica">Crítica</td>
                             <td>En reparación</td>
                         </tr>
                         <tr>
-                            <td><a href="incidencias-detalle.jsp">INC-011</a></td>
+                            <td><a href="incidencias-detalle.jsp?id=INC-011">INC-011</a></td>
                             <td>LIM-GYE-01</td>
                             <td class="severidad-media">Media</td>
                             <td>Reparación programada</td>
                         </tr>
                         <tr>
-                            <td><a href="incidencias-detalle.jsp">INC-010</a></td>
+                            <td><a href="incidencias-detalle.jsp?id=INC-010">INC-010</a></td>
                             <td>LIM-GYE-04</td>
                             <td class="severidad-alta">Alta</td>
                             <td>Restaurado</td>

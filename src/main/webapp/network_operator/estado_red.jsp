@@ -35,14 +35,11 @@
                 <p class="stat-trend stat-trend-positive">↗ +4.2% los últimos 7 días</p>
             </div>
 
-            <%-- La imagen assets/network-usage-chart.png no existe.
-                 Cuando la tengas, guárdala en /img y descomenta esto:
             <figure class="chart-figure">
                 <img class="chart-image"
-                     src="${pageContext.request.contextPath}/img/network-usage-chart.png"
-                     alt="Gráfico de utilización de la red">
+                     src="${pageContext.request.contextPath}/img/grafico_utilizacion.svg"
+                     alt="Gráfico de utilización de la red en los últimos 7 días: sube de 45.8% a 50%">
             </figure>
-            --%>
         </section>
 
         <section class="card segments-section">

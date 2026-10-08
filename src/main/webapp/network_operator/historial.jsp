@@ -63,25 +63,25 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><a href="incidencias-detalle.jsp">INC-009</a></td>
+                            <td><a href="incidencias-detalle.jsp?id=INC-009">INC-009</a></td>
                             <td>LIM-VLP-01</td>
                             <td class="severidad-media">Media</td>
                             <td>18 ago 2026</td>
                         </tr>
                         <tr>
-                            <td><a href="incidencias-detalle.jsp">INC-013</a></td>
+                            <td><a href="incidencias-detalle.jsp?id=INC-008">INC-008</a></td>
                             <td>LIM-VLP-02</td>
                             <td class="severidad-critica">Crítica</td>
                             <td>13 jul 2026</td>
                         </tr>
                         <tr>
-                            <td><a href="incidencias-detalle.jsp">INC-011</a></td>
+                            <td><a href="incidencias-detalle.jsp?id=INC-007">INC-007</a></td>
                             <td>LIM-GYE-01</td>
                             <td class="severidad-media">Media</td>
                             <td>25 ago 2025</td>
                         </tr>
                         <tr>
-                            <td><a href="incidencias-detalle.jsp">INC-010</a></td>
+                            <td><a href="incidencias-detalle.jsp?id=INC-006">INC-006</a></td>
                             <td>LIM-GYE-04</td>
                             <td class="severidad-alta">Alta</td>
                             <td>5 jul 2025</td>

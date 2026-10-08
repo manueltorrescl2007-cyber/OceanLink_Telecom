@@ -31,7 +31,17 @@ public class UsuarioServlet extends HttpServlet {
         switch (action) {
 
             case "lista":
-                request.setAttribute("listaUsuarios", usuarioDao.listarUsuarios());
+                // Filtros opcionales que llegan por la URL: ?idRol=3&estado=activo
+                int filtroIdRol = parseId(request.getParameter("idRol"));      // -1 = todos
+                String filtroEstado = request.getParameter("estado");
+                if (!"activo".equals(filtroEstado) && !"inactivo".equals(filtroEstado)) {
+                    filtroEstado = null;                                       // null = todos
+                }
+
+                request.setAttribute("listaUsuarios", usuarioDao.listarUsuarios(filtroIdRol, filtroEstado));
+                request.setAttribute("listaRoles", rolDao.listarRoles());     // para el <select> de rol
+                request.setAttribute("filtroIdRol", filtroIdRol);             // para recordar lo elegido
+                request.setAttribute("filtroEstado", filtroEstado == null ? "" : filtroEstado);
                 view = request.getRequestDispatcher("/admin/usuarios.jsp");
                 view.forward(request, response);
                 break;
