@@ -10,7 +10,7 @@
     <title>OceanLink | Dashboard</title>
 
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/supervisor/supervisor.css?v=2">
+          href="${pageContext.request.contextPath}/css/supervisor/landing_stations.css?v=2">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
 </head>
@@ -34,7 +34,7 @@
             class="boton-menu"
             title="Ocultar o mostrar menú">☰</label>
 
-    <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/supervisor.jsp"
+    <a href="${pageContext.request.contextPath}/supervisor/supervisor.jsp"
        class="logo">
         OceanLink
     </a>
@@ -62,8 +62,7 @@
            aria-label="Menú principal">
 
         <!-- Dashboard -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/supervisor.jsp"
-           class="activo">
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor.jsp">
             Dashboard general
         </a>
 
@@ -83,12 +82,12 @@
           </label>
           <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/visualizar.jsp"
+            <a href="${pageContext.request.contextPath}/supervisor/visualizar.jsp"
                class="subopcion">
                 Visualizar
             </a>
 
-            <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historial_incidencias.jsp"
+            <a href="${pageContext.request.contextPath}/supervisor/historial_incidencias.jsp"
                class="subopcion">
                 Historial de incidencias
             </a>
@@ -114,20 +113,20 @@
 
           <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/capacidad.jsp"
+            <a href="${pageContext.request.contextPath}/supervisor/capacidad.jsp"
                class="subopcion">
                 Capacidad
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/rutas.jsp"
+            <a href="${pageContext.request.contextPath}/supervisor/rutas.jsp"
                class="subopcion">
                 Rutas
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/segmentos.jsp"
+            <a href="${pageContext.request.contextPath}/supervisor/segmentos.jsp"
                class="subopcion">
                 Segmentos
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/landing_stations.jsp"
-               class="subopcion">
+            <a href="${pageContext.request.contextPath}/supervisor/landing_stations.jsp"
+               class="subopcion activo">
                 Landing stations
             </a>
           </div>
@@ -150,17 +149,17 @@
           </label>
           <div class="contenido-submenu">
 
-            <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/clientes.jsp"
+            <a href="${pageContext.request.contextPath}/supervisor/clientes.jsp"
                class="subopcion">
                 Clientes
             </a>
 
-            <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/servicios.jsp"
+            <a href="${pageContext.request.contextPath}/supervisor/servicios.jsp"
                class="subopcion">
                 Servicios
             </a>
             <a
-                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/solicitudes.jsp"
+                    href="${pageContext.request.contextPath}/supervisor/solicitudes.jsp"
                     class="subopcion">
                 Solicitudes
             </a>
@@ -191,24 +190,24 @@
           <div class="contenido-submenu">
 
             <a
-                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/programacion.jsp"
+                    href="${pageContext.request.contextPath}/supervisor/programacion.jsp"
                     class="subopcion">
                 Programación
             </a>
 
             <a
-                    href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historial_programados.jsp"
+                    href="${pageContext.request.contextPath}/supervisor/historial_programados.jsp"
                     class="subopcion">
                 Historial de programados
             </a>
           </div>
         </div>
         <!-- Reportes -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/reportes.jsp">
+        <a href="${pageContext.request.contextPath}/supervisor/reportes.jsp">
             Reportes
         </a>
         <!-- Históricos -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor_jsp/historicos.jsp">
+        <a href="${pageContext.request.contextPath}/supervisor/historicos.jsp">
             Históricos
         </a>
       </nav>
