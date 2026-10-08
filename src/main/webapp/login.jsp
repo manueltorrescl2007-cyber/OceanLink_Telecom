@@ -22,11 +22,11 @@ return;
   return;
 
 } else if (user.equals("supervisor") && pass.equals("supervisor")) {
-  response.sendRedirect(request.getContextPath() + "/supervisor/supervisor_jsp/supervisor.jsp");
+  response.sendRedirect(request.getContextPath() + "/supervisor/supervisor.jsp");
   return;
 
 } else if (user.equals("admin") && pass.equals("admin")) {
-  response.sendRedirect(request.getContextPath() + "/supervisor/supervisor_jsp/usuarios.jsp");
+  response.sendRedirect(request.getContextPath() + "/supervisor/usuarios.jsp");
   return;
 
 } else {
