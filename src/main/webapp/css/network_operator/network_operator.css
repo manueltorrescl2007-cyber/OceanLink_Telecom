@@ -1,0 +1,399 @@
+.card {
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+
+.card-title {
+  margin-bottom: 20px;
+  color: var(--color-texto);
+  font-size: 17px;
+  font-weight: bold;
+}
+
+/* Texto de ayuda debajo de tablas */
+.ayuda {
+  margin-top: 12px;
+  color: var(--color-texto-claro);
+  font-size: 14px;
+}
+
+
+/* ==================================================
+   2. FILTROS (selects y fechas encima de las tablas)
+   ================================================== */
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.filtros select,
+.filtros input,
+.bitacora-input {
+  padding: 8px 12px;
+  color: var(--color-texto);
+  font-family: inherit;
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+}
+
+
+/* ==================================================
+   3. TABLAS
+   ================================================== */
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  font-size: 14px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.data-table th {
+  color: var(--color-texto-claro);
+  font-size: 13px;
+  font-weight: bold;
+  background-color: var(--color-fondo);
+}
+
+.data-table tbody tr:hover {
+  background-color: var(--color-fondo);
+}
+
+/* Enlaces dentro de las tablas (ej. INC-014) */
+.data-table a {
+  color: var(--color-primario);
+  font-weight: bold;
+}
+
+.data-table a:hover {
+  text-decoration: underline;
+}
+
+
+/* ==================================================
+   4. BADGES Y SEVERIDADES
+   ================================================== */
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 999px;
+}
+
+/* Estado de capacidad del segmento */
+.badge-disponible { color: #1f8a4c; background-color: #e1f5e8; }
+.badge-limitada   { color: #b98a06; background-color: #fdf3d8; }
+
+/* Severidad como texto de color (en tablas) */
+.severidad-alta    { color: var(--color-alta);    font-weight: bold; }
+.severidad-critica { color: var(--color-critica); font-weight: bold; }
+.severidad-media   { color: var(--color-media);   font-weight: bold; }
+
+/* Severidad como badge relleno (en el detalle) */
+.badge.severidad-alta    { color: white; background-color: var(--color-alta); }
+.badge.severidad-critica { color: white; background-color: var(--color-critica); }
+.badge.severidad-media   { color: white; background-color: var(--color-media); }
+
+
+/* ==================================================
+   5. ESTADO DE LA RED (gráfico)
+   ================================================== */
+
+.chart-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.chart-header .card-title {
+  margin-bottom: 0;
+}
+
+.stat-trend {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.stat-trend-positive {
+  color: var(--color-critica);
+}
+
+.chart-figure {
+  width: 100%;
+  padding: 16px;
+  background-color: #fafbfc;
+  border: 1px dashed var(--color-borde);
+  border-radius: 6px;
+}
+
+.chart-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 220px;
+  object-fit: contain;
+}
+
+
+/* ==================================================
+   6. FORMULARIO (Registrar incidencia)
+   ================================================== */
+
+.segment-context {
+  margin-top: -8px;
+  margin-bottom: 20px;
+  color: var(--color-texto-claro);
+  font-size: 14px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.form-row .form-group {
+  margin-bottom: 0;
+}
+
+.form-group-full {
+  flex-basis: 100%;
+}
+
+.form-group label,
+.affected-services legend {
+  color: var(--color-texto);
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px 12px;
+  color: var(--color-texto);
+  font-size: 14px;
+  font-family: inherit;
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-acento);
+  box-shadow: 0 0 0 3px rgba(28, 140, 156, 0.2);
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.affected-services {
+  padding: 16px;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+}
+
+.affected-services legend {
+  padding: 0 6px;
+}
+
+.affected-services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  list-style: none;
+}
+
+.affected-service-item,
+.tarjeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  background-color: #fafbfc;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+}
+
+.affected-service-item .service-id {
+  font-weight: bold;
+}
+
+.affected-service-item .client-name,
+.tarjeta span:last-child {
+  color: var(--color-texto-claro);
+  font-size: 13px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.btn-primary {
+  padding: 12px 28px;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: inherit;
+  background-color: var(--color-primario);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-acento);
+}
+
+
+/* ==================================================
+   7. DETALLE DE INCIDENCIA
+   ================================================== */
+
+.migas {
+  margin-bottom: 8px;
+  color: var(--color-texto-claro);
+  font-size: 14px;
+}
+
+.titulo-incidencia {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.titulo-incidencia h3 {
+  font-size: 22px;
+}
+
+/* Stepper: pasos del flujo de la incidencia en una fila */
+.stepper {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 36px;
+}
+
+.paso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-texto-claro);
+  font-size: 13px;
+}
+
+.circulo {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background-color: white;
+  border: 2px solid var(--color-borde);
+  border-radius: 50%;
+}
+
+.paso.completado .circulo {
+  color: white;
+  background-color: var(--color-acento);
+  border-color: var(--color-acento);
+}
+
+.paso.actual .circulo {
+  color: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+.paso.actual p,
+.paso.completado p {
+  color: var(--color-texto);
+  font-weight: bold;
+}
+
+/* Dos columnas: servicios afectados / bitácora */
+.dos-columnas {
+  display: flex;
+  gap: 32px;
+}
+
+.columna {
+  flex: 1;
+}
+
+.columna h4 {
+  margin-bottom: 12px;
+}
+
+.registro {
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+}
+
+.registro p {
+  margin-top: 4px;
+  color: var(--color-texto-claro);
+}
+
+.bitacora-input {
+  width: 100%;
+}
+
+
+/* ==================================================
+   8. PANTALLAS PEQUEÑAS
+   ================================================== */
+
+@media (max-width: 700px) {
+  .dos-columnas {
+    flex-direction: column;
+  }
+
+  .stepper {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}

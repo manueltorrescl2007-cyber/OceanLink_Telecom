@@ -4,77 +4,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oceanlink | Estado de la Red</title>
-    <link rel="stylesheet" href="../css/estado_red.css">
+    <title>OceanLink - Estado de la Red</title>
+
+    <%-- Estilos de tu contenido (temporal, en el paso 4 lo unificamos) --%>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css">    <%-- Estilos comunes de barra y menú: SIEMPRE al final para que ganen --%>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 </head>
-<body class="app-page">
+<body>
 
-    <!-- 1. Configuramos la clave de la página activa -->
-    <% request.setAttribute("activePage", "estado_red"); %>
+<%-- Pieza 1: barra superior --%>
+<jsp:include page="header.jsp" />
 
-    <!-- 2. Reemplazamos la barra lateral por la inclusión dinámica -->
-    <jsp:include page="slidebar_netoperator.jsp" />
+<div class="contenedor">
 
-    <div class="content-wrapper">
+    <%-- Pieza 2: menú lateral, indicando qué opción resaltar --%>
+    <jsp:include page="sidebar.jsp">
+        <jsp:param name="activePage" value="estado" />
+    </jsp:include>
 
-        <header class="header">
-            <h1 class="header-title">Utilización de la red y Visualizador de segmentos</h1>
+    <%-- Pieza 3: tu contenido --%>
+    <main class="contenido-principal">
 
-            <div class="user-info">
-                <span class="user-avatar" aria-hidden="true"></span>
-                <div class="user-text">
-                    <p class="user-name">Username</p>
-                    <p class="user-role">Network Operator</p>
-                </div>
+        <div class="encabezado-panel">
+            <h1>Utilización de la red y Visualizador de segmentos</h1>
+        </div>
+
+        <section class="card chart-section">
+            <div class="chart-header">
+                <h2 class="card-title">Utilización de la Red (50%)</h2>
+                <p class="stat-trend stat-trend-positive">↗ +4.2% los últimos 7 días</p>
             </div>
-        </header>
 
-        <main class="main-content">
+            <%-- La imagen assets/network-usage-chart.png no existe.
+                 Cuando la tengas, guárdala en /img y descomenta esto:
+            <figure class="chart-figure">
+                <img class="chart-image"
+                     src="${pageContext.request.contextPath}/img/network-usage-chart.png"
+                     alt="Gráfico de utilización de la red">
+            </figure>
+            --%>
+        </section>
 
-            <section class="card chart-section">
-                <div class="chart-header">
-                    <h2 class="card-title">Utilización de la Red (50%)</h2>
-                    <p class="stat-trend stat-trend-positive">↗ +4.2% los últimos 7 días</p>
-                </div>
+        <section class="card segments-section">
+            <h2 class="card-title">Segmentos</h2>
 
-                <figure class="chart-figure">
-                    <img class="chart-image" src="assets/network-usage-chart.png" alt="Gráfico de utilización de la red durante los últimos días">
-                    <figcaption class="visually-hidden">Tendencia de utilización de la red</figcaption>
-                </figure>
-            </section>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Segmento</th>
+                            <th scope="col">Uso</th>
+                            <th scope="col">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>LIM-VLP-02</td>
+                            <td>91%</td>
+                            <td><span class="badge badge-limitada">Limitada</span></td>
+                        </tr>
+                        <tr>
+                            <td>LIM-VLP-01</td>
+                            <td>65%</td>
+                            <td><span class="badge badge-disponible">Disponible</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-            <section class="card segments-section">
-                <h2 class="card-title">Segmentos</h2>
+    </main>
 
-                <div class="table-wrapper">
-                    <table class="data-table">
-                        <caption class="visually-hidden">Utilización por segmento de red</caption>
-                        <thead>
-                            <tr>
-                                <th scope="col">Segmento</th>
-                                <th scope="col">Uso</th>
-                                <th scope="col">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>LIM-VLP-02</td>
-                                <td>91%</td>
-                                <td><span class="badge badge-limitada">Limitada</span></td>
-                            </tr>
-                            <tr>
-                                <td>LIM-VLP-01</td>
-                                <td>65%</td>
-                                <td><span class="badge badge-disponible">Disponible</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-        </main>
-
-    </div>
+</div>
 
 </body>
 </html>
