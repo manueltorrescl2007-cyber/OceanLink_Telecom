@@ -1,145 +1,11 @@
+/* Colores propios de Clientes; los demás están en barras.css */
 :root {
-  --color-primario: #0b3d5c;
-  --color-acento: #1c8c9c;
-  --color-fondo: #f5f7fa;
-  --color-texto: #1e293b;
-  --color-texto-claro: #64748b;
-  --color-borde: #d9e1e8;
   --color-peligro: #d64545;
   --color-exito: #2fa36b;
   --color-pendiente: #ecb84a;
-  --fuente-principal: Arial, Helvetica, sans-serif;
-}
-
-/* Configuración general */
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  min-height: 100vh;
-  color: var(--color-texto);
-  font-family: var(--fuente-principal);
-  background-color: var(--color-fondo);
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* Barra superior */
-
-.barra-superior {
-  height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 30px;
-  background-color: white;
-  border-bottom: 1px solid var(--color-borde);
-}
-
-.logo {
-  color: var(--color-acento);
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.usuario {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-
-.foto-usuario {
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 12px;
-  border-radius: 50%;
-  background-color: var(--color-primario);
-}
-
-.nombre-usuario {
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.rol-usuario {
-  margin-top: 1px;
-  color: var(--color-texto-claro);
-  font-size: 10px;
-}
-
-/* Estructura */
-
-.contenedor {
-  display: flex;
-  min-height: calc(100vh - 58px);
-}
-
-/* Menú lateral */
-
-.menu-lateral {
-  width: 220px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 25px 24px;
-  color: white;
-  background-color: var(--color-primario);
-}
-
-.menu-lateral h2 {
-  margin-bottom: 20px;
-  font-size: 21px;
-  font-weight: normal;
-}
-
-.menu-lateral nav {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.menu-lateral nav a {
-  padding: 9px 12px;
-  font-size: 15px;
-  border-radius: 6px;
-}
-
-.menu-lateral nav a:hover,
-.menu-lateral nav a.activo {
-  color: white;
-  background-color: var(--color-acento);
-}
-
-.configuracion h3 {
-  margin-bottom: 9px;
-  font-size: 15px;
-  font-weight: normal;
-}
-
-.configuracion a {
-  display: block;
-  margin-top: 6px;
-  font-size: 12px;
-}
-
-.configuracion a:hover {
-  text-decoration: underline;
 }
 
 /* Contenido principal */
-
 .contenido-principal {
   flex: 1;
   min-width: 0;
@@ -162,7 +28,6 @@ a {
 }
 
 /* Paneles */
-
 .seccion-clientes {
   display: grid;
   grid-template-columns: minmax(340px, 1fr) minmax(380px, 1fr);
@@ -181,7 +46,6 @@ a {
 }
 
 /* Encabezado de clientes */
-
 .titulo-seccion {
   display: flex;
   align-items: flex-start;
@@ -216,7 +80,6 @@ a {
 }
 
 /* Lista de clientes */
-
 .lista-clientes {
   min-height: 225px;
   max-height: 245px;
@@ -292,7 +155,6 @@ a {
 }
 
 /* Botones */
-
 .botones-clientes {
   display: flex;
   flex-wrap: wrap;
@@ -303,7 +165,7 @@ a {
 
 .boton {
   padding: 9px 13px;
-  font-family: var(--fuente-principal);
+  font-family: var(--fuente-principal), sans-serif;
   font-size: 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -342,7 +204,6 @@ a {
 }
 
 /* Resumen */
-
 .etiqueta-resumen {
   margin-bottom: 5px;
   color: var(--color-texto-claro);
@@ -368,7 +229,6 @@ a {
 }
 
 /* Opciones del resumen */
-
 .opcion-resumen {
   width: 100%;
   display: grid;
@@ -417,7 +277,6 @@ a {
 }
 
 /* Detalles inferiores */
-
 .panel-detalle {
   margin-top: 28px;
   padding: 25px;
@@ -486,7 +345,6 @@ a {
 }
 
 /* Estados */
-
 .estado-solicitud,
 .estado-activo {
   display: inline-block;
@@ -515,8 +373,8 @@ a {
   background-color: var(--color-peligro);
   border-radius: 12px;
 }
-/* Modal */
 
+/* Modal */
 .modal {
   position: fixed;
   inset: 0;
@@ -586,7 +444,7 @@ a {
   width: 100%;
   padding: 10px 12px;
   color: var(--color-texto);
-  font-family: var(--fuente-principal);
+  font-family: var(--fuente-principal), sans-serif;
   background-color: white;
   border: 1px solid var(--color-borde);
   border-radius: 6px;
@@ -609,7 +467,7 @@ a {
 .boton-cancelar,
 .boton-guardar {
   padding: 10px 15px;
-  font-family: var(--fuente-principal);
+  font-family: var(--fuente-principal), sans-serif;
   border-radius: 6px;
   cursor: pointer;
 }
@@ -631,7 +489,6 @@ a {
   border-color: var(--color-acento);
 }
 
-
 .estado-aprobado,
 .estado-desaprobado,
 .estado-inactivo {
@@ -652,8 +509,6 @@ a {
   background-color: #d64545;
 }
 
-/* Responsive */
-
 @media (max-width: 950px) {
   .seccion-clientes {
     grid-template-columns: 1fr;
@@ -661,19 +516,6 @@ a {
 }
 
 @media (max-width: 650px) {
-  .barra-superior {
-    padding: 0 18px;
-  }
-
-  .menu-lateral {
-    width: 165px;
-    padding: 22px 14px;
-  }
-
-  .menu-lateral nav a {
-    font-size: 14px;
-  }
-
   .contenido-principal {
     padding: 22px;
   }
@@ -684,71 +526,8 @@ a {
 }
 
 /* =========================================================
-   BOTÓN PARA OCULTAR Y MOSTRAR EL MENÚ
-   ========================================================= */
-
-.control-menu {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.zona-logo {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.boton-menu {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-primario);
-  font-size: 22px;
-  background-color: #e8edf2;
-  border-radius: 6px;
-  cursor: pointer;
-  user-select: none;
-  transition:
-    color 0.2s ease,
-    background-color 0.2s ease;
-}
-
-.boton-menu:hover {
-  color: white;
-  background-color: var(--color-acento);
-}
-
-.menu-lateral {
-  width: 220px;
-  min-width: 220px;
-  overflow: hidden;
-  transition:
-    width 0.3s ease,
-    min-width 0.3s ease,
-    padding 0.3s ease;
-}
-
-.contenido-menu,
-.configuracion {
-  min-width: 172px;
-}
-
-.control-menu:checked + .contenedor .menu-lateral {
-  width: 0;
-  min-width: 0;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-/* =========================================================
    CLIENTES DE PRUEBA
    ========================================================= */
-
 /* Cada elemento de la lista */
 .lista-clientes li {
   margin-bottom: 7px;
@@ -808,7 +587,6 @@ a {
 /* =========================================================
    TARJETAS DE DETALLE
    ========================================================= */
-
 .contenido-detalle {
   display: flex;
   flex-direction: column;
@@ -849,7 +627,6 @@ a {
 /* =========================================================
    ETIQUETAS DE ESTADO
    ========================================================= */
-
 .badge {
   display: inline-block;
   flex-shrink: 0;
@@ -883,12 +660,10 @@ a {
 /* =========================================================
    VENTANAS EMERGENTES SIN JAVASCRIPT
    ========================================================= */
-
 /*
   Estas reglas reemplazan el comportamiento antiguo
   de .modal.mostrar que necesitaba JavaScript.
 */
-
 .modal[popover] {
   width: min(500px, calc(100% - 32px));
   max-height: calc(100vh - 40px);
@@ -941,7 +716,7 @@ a {
 .boton-confirmar-eliminar {
   padding: 10px 15px;
   color: white;
-  font-family: var(--fuente-principal);
+  font-family: var(--fuente-principal), sans-serif;
   background-color: var(--color-peligro);
   border: 1px solid var(--color-peligro);
   border-radius: 6px;
@@ -953,40 +728,12 @@ a {
   border-color: #b93636;
 }
 
-/* =========================================================
-   DISEÑO ADAPTABLE
-   ========================================================= */
-
 @media (max-width: 650px) {
-
-  .menu-lateral {
-    width: 165px;
-    min-width: 165px;
-  }
-
-  .contenido-menu,
-  .configuracion {
-    min-width: 137px;
-  }
-
-  .control-menu:checked + .contenedor .menu-lateral {
-    width: 0;
-    min-width: 0;
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .nombre-usuario,
-  .rol-usuario {
-    display: none;
-  }
-
   .tarjeta-detalle {
     align-items: flex-start;
     flex-direction: column;
   }
 }
-
 
 .numero-selecciones {
   margin-top: 2px;
@@ -998,7 +745,6 @@ a {
 /* =========================================================
    PROPORCIONES DE TEXTO
    ========================================================= */
-
 /* Título principal */
 .encabezado-panel h2 {
   color: var(--color-primario);
@@ -1085,34 +831,13 @@ a {
   font-size: 22px;
 }
 
-/* Menú lateral */
-.menu-lateral h2 {
-  font-size: 22px;
-  line-height: 1.2;
-}
-
-.menu-lateral nav a {
-  font-size: 15px;
-  line-height: 1.25;
-}
-
-.configuracion h3 {
-  font-size: 15px;
-}
-
-.configuracion a {
-  font-size: 12px;
-}
-
 /* Botones */
 .boton {
   font-size: 12px;
   line-height: 1.2;
 }
 
-
 /* Encabezado del panel de resumen */
-
 .encabezado-resumen {
   padding-bottom: 18px;
   border-bottom: 1px solid var(--color-borde);
@@ -1146,7 +871,6 @@ a {
 }
 
 /* Ocultar barra de desplazamiento sin desactivar el scroll */
-
 .lista-clientes {
   overflow-y: auto;
   scrollbar-width: none;
@@ -1158,7 +882,6 @@ a {
 }
 
 /* Igualar encabezado con el Dashboard */
-
 .encabezado-panel h2 {
   margin: 0;
   color: var(--color-primario);
@@ -1174,3 +897,14 @@ a {
   font-weight: 400;
   line-height: 1.15;
 }
+
+/* Flecha del selector: centrada y separada del borde */
+.grupo-formulario select {
+  appearance: none;
+  padding-right: 40px;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1L6 6L11 1' fill='none' stroke='%231e293b' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+

@@ -311,62 +311,65 @@
           </div>
       </section>
 
-      <!-- Incidencias -->
-      <section>
-        <h2>Incidencias activas</h2>
+      <section class="encabezado-panel">
+          <h1>Incidencias activas</h1>
+      </section>
+      <section class="card">
 
         <div class="filtros">
-          <select>
-            <option>Todas las severidades</option>
-            <option>Alta</option>
-            <option>Crítica</option>
-            <option>Media</option>
-          </select>
-          <select>
-            <option>Todos los segmentos</option>
-            <option>LIM-VLP-01</option>
-            <option>LIM-VLP-02</option>
-            <option>LIM-GYE-01</option>
-          </select>
+            <select>
+                <option>Todas las severidades</option>
+                <option>Alta</option>
+                <option>Crítica</option>
+                <option>Media</option>
+            </select>
+            <select>
+                <option>Todos los segmentos</option>
+                <option>LIM-VLP-01</option>
+                <option>LIM-VLP-02</option>
+                <option>LIM-GYE-01</option>
+            </select>
         </div>
 
-        <table>
-          <thead>
-          <tr>
-            <th>ID</th>
-            <th>Segmento</th>
-            <th>Severidad</th>
-            <th>Estado</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td><a href="incidencias-detalle.jsp">INC-014</a></td>
-            <td>LIM-VLP-02</td>
-            <td class="severidad-alta">Alta</td>
-            <td>En análisis</td>
-          </tr>
-          <tr>
-            <td><a href="incidencias-detalle.jsp">INC-013</a></td>
-            <td>LIM-VLP-02</td>
-            <td class="severidad-critica">Crítica</td>
-            <td>En reparación</td>
-          </tr>
-          <tr>
-            <td><a href="incidencias-detalle.jsp">INC-011</a></td>
-            <td>LIM-GYE-01</td>
-            <td class="severidad-media">Media</td>
-            <td>Reparación programada</td>
-          </tr>
-          <tr>
-            <td><a href="incidencias-detalle.jsp">INC-010</a></td>
-            <td>LIM-GYE-04</td>
-            <td class="severidad-alta">Alta</td>
-            <td>Restaurado</td>
-          </tr>
-          </tbody>
-        </table>
-        <p class="ayuda">Click en una fila para ver el detalle de la incidencia.</p>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Segmento</th>
+                        <th>Severidad</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><a href="incidencias-detalle.jsp?id=INC-014">INC-014</a></td>
+                        <td>LIM-VLP-02</td>
+                        <td class="severidad-alta">Alta</td>
+                        <td>En análisis</td>
+                    </tr>
+                    <tr>
+                        <td><a href="incidencias-detalle.jsp?id=INC-013">INC-013</a></td>
+                        <td>LIM-VLP-02</td>
+                        <td class="severidad-critica">Crítica</td>
+                        <td>En reparación</td>
+                    </tr>
+                    <tr>
+                        <td><a href="incidencias-detalle.jsp?id=INC-011">INC-011</a></td>
+                        <td>LIM-GYE-01</td>
+                        <td class="severidad-media">Media</td>
+                        <td>Reparación programada</td>
+                    </tr>
+                    <tr>
+                        <td><a href="incidencias-detalle.jsp?id=INC-010">INC-010</a></td>
+                        <td>LIM-GYE-04</td>
+                        <td class="severidad-alta">Alta</td>
+                        <td>Restaurado</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="ayuda">Haz clic en el ID para ver el detalle de la incidencia.</p>
       </section>
     </main>
   </div>

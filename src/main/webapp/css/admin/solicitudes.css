@@ -1,173 +1,14 @@
+/* SOLICITUDES: filtros, tabla, detalles y formularios.
+   Cargar barras.css después de este archivo. */
+
+/* Colores propios de Clientes; los demás están en barras.css */
 :root {
-  --color-primario: #0b3d5c;
-  --color-acento: #1c8c9c;
-  --color-fondo: #f5f7fa;
-  --color-texto: #1e293b;
-  --color-texto-claro: #64748b;
-  --color-borde: #d9e1e8;
+  --color-rojo: #d64545;
   --color-verde: #2fa36b;
   --color-amarillo: #ecb84a;
-  --color-rojo: #d64545;
-  --fuente-principal: Arial, Helvetica, sans-serif;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  min-height: 100vh;
-  color: var(--color-texto);
-  font-family: var(--fuente-principal);
-  background-color: var(--color-fondo);
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* Control del menú */
-
-.control-menu {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Barra superior */
-
-.barra-superior {
-  height: 70px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 42px;
-  background-color: white;
-  border-bottom: 1px solid var(--color-borde);
-}
-
-.zona-logo {
-  display: flex;
-  align-items: center;
-  gap: 17px;
-}
-
-.boton-menu {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-primario);
-  font-size: 26px;
-  background-color: #edf3f7;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.logo {
-  color: var(--color-acento);
-  font-size: 25px;
-  font-weight: bold;
-}
-
-.usuario {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.foto-usuario {
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 14px;
-  background-color: var(--color-primario);
-  border-radius: 50%;
-}
-
-.nombre-usuario {
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.rol-usuario {
-  margin-top: 2px;
-  color: var(--color-texto-claro);
-  font-size: 12px;
-}
-
-/* Estructura */
-
-.contenedor {
-  display: flex;
-  min-height: calc(100vh - 70px);
-}
-
-/* Menú lateral */
-
-.menu-lateral {
-  width: 280px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 31px 35px;
-  color: white;
-  background-color: var(--color-primario);
-  transition: width 0.25s, padding 0.25s;
-}
-
-.menu-lateral h2 {
-  margin-bottom: 21px;
-  font-size: 28px;
-  font-weight: normal;
-}
-
-.menu-lateral nav {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.menu-lateral nav a {
-  padding: 11px 15px;
-  font-size: 18px;
-  border-radius: 7px;
-}
-
-.menu-lateral nav a:hover,
-.menu-lateral nav a.activo {
-  background-color: var(--color-acento);
-}
-
-.configuracion h3 {
-  margin-bottom: 9px;
-  font-size: 18px;
-  font-weight: normal;
-}
-
-.configuracion a {
-  display: block;
-  margin-top: 7px;
-  font-size: 14px;
-}
-
-.control-menu:checked ~ .contenedor .menu-lateral {
-  width: 0;
-  padding-left: 0;
-  padding-right: 0;
-  overflow: hidden;
 }
 
 /* Contenido */
-
 .contenido-principal {
   flex: 1;
   min-width: 0;
@@ -196,10 +37,9 @@ a {
 }
 
 /* Botones */
-
 .boton {
   padding: 11px 17px;
-  font-family: var(--fuente-principal);
+  font-family: var(--fuente-principal), sans-serif;
   font-size: 13px;
   border-radius: 7px;
   cursor: pointer;
@@ -223,7 +63,6 @@ a {
 }
 
 /* Filtros */
-
 .barra-filtros {
   display: flex;
   align-items: center;
@@ -255,7 +94,6 @@ a {
 }
 
 /* Tabla */
-
 .tabla-contenedor {
   overflow-x: auto;
   background-color: white;
@@ -304,7 +142,6 @@ a {
 }
 
 /* Estados */
-
 .formulario-estado {
   margin: 0;
 }
@@ -334,7 +171,6 @@ a {
 }
 
 /* Las opciones permanecen blancas */
-
 .selector-estado option {
   color: var(--color-texto);
   font-weight: normal;
@@ -342,7 +178,6 @@ a {
 }
 
 /* Acciones */
-
 .acciones-tabla {
   display: flex;
   align-items: center;
@@ -355,7 +190,7 @@ a {
 
 .accion {
   padding: 0;
-  font-family: var(--fuente-principal);
+  font-family: var(--fuente-principal), sans-serif;
   font-size: 12px;
   background: none;
   border: none;
@@ -382,7 +217,6 @@ a {
 }
 
 /* Detalle */
-
 .panel-detalle {
   margin-top: 24px;
   padding: 25px;
@@ -463,7 +297,6 @@ a {
 }
 
 /* Editar */
-
 .editar-solicitud {
   margin-top: 20px;
 }
@@ -476,7 +309,6 @@ a {
 }
 
 /* Modal */
-
 .modal[popover] {
   width: min(650px, calc(100% - 40px));
   max-height: calc(100vh - 40px);
@@ -514,7 +346,6 @@ a {
 }
 
 /* Formulario */
-
 .formulario-solicitud {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -537,7 +368,7 @@ a {
   width: 100%;
   padding: 10px 12px;
   color: var(--color-texto);
-  font-family: var(--fuente-principal);
+  font-family: var(--fuente-principal), sans-serif;
   font-size: 13px;
   background-color: white;
   border: 1px solid var(--color-borde);
@@ -568,24 +399,13 @@ a {
   gap: 12px;
 }
 
-/* Adaptable */
-
 @media (max-width: 900px) {
-  .menu-lateral {
-    width: 180px;
-    padding: 22px 16px;
-  }
-
   .cuadricula-detalle {
     grid-template-columns: 1fr 1fr;
   }
 }
 
 @media (max-width: 700px) {
-  .barra-superior {
-    padding: 0 18px;
-  }
-
   .contenido-principal {
     padding: 22px;
   }
@@ -604,15 +424,9 @@ a {
   .ancho-completo {
     grid-column: auto;
   }
-
-  .nombre-usuario,
-  .rol-usuario {
-    display: none;
-  }
 }
 
 /* Filas seleccionables */
-
 .fila-solicitud {
   cursor: pointer;
   transition:
@@ -634,7 +448,6 @@ a {
 }
 
 /* Acciones dentro del detalle */
-
 .acciones-detalle {
   display: flex;
   align-items: flex-start;
@@ -682,7 +495,7 @@ a {
 .boton-eliminar-solicitud {
   padding: 10px 16px;
   color: var(--color-rojo);
-  font-family: var(--fuente-principal);
+  font-family: var(--fuente-principal), sans-serif;
   font-size: 13px;
   background-color: white;
   border: 1px solid var(--color-rojo);
@@ -696,7 +509,6 @@ a {
 }
 
 /* Ocultar estilos antiguos de acciones de tabla */
-
 .acciones-tabla {
   display: none;
 }
@@ -713,7 +525,6 @@ a {
 }
 
 /* Distribuir las seis columnas uniformemente */
-
 .tabla-solicitudes {
   width: 100%;
   table-layout: fixed;
@@ -726,7 +537,6 @@ a {
 }
 
 /* Centrar el selector dentro de Estado */
-
 .formulario-estado {
   display: flex;
   justify-content: center;
@@ -735,81 +545,57 @@ a {
 }
 
 /* Mantener el ID resaltado */
-
 .id-solicitud {
   text-align: center;
 }
 
-/* Igualar barra superior y menú lateral con Clientes */
+/* Estados del SQL: amarillo para revisión, verde para aprobadas y rojo para rechazo. */
+.etiqueta-estado { display: inline-block; padding: 6px 10px; border-radius: 14px; font-size: 12px; }
+.etiqueta-estado.pendiente { color: #6b4700; background-color: #fff0bd; }
+.etiqueta-estado.aprobada { color: white; background-color: var(--color-verde); }
+.etiqueta-estado.rechazada { color: white; background-color: var(--color-rojo); }
+/* Mensajes de prueba y de validación. */
+.aviso-prueba { margin: 15px 0; color: var(--color-texto-claro); font-size: 13px; }
+.mensaje-error { padding: 12px; margin-bottom: 15px; color: #8a2929; background-color: #fdeaea; border-radius: 6px; }
+.cambio-estado { margin-top: 20px; flex-wrap: wrap; }
+.id-solicitud:hover { text-decoration: underline; }
+/* Centra la flecha de las listas y deja espacio a la derecha. */
+.formulario-solicitud select, .formulario-filtro select {
+  appearance: none;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1L6 6L11 1' fill='none' stroke='%231e293b' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+@media (max-width: 700px) { .formulario-filtro { flex-wrap: wrap; } }
 
-.barra-superior {
-  height: 58px;
-  padding: 0 30px;
+/* Botón Nueva solicitud: misma posición y estilo que Nuevo servicio. */
+#encabezadoSolicitudes {
+  align-items: center;
 }
 
-.zona-logo {
-  gap: 14px;
-}
-
-.boton-menu {
-  width: 38px;
-  height: 38px;
-  font-size: 23px;
-  border-radius: 7px;
-}
-
-.logo {
-  font-size: 20px;
-}
-
-.foto-usuario {
-  width: 34px;
-  height: 34px;
-  font-size: 12px;
-}
-
-.nombre-usuario {
-  font-size: 12px;
-}
-
-.rol-usuario {
-  font-size: 10px;
-}
-
-/* Mismo ancho de Clientes */
-
-.contenedor {
-  min-height: calc(100vh - 58px);
-}
-
-.menu-lateral {
-  width: 220px;
-  padding: 25px 24px;
-}
-
-.menu-lateral h2 {
-  margin-bottom: 20px;
-  font-size: 22px;
-  font-weight: normal;
-}
-
-.menu-lateral nav {
-  gap: 5px;
-}
-
-.menu-lateral nav a {
-  padding: 9px 12px;
-  font-size: 15px;
+#botonNuevaSolicitud {
+  display: inline-block;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 10px 16px;
+  color: white;
+  background-color: #1c8c9c;
+  border: 1px solid transparent;
   border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+  line-height: normal;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.configuracion h3 {
-  margin-bottom: 9px;
-  font-size: 15px;
-  font-weight: normal;
-}
-
-.configuracion a {
-  margin-top: 6px;
-  font-size: 12px;
+#botonNuevaSolicitud:hover {
+  background-color: #1c8c9c;
+  border-color: transparent;
+  transform: translateY(-2px);
 }

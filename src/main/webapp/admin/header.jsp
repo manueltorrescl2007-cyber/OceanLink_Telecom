@@ -10,7 +10,7 @@
 
   <div class="zona-logo">
     <label for="controlMenu" class="boton-menu">☰</label>
-    <a href="${pageContext.request.contextPath}/UsuarioServlet" class="logo">OceanLink</a>
+    <a href="${pageContext.request.contextPath}/admin/admin.jsp" class="logo">OceanLink</a>
   </div>
 
   <div class="usuario">

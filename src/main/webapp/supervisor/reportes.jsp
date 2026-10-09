@@ -96,7 +96,7 @@
     <title>OceanLink | Dashboard</title>
 
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/supervisor/supervisor.css?v=2">
+          href="${pageContext.request.contextPath}/css/supervisor/reportes.css?v=2">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
 </head>
@@ -148,8 +148,7 @@
            aria-label="Menú principal">
 
         <!-- Dashboard -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor.jsp"
-           class="activo">
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor.jsp">
             Dashboard general
         </a>
 
@@ -290,7 +289,8 @@
           </div>
         </div>
         <!-- Reportes -->
-        <a href="${pageContext.request.contextPath}/supervisor/reportes.jsp">
+        <a href="${pageContext.request.contextPath}/supervisor/reportes.jsp"
+           class="activo">
             Reportes
         </a>
         <!-- Históricos -->
@@ -615,7 +615,8 @@
 
                             <a
                                     class="boton-accion"
-                                    href="reporte_pdf.jsp?id=<%= reporte.get("id") %>"
+                                    href="#"
+                                    <-- href="reporte_pdf.jsp?id=<%= reporte.get("id") %>" -->
                                     target="_blank"
                             >
                                 Vista previa
@@ -623,7 +624,8 @@
 
                             <a
                                     class="boton-accion"
-                                    href="reporte_pdf.jsp?id=<%= reporte.get("id") %>"
+                                    href="#"
+                                    <-- href="reporte_pdf.jsp?id=<%= reporte.get("id") %>" -->
                             >
                                 Descargar
                             </a>

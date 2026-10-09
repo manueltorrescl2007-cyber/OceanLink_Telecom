@@ -10,7 +10,7 @@
     <title>OceanLink | Dashboard</title>
 
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/supervisor/supervisor.css?v=2">
+          href="${pageContext.request.contextPath}/css/supervisor/incidencia.css?v=2">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
 </head>
@@ -62,8 +62,7 @@
            aria-label="Menú principal">
 
         <!-- Dashboard -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor.jsp"
-           class="activo">
+        <a href="${pageContext.request.contextPath}/supervisor/supervisor.jsp">
             Dashboard general
         </a>
 
@@ -225,76 +224,75 @@
     </div>
   </aside>
 
-    <!-- Contenido principal -->
-    <main class="contenido-principal">
+  <!-- Contenido principal -->
+  <main class="contenido-principal">
     <section class="encabezado-panel">
       <h2>Incidencias</h2>
       <h1>Historial de incidencias</h1>
     </section>
-    <section>
-          <h3>Filtrar</h3>
+    <section class="card">
+      <h2 class="card-title">Filtrar</h2>
+      <div class="filtros">
+          <input type="date">
+          <input type="date">
+          <select>
+            <option>Severidad</option>
+            <option>Alta</option>
+            <option>Crítica</option>
+            <option>Media</option>
+          </select>
+          <select>
+            <option>Segmento</option>
+            <option>LIM-VLP-01</option>
+            <option>LIM-VLP-02</option>
+            <option>LIM-GYE-01</option>
+            <option>LIM-GYE-04</option>
+          </select>
+      </div>
 
-          <div class="filtros">
-            <input type="date">
-            <input type="date">
-            <select>
-              <option>Severidad</option>
-              <option>Alta</option>
-              <option>Crítica</option>
-              <option>Media</option>
-            </select>
-            <select>
-              <option>Segmento</option>
-              <option>LIM-VLP-01</option>
-              <option>LIM-VLP-02</option>
-              <option>LIM-GYE-01</option>
-              <option>LIM-GYE-04</option>
-            </select>
-          </div>
-
-          <table>
-            <thead>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
             <tr>
               <th>ID</th>
               <th>Segmento</th>
               <th>Severidad</th>
               <th>Cerrada el</th>
             </tr>
-            </thead>
-            <tbody>
+          </thead>
+          <tbody>
             <tr>
-              <td><a href="incidencia-detalle.jsp">INC-009</a></td>
+              <td><a href="incidencias-detalle.jsp?id=INC-009">INC-009</a></td>
               <td>LIM-VLP-01</td>
               <td class="severidad-media">Media</td>
               <td>18 ago 2026</td>
             </tr>
             <tr>
-              <td><a href="incidencia-detalle.jsp">INC-013</a></td>
+              <td><a href="incidencias-detalle.jsp?id=INC-008">INC-008</a></td>
               <td>LIM-VLP-02</td>
               <td class="severidad-critica">Crítica</td>
               <td>13 jul 2026</td>
             </tr>
             <tr>
-              <td><a href="incidencia-detalle.jsp">INC-011</a></td>
+              <td><a href="incidencias-detalle.jsp?id=INC-007">INC-007</a></td>
               <td>LIM-GYE-01</td>
               <td class="severidad-media">Media</td>
               <td>25 ago 2025</td>
             </tr>
             <tr>
-              <td><a href="incidencia-detalle.jsp">INC-010</a></td>
+              <td><a href="incidencias-detalle.jsp?id=INC-006">INC-006</a></td>
               <td>LIM-GYE-04</td>
-              <td class="severidad-alta">Alto</td>
+              <td class="severidad-alta">Alta</td>
               <td>5 jul 2025</td>
             </tr>
-            </tbody>
-          </table>
+          </tbody>
+        </table>
+      </div>
 
-          <p class="ayuda">Click en una fila para ver el detalle de la incidencia.</p>
-        </section>
+      <p class="ayuda">Haz clic en el ID para ver el detalle de la incidencia.</p>
+    </section>
+  </main>
 
-      </main>
-
-    </div>
-
-    </body>
-    </html>
+</div>
+</body>
+</html>

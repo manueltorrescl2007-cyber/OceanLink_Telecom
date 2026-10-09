@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<!-- Datos estáticos, falta unir con SQL -->
+<!-- Datos estáticos, no hay conexion con SQL todavía -->
 <%@ page import="java.util.ArrayList" %>
 <%!
     // Escapa texto escrito por el usuario antes de mostrarlo en HTML.
@@ -193,11 +193,9 @@
         if (rutas.get(i)[0].equals(request.getParameter("detalle"))) detalle = i;
     }
 %>
-
 <!-- Contenido JSP -->
 <!doctype html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -205,269 +203,172 @@
     <title>OceanLink | Dashboard</title>
 
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/supervisor/rutas.css?v=2">
+          href="${pageContext.request.contextPath}/css/admin/capacidad.css">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
 </head>
 
 <body>
-
-<!-- Control para abrir/cerrar el menú -->
-<input
-  type="checkbox"
-  id="controlMenu"
-  class="control-menu"
-  aria-label="Ocultar menú lateral">
-
-<!-- Barra superior -->
-<header class="barra-superior">
-
-  <div class="zona-logo">
-
-    <label
-            for="controlMenu"
-            class="boton-menu"
-            title="Ocultar o mostrar menú">☰</label>
-
-    <a href="${pageContext.request.contextPath}/supervisor/supervisor.jsp"
-       class="logo">
-        OceanLink
-    </a>
-  </div>
-
-  <div class="usuario">
-    <div class="foto-usuario">SU</div>
-    <div>
-        <p class="nombre-usuario">Username</p>
-        <p class="rol-usuario">Supervisor</p>
-    </div>
-  </div>
-</header>
+<jsp:include page="header.jsp" />
 
 <div class="contenedor">
 
-  <!-- Barra lateral -->
-  <aside class="menu-lateral">
-
-    <div class="contenido-menu">
-
-      <h2>Menú</h2>
-
-      <nav class="navegacion-lateral"
-           aria-label="Menú principal">
-
-        <!-- Dashboard -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor.jsp">
-            Dashboard general
-        </a>
-
-        <!-- Incidencias -->
-        <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
-          <input
-            type="checkbox"
-            id="control-incidencias"
-            class="control-submenu"
-          >
-           <!-- Al hacer clic, marca o desmarca el checkbox -->
-          <label for="control-incidencias"
-                 class="titulo-grupo">
-            <span>Incidencias</span>
-            <span class="flecha-submenu"></span>
-          </label>
-          <!-- Opciones que aparecen al desplegar -->
-          <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/supervisor/visualizar.jsp"
-               class="subopcion">
-                Visualizar
-            </a>
-
-            <a href="${pageContext.request.contextPath}/supervisor/historial_incidencias.jsp"
-               class="subopcion">
-                Historial de incidencias
-            </a>
-          </div>
-        </div>
-
-        <!-- Estado de la red -->
-        <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
-          <input
-            type="checkbox"
-            id="controlEstadoRed"
-            class="control-submenu">
-
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
-          <label for="controlEstadoRed"
-                 class="titulo-grupo">
-            <span class="texto-grupo">
-                Estado de la red
-            </span>
-            <span class="flecha-submenu"></span>
-          </label>
-
-          <!-- Opciones que aparecen al desplegar -->
-          <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/supervisor/capacidad.jsp"
-               class="subopcion">
-                Capacidad
-            </a>
-            <a href="rutas.jsp" class="subopcion activo">Rutas</a>
-            <a href="${pageContext.request.contextPath}/supervisor/segmentos.jsp"
-               class="subopcion">
-                Segmentos
-            </a>
-            <a href="${pageContext.request.contextPath}/supervisor/landing_stations.jsp"
-               class="subopcion">
-                Landing stations
-            </a>
-          </div>
-        </div>
-
-        <!-- Servicios y clientes -->
-        <div class="grupo-menu">
-          <input
-            type="checkbox"
-            id="control-servicios-clientes"
-            class="control-submenu"
-          >
-
-          <label for="control-servicios-clientes"
-                  class="titulo-grupo">
-            <span class="texto-grupo">
-                Servicios y clientes
-            </span>
-            <span class="flecha-submenu"></span>
-          </label>
-          <div class="contenido-submenu">
-
-            <a href="${pageContext.request.contextPath}/supervisor/clientes.jsp"
-               class="subopcion">
-                Clientes
-            </a>
-
-            <a href="${pageContext.request.contextPath}/supervisor/servicios.jsp"
-               class="subopcion">
-                Servicios
-            </a>
-            <a
-                    href="${pageContext.request.contextPath}/supervisor/solicitudes.jsp"
-                    class="subopcion">
-                Solicitudes
-            </a>
-          </div>
-        </div>
-
-        <!-- Mantenimientos -->
-        <div class="grupo-menu">
-
-          <input
-            type="checkbox"
-            id="control-mantenimientos"
-            class="control-submenu"
-          >
-
-          <label
-                  for="control-mantenimientos"
-                  class="titulo-grupo">
-
-            <span class="texto-grupo">
-                Mantenimientos
-            </span>
-
-            <span class="flecha-submenu"></span>
-
-          </label>
-
-          <div class="contenido-submenu">
-
-            <a
-                    href="${pageContext.request.contextPath}/supervisor/programacion.jsp"
-                    class="subopcion">
-                Programación
-            </a>
-
-            <a
-                    href="${pageContext.request.contextPath}/supervisor/historial_programados.jsp"
-                    class="subopcion">
-                Historial de programados
-            </a>
-          </div>
-        </div>
-        <!-- Reportes -->
-        <a href="${pageContext.request.contextPath}/supervisor/reportes.jsp">
-            Reportes
-        </a>
-        <!-- Históricos -->
-        <a href="${pageContext.request.contextPath}/supervisor/historicos.jsp">
-            Históricos
-        </a>
-      </nav>
-    </div>
-    <!-- parte baja -->
-    <div class="configuracion">
-      <nav aria-label="Opciones del usuario">
-          <a href="#">Perfil</a>
-          <a href="${pageContext.request.contextPath}/login.jsp"
-             class="cerrar-sesion">
-              Cerrar sesión
-          </a>
-      </nav>
-    </div>
-  </aside>
-
+  <jsp:include page="sidebar.jsp">
+      <jsp:param name="activePage" value="usuarios" />
+  </jsp:include>
   <!-- Contenido principal -->
-   <main class="contenido-principal pagina-rutas">
-      <section class="encabezado-pagina">
-        <div class="encabezado-panel"><h2>Supervisor</h2><h1>Rutas</h1></div>
-      </section>
-      <% if ("1".equals(request.getParameter("guardado"))) { %><p class="mensaje-exito">Ruta guardada.</p><% } %>
-      <section class="barra-herramientas">
-        <form method="get" action="rutas.jsp" class="formulario-filtro">
-          <label for="filtro">Estado:</label>
-          <select id="filtro" name="filtro">
-            <option value="Todas">Todas</option>
-            <option value="activa" <%= filtro.equals("activa") ? "selected" : "" %>>Activa</option>
-            <option value="inactiva" <%= filtro.equals("inactiva") ? "selected" : "" %>>Inactiva</option>
-          </select>
-          <button class="boton secundario" type="submit">Filtrar</button>
-        </form>
-        <span><%= cantidad %> rutas</span>
-      </section>
-      <section class="contenedor-tabla">
-        <table><thead><tr><th>ID</th><th>Nombre</th><th>Origen</th><th>Destino</th><th>Segmentos</th><th>Capacidad disponible</th><th>Estado</th></tr></thead>
-        <tbody>
-        <% for (String[] ruta : rutas) { if (filtro.equals("Todas") || filtro.equals(ruta[4])) { %>
-        <tr>
-          <td><a class="enlace-ruta" href="rutas.jsp?detalle=<%= ruta[0] %>">RUT-<%= ruta[0] %></a></td>
-          <td><%= texto(ruta[1]) %></td>
-          <td><%= estaciones[buscar(estaciones, ruta[2])][1] %></td>
-          <td><%= estaciones[buscar(estaciones, ruta[3])][1] %></td>
-          <td><%= ruta[5].split(",").length %></td>
-          <td><%= disponible(ruta[5], segmentos) %> Gbps</td>
-          <td><span class="estado <%= ruta[4] %>"><%= ruta[4].equals("activa") ? "Activa" : "Inactiva" %></span></td>
-        </tr>
-        <% } } %>
-        <% if (cantidad == 0) { %><tr><td colspan="7">No hay rutas con este estado.</td></tr><% } %>
-        </tbody></table>
-      </section>
-      <!-- 6. DETALLE: muestra los segmentos en el orden del recorrido. -->
-      <% if (detalle >= 0) { String[] ruta = rutas.get(detalle); int orden = 1; %>
-      <section class="panel-detalle">
-        <div class="encabezado-detalle"><h2><%= texto(ruta[1]) %></h2><a href="rutas.jsp" aria-label="Cerrar detalle">&times;</a></div>
-        <p class="resumen-ruta"><%= estaciones[buscar(estaciones, ruta[2])][1] %> → <%= estaciones[buscar(estaciones, ruta[3])][1] %></p>
-        <h3>Segmentos de la ruta</h3>
-        <div class="contenedor-tabla">
-          <table><thead><tr><th>Orden</th><th>Segmento</th><th>Total</th><th>Ocupada</th><th>Reservada</th><th>Estado</th></tr></thead><tbody>
-          <% for (String codigo : ruta[5].split(",")) { for (String[] segmento : segmentos) { if (segmento[1].equals(codigo.trim())) { %>
-          <tr><td><%= orden++ %></td><td><%= segmento[1] %></td><td><%= segmento[4] %> Gbps</td><td><%= segmento[5] %> Gbps</td><td><%= segmento[6] %> Gbps</td><td><%= segmento[7] %></td></tr>
-          <% } } } %>
-          </tbody></table>
+  <main class="contenido-principal">
+    <div class="encabezado-panel">
+      <h2>Administrador</h2>
+      <h1>Utilización de la red</h1>
+    </div>
+    <section class="card chart-section">
+      <div class="chart-header">
+        <h2 class="card-title">Utilización de la Red (50%)</h2>
+        <p class="stat-trend stat-trend-positive">↗ +4.2% los últimos 7 días</p>
+      </div>
+
+      <figure class="chart-figure">
+        <img class="chart-image"
+             src="${pageContext.request.contextPath}/img/grafico_utilizacion.svg"
+             alt="Gráfico de utilización de la red en los últimos 7 días: sube de 45.8% a 50%">
+      </figure>
+    </section>
+
+    <div class="encabezado-panel">
+      <h1>Detalles generales</h1>
+    </div>
+    <!-- Las tres tarjetas conservan el diseño existente -->
+    <section class="tarjetas">
+      <article class="tarjeta tarjeta-resumen">
+        <h3>Resumen</h3>
+        <div class="fila">
+          <span>Solicitudes registradas</span>
+          <strong>12</strong>
         </div>
-        <p class="ayuda">Disponible = menor valor de (total − ocupada − reservada) entre los segmentos.</p>
-      </section>
-      <% } %>
-   </main>
-</div>
+        <div class="fila">
+          <span>Pendientes de evaluación</span>
+          <strong>4</strong>
+        </div>
+        <div class="fila">
+          <span>Solicitudes aprobadas</span>
+          <strong>6</strong>
+        </div>
+        <div class="fila">
+          <span>Pendientes por capacidad</span>
+          <strong>2</strong>
+        </div>
+        <div class="fila">
+          <span>Servicios activos</span>
+          <strong>2</strong>
+        </div>
+      </article>
+      <!-- ==========================================
+           5. UTILIZACIÓN DE SEGMENTOS
+
+           Propuesta de cálculo:
+           (ocupada + reservada) / total * 100
+
+           Normal: menor al 80%.
+           Alta: del 80% al 95%, inclusive.
+           Crítica: mayor al 95%.
+
+           Los conteos siguientes son ejemplos.
+           ========================================== -->
+      <article class="tarjeta tarjeta-segmentos">
+        <h3>Estado de segmentos</h3>
+
+        <div class="fila">
+            <span>25 estables</span>
+            <span class="estado disponible"
+                  aria-label="Normal"></span>
+        </div>
+
+        <div class="fila">
+            <span>3 limitados</span>
+            <span class="estado limitada"
+                  aria-label="Alta utilización"></span>
+        </div>
+
+        <div class="fila">
+            <span>2 críticos</span>
+            <span class="estado insuficiente"
+                  aria-label="Utilización crítica"></span>
+        </div>
+
+        <div class="fila enlace-segmentos">
+            <a href="${pageContext.request.contextPath}/admin/segmentos.jsp">
+                Ver segmentos →
+            </a>
+        </div>
+      </article>
+      <!-- ==========================================
+           6. ACCIONES PENDIENTES
+
+           Ya no se registran manualmente.
+           Después se generarán según el estado
+           de cada solicitud consultada en MySQL.
+
+           Aquí mostramos ejemplos del resultado.
+           ========================================== -->
+      <article class="tarjeta acciones">
+        <div class="encabezado-acciones">
+            <h3>Acciones pendientes</h3>
+            <!-- Después mostrará el total obtenido
+                 de la consulta de solicitudes -->
+            <span class="cantidad-acciones">4</span>
+        </div>
+        <ul class="lista-acciones">
+          <!-- Solicitud registrada -->
+          <li>
+            <div class="informacion-accion">
+
+                <!-- Por ahora abre la lista de solicitudes -->
+                <a href="${pageContext.request.contextPath}/admin/solicitudes.jsp">
+                    <strong>SOL-014</strong>
+                </a>
+
+                <span>Evaluar solicitud</span>
+            </div>
+          </li>
+
+          <!-- Solicitud en evaluación -->
+          <li>
+            <div class="informacion-accion">
+
+                <a href="${pageContext.request.contextPath}/admin/solicitudes.jsp">
+                    <strong>SOL-018</strong>
+                </a>
+
+                <span>Revisar capacidad de segmentos</span>
+            </div>
+          </li>
+          <!-- Solicitud pendiente por capacidad -->
+          <li>
+              <div class="informacion-accion">
+
+                  <a href="${pageContext.request.contextPath}/admin/solicitudes.jsp">
+                      <strong>SOL-021</strong>
+                  </a>
+
+                  <span>Revisar alternativas de capacidad</span>
+              </div>
+          </li>
+
+          <!-- Solicitud aprobada -->
+          <li>
+              <div class="informacion-accion">
+
+                  <a href="${pageContext.request.contextPath}/admin/solicitudes.jsp">
+                      <strong>SOL-022</strong>
+                  </a>
+
+                  <span>Gestionar reserva de capacidad</span>
+              </div>
+          </li>
+        </ul>
+      </article>
+    </section>
+  </main>
 </body>
 </html>
