@@ -17,7 +17,7 @@
     <nav class="navegacion-lateral">
 
 
-        <a href="nuevo_mantenimiento.jsp"
+        <a href="${pageContext.request.contextPath}/MantenimientoServlet?accion=nuevo"
            class="<%= "nuevo".equals(activePage) ? "activo" : "" %>">
             Nuevo mantenimiento
         </a>
@@ -47,21 +47,21 @@
         <div class="contenido-submenu">
 
           <a
-            href="fechas_duracion.jsp"
+            href="${pageContext.request.contextPath}/MantenimientoServlet?accion=listar"
             class="subopcion <%= "fechas".equals(activePage) ? "activo" : "" %>"
           >
             Fechas y duración
           </a>
 
           <a
-            href="estado.jsp"
+            href="${pageContext.request.contextPath}/Maintenance_coordinator/estado.jsp"
             class="subopcion <%= "estado".equals(activePage) ? "activo" : "" %>"
           >
             Estado
           </a>
 
           <a
-            href="historial.jsp"
+            href="${pageContext.request.contextPath}/MantenimientoServlet?accion=historial"
             class="subopcion <%= "historial".equals(activePage) ? "activo" : "" %>"
           >
             Historial

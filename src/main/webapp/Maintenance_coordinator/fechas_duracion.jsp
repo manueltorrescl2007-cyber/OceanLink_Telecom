@@ -1,121 +1,308 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java"
+         contentType="text/html; charset=UTF-8"
+         pageEncoding="UTF-8" %>
+
+<%@ page import="beans.maintenance.Mantenimiento" %>
 <%@ page import="java.util.*" %>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oceanlink - Fechas y duración</title>
-    <link rel="stylesheet"
-        href="${pageContext.request.contextPath}/css/barras.css">
+<%@ page import="java.time.format.DateTimeFormatter" %>
 
-    <link rel="stylesheet"
-        href="${pageContext.request.contextPath}/css/styles_MC.css">
-</head>
-<body>
+<%!
+  private String escaparHtml(String valor) {
+    if (valor == null) return "";
 
-<%
-    /*
-        En una implementación real, esta lista vendría de un Servlet/DAO
-        (p. ej. request.getAttribute("mantenimientos")) que consulta la
-        base de datos. Aquí se simula un único registro de ejemplo,
-        tal como en el wireframe, y se completan filas vacías hasta 10
-        para conservar el aspecto de "Vista de Tabla".
-    */
-    List<Map<String, String>> mantenimientos = new ArrayList<Map<String, String>>();
-    Map<String, String> ejemplo = new HashMap<String, String>();
-    ejemplo.put("segmento", "LIM-VLP-02");
-    ejemplo.put("tipo", "Preventivo");
-    ejemplo.put("fechaInicio", "4 de sep. de 2026");
-    ejemplo.put("fechaFin", "30 de sep. de 2026");
-    ejemplo.put("prioridad", "Leve");
-    ejemplo.put("notas", "Verificar estado de conectores");
-    mantenimientos.add(ejemplo);
-
-    int totalFilas = 10;
+    return valor.replace("&", "&amp;")
+      .replace("<", "&lt;")
+      .replace(">", "&gt;")
+      .replace("\"", "&quot;")
+      .replace("'", "&#39;");
+  }
 %>
 
+<%
+  ArrayList<Mantenimiento> mantenimientos =
+    (ArrayList<Mantenimiento>)
+      request.getAttribute("mantenimientos");
+
+  Map<Integer, String> segmentos =
+    (Map<Integer, String>)
+      request.getAttribute("segmentos");
+
+  // El listado siempre debe recibir los datos del Servlet.
+  if (mantenimientos == null || segmentos == null) {
+    response.sendRedirect(
+      request.getContextPath()
+        + "/MantenimientoServlet?accion=listar"
+    );
+    return;
+  }
+
+  DateTimeFormatter formatoFecha =
+    DateTimeFormatter.ofPattern(
+      "dd/MM/yyyy", Locale.forLanguageTag("es-PE")
+    );
+
+  // Conservamos al menos diez filas en la tabla.
+  int totalFilas = Math.max(10, mantenimientos.size());
+
+  String resultado = request.getParameter("resultado");
+%>
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>OceanLink - Fechas y duración</title>
+
+  <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/barras.css">
+
+  <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/styles_MC.css">
+</head>
+
+<body>
+
 <jsp:include page="header.jsp">
-  <jsp:param name="pageTitle" value="Registro y actualizaci&oacute;n de actividades de mantenimiento" />
+  <jsp:param name="pageTitle"
+             value="Registro y actualizaci&oacute;n de actividades de mantenimiento"/>
 </jsp:include>
 
 <div class="contenedor">
 
-    <jsp:include page="sidebar.jsp">
-        <jsp:param name="activePage" value="fechas" />
-    </jsp:include>
+  <jsp:include page="sidebar.jsp">
+    <jsp:param name="activePage" value="fechas"/>
+  </jsp:include>
 
-    <main class="contenido-principal">
+  <main class="contenido-principal">
+
+    <div class="content-container">
+
+      <div class="card">
+
+        <h2 class="card-title">
+          Fechas y duración de mantenimientos programados
+        </h2>
 
 
+        <!-- MENSAJE DE RESULTADO -->
+        <% if ("actualizado".equals(resultado)) { %>
 
-        <div class="content-container">
-            <div class="card">
-                <h2 class="card-title">Fechas y duración de mantenimientos programados</h2>
+        <p style="color: green; font-weight: bold;">
+          El mantenimiento se actualizó correctamente.
+        </p>
 
-                <div class="table-toolbar">
-                    <div class="table-toolbar-left">
-                        <span>&#9638;</span> Vista de Tabla
-                    </div>
-                    <div class="table-toolbar-icons">
-                        <span title="Expandir">&#8599;</span>
-                        <span title="Más opciones">&#8942;</span>
-                    </div>
-                </div>
+        <% } else if ("creado".equals(resultado)) { %>
 
-                <div class="data-table-wrapper">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Segmento</th>
-                                <th>Tipo de mantenimiento</th>
-                                <th>Fecha de inicio</th>
-                                <th>Fecha de fin</th>
-                                <th>Prioridad</th>
-                                <th>Notas / Descripción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <%
-                                for (int i = 0; i < totalFilas; i++) {
-                                    if (i < mantenimientos.size()) {
-                                        Map<String, String> m = mantenimientos.get(i);
-                                        String prioridad = m.get("prioridad");
-                                        String badgeClass = "badge-leve";
-                                        if ("Media".equalsIgnoreCase(prioridad)) badgeClass = "badge-media";
-                                        else if ("Alta".equalsIgnoreCase(prioridad)) badgeClass = "badge-alta";
-                                        else if ("Critica".equalsIgnoreCase(prioridad) || "Crítica".equalsIgnoreCase(prioridad)) badgeClass = "badge-critica";
-                            %>
-                                <tr>
-                                    <td><%= m.get("segmento") %></td>
-                                    <td><%= m.get("tipo") %></td>
-                                    <td><%= m.get("fechaInicio") %></td>
-                                    <td><%= m.get("fechaFin") %></td>
-                                    <td><span class="badge <%= badgeClass %>"><%= prioridad %></span></td>
-                                    <td><%= m.get("notas") %></td>
-                                </tr>
-                            <%
-                                    } else {
-                            %>
-                                <tr class="row-empty">
-                                    <td>&nbsp;</td>
-                                    <td>&nbsp;</td>
-                                    <td>&nbsp;</td>
-                                    <td>&nbsp;</td>
-                                    <td>&nbsp;</td>
-                                    <td>&nbsp;</td>
-                                </tr>
-                            <%
-                                    }
-                                }
-                            %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <p style="color: green; font-weight: bold;">
+          El mantenimiento se registró correctamente.
+        </p>
+
+        <% } else if ("cancelado".equals(resultado)) { %>
+
+        <p style="color: green; font-weight: bold;">
+          El mantenimiento se canceló correctamente.
+        </p>
+
+        <% } %>
+
+
+        <!-- BARRA SUPERIOR -->
+        <div class="table-toolbar">
+
+          <div class="table-toolbar-left">
+            <span>&#9638;</span>
+            Vista de Tabla
+          </div>
+
+          <div class="table-toolbar-icons">
+
+            <a
+              href="${pageContext.request.contextPath}/MantenimientoServlet?accion=listar"
+              title="Actualizar listado"
+              aria-label="Actualizar listado">
+
+              &#8635;
+
+            </a>
+
+            <span title="Más opciones">&#8942;</span>
+
+          </div>
+
         </div>
 
-    </main>
+
+        <!-- TABLA DE MANTENIMIENTOS -->
+        <div class="data-table-wrapper">
+
+          <table class="data-table">
+
+            <thead>
+            <tr>
+              <th>Segmento</th>
+              <th>Tipo de mantenimiento</th>
+              <th>Fecha de inicio</th>
+              <th>Fecha de fin</th>
+              <th>Prioridad</th>
+              <th>Notas / Descripción</th>
+              <th>Acciones</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <%
+              for (int i = 0; i < totalFilas; i++) {
+
+                if (i < mantenimientos.size()) {
+
+                  Mantenimiento m =
+                    mantenimientos.get(i);
+
+                  String prioridad = m.getPrioridad();
+
+                  String badgeClass = "badge-leve";
+
+                  if ("Media".equals(prioridad)) {
+                    badgeClass = "badge-media";
+
+                  } else if ("Alta".equals(prioridad)) {
+                    badgeClass = "badge-alta";
+
+                  } else if ("Crítica".equals(prioridad)) {
+                    badgeClass = "badge-critica";
+                  }
+
+                  String codigoSegmento =
+                    segmentos.getOrDefault(
+                      m.getIdSegmento(),
+                      "Segmento #" + m.getIdSegmento()
+                    );
+
+                  String fechaInicio =
+                    m.getFechaInicio() == null
+                      ? "—"
+                      : m.getFechaInicio()
+                      .format(formatoFecha);
+
+                  String fechaFin =
+                    m.getFechaFin() == null
+                      ? "—"
+                      : m.getFechaFin()
+                      .format(formatoFecha);
+            %>
+
+            <tr>
+
+              <!-- SEGMENTO -->
+              <td>
+                <%= escaparHtml(codigoSegmento) %>
+              </td>
+
+
+              <!-- TIPO -->
+              <td>
+                <%= escaparHtml(m.getTipo()) %>
+              </td>
+
+
+              <!-- FECHA INICIO -->
+              <td>
+                <%= fechaInicio %>
+              </td>
+
+
+              <!-- FECHA FIN -->
+              <td>
+                <%= fechaFin %>
+              </td>
+
+
+              <!-- PRIORIDAD -->
+              <td>
+
+                                    <span class="badge <%= badgeClass %>">
+
+                                        <%= escaparHtml(prioridad) %>
+
+                                    </span>
+
+              </td>
+
+
+              <!-- DESCRIPCIÓN -->
+              <td>
+                <%= escaparHtml(
+                  m.getDescripcionGeneral()
+                ) %>
+              </td>
+
+
+              <!-- ACCIONES -->
+              <td>
+
+                <% if ("Programado".equals(
+                  m.getEstado())) { %>
+
+                <a
+                  href="${pageContext.request.contextPath}/MantenimientoServlet?accion=editar&idMantenimiento=<%= m.getIdMantenimiento() %>"
+                  class="btn btn-primary">
+
+                  Editar
+
+                </a>
+
+                <% } else { %>
+
+                <span>
+                                            <%= escaparHtml(m.getEstado()) %>
+                                        </span>
+
+                <% } %>
+
+              </td>
+
+            </tr>
+
+            <%
+            } else {
+            %>
+
+            <!-- FILAS VACÍAS DEL DISEÑO ORIGINAL -->
+            <tr class="row-empty">
+
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+
+            </tr>
+
+            <%
+                }
+              }
+            %>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
 </div>
 
 </body>

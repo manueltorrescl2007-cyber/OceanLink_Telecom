@@ -2,6 +2,7 @@ package daos;
 
 import beans.Rol;
 import beans.Usuario;
+import utils.PasswordUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,7 +24,7 @@ public class UsuarioDao extends BaseDao {
         return listarUsuarios(-1, null);
     }
 
-    /* ========== READ: lista filtrada por rol y/o estado ==========
+    /* READ: lista filtrada por rol y/o estado
      * idRol  : -1 = todos los roles
      * estado : null o "" = todos los estados ("activo" / "inactivo")
      */
@@ -87,23 +88,117 @@ public class UsuarioDao extends BaseDao {
         return usuario;
     }
 
+  public Usuario autenticarUsuario(
+    String correo,
+    String contrasena
+  ) {
+
+    if (correo == null || correo.isBlank()
+      || contrasena == null || contrasena.isEmpty()) {
+      return null;
+    }
+
+    String sql =
+      "SELECT u.id_usuario, u.nombre, u.correo, "
+        + "u.contrasena, u.estado, "
+        + "r.id_rol, r.nombre AS nombre_rol "
+        + "FROM usuarios u "
+        + "INNER JOIN roles_usuario r ON u.id_rol = r.id_rol "
+        + "WHERE u.correo = ? "
+        + "LIMIT 1";
+
+    try (Connection conn = getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+      pstmt.setString(1, correo.trim());
+
+      Usuario usuario = null;
+      String passwordGuardada = null;
+      String estado = null;
+
+      try (ResultSet rs = pstmt.executeQuery()) {
+
+        if (rs.next()) {
+          usuario = fetchUsuario(rs);
+          passwordGuardada = rs.getString("contrasena");
+          estado = rs.getString("estado");
+        }
+      }
+
+      // No permitir el acceso a cuentas inactivas.
+      if (usuario == null
+        || !"activo".equalsIgnoreCase(estado)) {
+        return null;
+      }
+
+      // Verificar la contraseña.
+      if (!PasswordUtil.verificarPassword(
+        contrasena,
+        passwordGuardada
+      )) {
+        return null;
+      }
+
+      // Si la contraseña antigua estaba en texto plano,
+      // la migramos a hash después de verificarla.
+      if (!PasswordUtil.esHashAlmacenado(passwordGuardada)) {
+
+        String nuevoHash =
+          PasswordUtil.hashPassword(contrasena);
+
+        String sqlActualizar =
+          "UPDATE usuarios SET contrasena = ? "
+            + "WHERE id_usuario = ? AND contrasena = ?";
+
+        try (PreparedStatement actualizar =
+               conn.prepareStatement(sqlActualizar)) {
+
+          actualizar.setString(1, nuevoHash);
+          actualizar.setInt(2, usuario.getIdUsuario());
+          actualizar.setString(3, passwordGuardada);
+
+          actualizar.executeUpdate();
+        }
+      }
+
+      // fetchUsuario no coloca la contraseña en el Bean.
+      return usuario;
+
+    } catch (SQLException e) {
+      throw new IllegalStateException(
+        "Error al autenticar al usuario.",
+        e
+      );
+    }
+  }
+
     /* ========== CREATE: nuevo usuario (estado = 'activo' por defecto en MySQL) ========== */
     public void crearUsuario(Usuario usuario) {
-        String sql = "INSERT INTO usuarios (nombre, correo, contrasena, id_rol) "
-                   + "VALUES (?, ?, ?, ?)";
 
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+      String sql =
+        "INSERT INTO usuarios "
+          + "(nombre, correo, contrasena, id_rol) "
+          + "VALUES (?, ?, ?, ?)";
 
-            pstmt.setString(1, usuario.getNombre());
-            pstmt.setString(2, usuario.getCorreo());
-            pstmt.setString(3, usuario.getContrasena());
-            pstmt.setInt(4, usuario.getRol().getIdRol());
-            pstmt.executeUpdate();
+      String passwordHash =
+        PasswordUtil.hashPassword(usuario.getContrasena());
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+      try (Connection conn = getConnection();
+           PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, usuario.getNombre());
+        pstmt.setString(2, usuario.getCorreo());
+        pstmt.setString(3, passwordHash);
+        pstmt.setInt(4, usuario.getRol().getIdRol());
+
+        pstmt.executeUpdate();
+
+      } catch (SQLException e) {
+        throw new IllegalStateException(
+          "No se pudo crear el usuario.",
+          e
+        );
+      }
     }
 
     /* ========== UPDATE: nombre, correo y rol (la contraseña no se toca aquí) ========== */

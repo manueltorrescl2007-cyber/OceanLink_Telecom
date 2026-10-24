@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -27,69 +28,85 @@
 
 
 
-        <div class="content-container">
-            <div class="card">
-                <h2 class="card-title">Programar un nuevo mantenimiento</h2>
+      <div class="content-container">
+        <div class="card">
+          <h2 class="card-title">Programar un nuevo mantenimiento</h2>
 
-                <form action="ProgramarMantenimientoServlet" method="post" class="form-grid">
+          <form action="${pageContext.request.contextPath}/MantenimientoServlet"
+                method="post"
+                class="form-grid">
 
-                    <div class="form-field">
-                        <label for="segmento">Segmento <span class="required">*</span></label>
-                        <select id="segmento" name="segmento" required>
-                            <option value="" selected disabled>Seleccione un segmento</option>
-                            <option value="LIM-VLP-01">LIM-VLP-01</option>
-                            <option value="LIM-VLP-02">LIM-VLP-02</option>
-                            <option value="LIM-VLP-03">LIM-VLP-03</option>
-                        </select>
-                    </div>
+            <!-- Indica al servlet que debe crear un mantenimiento -->
+            <input type="hidden" name="accion" value="crear">
 
-                    <div class="form-field">
-                        <label for="tipoMantenimiento">Tipo de mantenimiento <span class="required">*</span></label>
-                        <select id="tipoMantenimiento" name="tipoMantenimiento" required>
-                            <option value="" selected disabled>Seleccione un tipo</option>
-                            <option value="Preventivo">Preventivo</option>
-                            <option value="Correctivo">Correctivo</option>
-                            <option value="Predictivo">Predictivo</option>
-                        </select>
-                    </div>
+            <div class="form-field">
+              <label for="segmento">
+                Segmento <span class="required">*</span>
+              </label>
 
-                    <div class="form-field">
-                        <label for="fechaInicio">Fecha de inicio <span class="required">*</span></label>
-                        <input type="date" id="fechaInicio" name="fechaInicio" required>
-                    </div>
+              <select id="segmento" name="idSegmento" required>
+                <option value="" selected disabled>
+                  Seleccione un segmento
+                </option>
 
-                    <div class="form-field">
-                        <label for="fechaFin">Fecha de fin estimada <span class="required">*</span></label>
-                        <input type="date" id="fechaFin" name="fechaFin" required>
-                    </div>
-
-                    <div class="form-field">
-                        <label for="prioridad">Prioridad <span class="required">*</span></label>
-                        <select id="prioridad" name="prioridad" required>
-                            <option value="" selected disabled>Seleccione una prioridad</option>
-                            <option value="Leve">Leve</option>
-                            <option value="Media">Media</option>
-                            <option value="Alta">Alta</option>
-                            <option value="Critica">Crítica</option>
-                        </select>
-                    </div>
-
-                    <div class="form-field">
-                        <!-- Campo vacío para mantener alineada la grilla de 2 columnas -->
-                    </div>
-
-                    <div class="form-field full-width">
-                        <label for="notas">Notas / Descripción</label>
-                        <textarea id="notas" name="notas" placeholder="Ingrese detalles adicionales..."></textarea>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Programar</button>
-                    </div>
-
-                </form>
+                <c:forEach var="segmento" items="${segmentos}">
+                  <option value="${segmento.key}">
+                      ${segmento.value}
+                  </option>
+                </c:forEach>
+              </select>
             </div>
+
+            <div class="form-field">
+              <label for="tipoMantenimiento">Tipo de mantenimiento <span class="required">*</span></label>
+
+              <select id="tipoMantenimiento" name="tipo" required>
+                <option value="" selected disabled>Seleccione un tipo</option>
+                <option value="Preventivo">Preventivo</option>
+                <option value="Correctivo">Correctivo</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="fechaInicio">Fecha de inicio <span class="required">*</span></label>
+              <input type="date" id="fechaInicio" name="fechaInicio" required>
+            </div>
+
+            <div class="form-field">
+              <label for="fechaFin">Fecha de fin estimada <span class="required">*</span></label>
+              <input type="date" id="fechaFin" name="fechaFin" required>
+            </div>
+
+            <div class="form-field">
+              <label for="prioridad">Prioridad <span class="required">*</span></label>
+
+              <select id="prioridad" name="prioridad" required>
+                <option value="" selected disabled>Seleccione una prioridad</option>
+                <option value="Leve">Leve</option>
+                <option value="Media">Media</option>
+                <option value="Alta">Alta</option>
+                <option value="Critica">Crítica</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <!-- Espacio para mantener la grilla de dos columnas -->
+            </div>
+
+            <div class="form-field full-width">
+              <label for="notas">Notas / Descripción</label>
+              <textarea id="notas"
+                        name="descripcionGeneral"
+                        placeholder="Ingrese detalles adicionales..."></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Programar</button>
+            </div>
+
+          </form>
         </div>
+      </div>
 
     </main>
 </div>

@@ -92,13 +92,13 @@
 
                 <div class="table-icons-row">
                     <span title="Actualizar">&#8635;</span>
-                    <span title="Vistas">&#9638;</span>
-                    <span title="Agrupar">&#9776;</span>
+                    <!--span title="Vistas">&#9638;</--span  // no necesario -->
+                    <!-- span title="Agrupar">&#9776;</span // no necesario -->
                     <span title="Filtrar">&#9660;</span>
                     <span title="Ordenar">&#8645;</span>
-                    <span title="Lista de campos">&#9776;</span>
-                    <span title="Compartir">&#8646;</span>
-                    <span title="Ver como cuadrícula">&#9638;</span>
+                    <!-- span title="Lista de campos">&#9776;</span -->
+                    <!-- span title="Compartir">&#8646;</span -->
+                    <!-- span title="Ver como cuadrícula">& #9638;</span -->
                     <span title="Buscar">&#128269;</span>
                 </div>
 
