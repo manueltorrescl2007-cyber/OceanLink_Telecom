@@ -10,7 +10,7 @@ if (user != null && pass != null) {
 
 // 3. Lógica estática de roles
 if (user.equals("network_operator") && pass.equals("network_operator")) {
-response.sendRedirect(request.getContextPath() + "/network_operator/estado_red.jsp");
+response.sendRedirect(request.getContextPath() + "/EstadoRedServlet");   // Network Operator: entra por su Servlet (RF14)
 return; // Termina la ejecución de esta página
 
 } else if (user.equals("maintenance_coordinator") && pass.equals("maintenance_coordinator")) {

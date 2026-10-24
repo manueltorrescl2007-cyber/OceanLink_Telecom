@@ -1,30 +1,24 @@
-<%--
-    sidebar.jsp - Menú lateral del Network Operator
-    Recibe el parámetro "activePage" para resaltar la opción actual.
-    Valores esperados: estado | registrar | visualizar | historial
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
     String activePage = request.getParameter("activePage");
     if (activePage == null) {
         activePage = "";
     }
-    String ctx = request.getContextPath() + "/network_operator/";
+
+    String ctx = request.getContextPath();
 %>
 <aside class="menu-lateral">
   <div class="contenido-menu">
     <h2>Menú</h2>
     <nav class="navegacion-lateral">
 
-      <a href="<%= ctx %>estado_red.jsp"
+      <a href="<%= ctx %>/EstadoRedServlet"
          class="<%= "estado".equals(activePage) ? "activo" : "" %>">
         Estado de la red
       </a>
 
-      <!-- Grupo Incidencias -->
       <div class="grupo-menu">
 
-        <!-- Control del submenú (abierto por defecto) -->
         <input
           type="checkbox"
           id="control-incidencias"
@@ -38,15 +32,15 @@
         </label>
 
         <div class="contenido-submenu">
-          <a href="<%= ctx %>registrar_incidencia.jsp"
+          <a href="<%= ctx %>/IncidenciaServlet?action=formCrear"
              class="subopcion <%= "registrar".equals(activePage) ? "activo" : "" %>">
             Registrar
           </a>
-          <a href="<%= ctx %>incidencias-visualizar.jsp"
+          <a href="<%= ctx %>/IncidenciaServlet?action=lista"
              class="subopcion <%= "visualizar".equals(activePage) ? "activo" : "" %>">
             Visualizar
           </a>
-          <a href="<%= ctx %>historial.jsp"
+          <a href="<%= ctx %>/IncidenciaServlet?action=historial"
              class="subopcion <%= "historial".equals(activePage) ? "activo" : "" %>">
             Historial
           </a>
@@ -57,7 +51,6 @@
     </nav>
   </div>
 
-  <!-- Configuración -->
   <div class="configuracion">
     <nav>
       <a href="#">Perfil</a>

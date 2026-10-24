@@ -395,3 +395,284 @@
     gap: 12px;
   }
 }
+
+
+/* ==================================================
+   9. CRUD NETWORK OPERATOR (clases nuevas)
+   ================================================== */
+
+/* --- Encabezado de tarjeta con botón a la derecha --- */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.card-header .card-title {
+  margin-bottom: 0;
+}
+
+/* --- Botones --- */
+a.btn-primary {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.btn-chico {
+  padding: 8px 18px;
+  font-size: 14px;
+}
+
+.btn-secundario {
+  display: inline-block;
+  padding: 8px 18px;
+  color: var(--color-texto);
+  font-size: 14px;
+  font-weight: bold;
+  font-family: inherit;
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-secundario:hover {
+  background-color: var(--color-fondo);
+}
+
+.form-actions {
+  align-items: center;
+  gap: 12px;
+}
+
+/* Que el código (INC-001, LUR-VLP-01) no se parta en dos líneas */
+.data-table td:first-child {
+  white-space: nowrap;
+}
+
+/* --- Filtros y tablas --- */
+.filtros {
+  align-items: center;
+}
+
+.contador {
+  margin-left: auto;
+  color: var(--color-texto-claro);
+  font-size: 14px;
+}
+
+.data-table .vacio {
+  color: var(--color-texto-claro);
+  text-align: center;
+}
+
+/* --- Mensajes de éxito / error que manda el Servlet --- */
+.mensaje {
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+.mensaje-ok    { color: #1f8a4c; background-color: #e1f5e8; border: 1px solid #b7e4c7; }
+.mensaje-error { color: #a12c2c; background-color: #fde8e8; border: 1px solid #f5c2c2; }
+
+/* --- Severidad "Leve" (faltaba) --- */
+.severidad-leve       { color: var(--color-disponible); font-weight: bold; }
+.badge.severidad-leve { color: white; background-color: var(--color-disponible); }
+
+/* --- Badges del estado del segmento (valores del ENUM) --- */
+.badge-operativo          { color: #1f8a4c; background-color: #e1f5e8; }
+.badge-degradado          { color: #b98a06; background-color: #fdf3d8; }
+.badge-en-mantenimiento   { color: #0b5c8a; background-color: #e0eff9; }
+.badge-fuera-de-servicio  { color: #a12c2c; background-color: #fde8e8; }
+
+/* --- Colores por nivel de uso (RF12): se usan en las barras --- */
+.relleno.nivel-normal  { background-color: var(--color-acento); }
+.relleno.nivel-alta    { background-color: var(--color-alta); }
+.relleno.nivel-critica { background-color: var(--color-critica); }
+
+/* --- 1. Gráfica semanal (Chart.js dibuja dentro del <canvas>) ---
+   El canvas toma el alto de este div (maintainAspectRatio: false en el JavaScript). */
+.grafico-semana {
+  position: relative;
+  height: 300px;
+  margin-bottom: 8px;
+}
+
+/* Colores de la leyenda: los mismos de las líneas de la gráfica */
+.tramo-ocupada    { background-color: var(--color-primario); }
+.tramo-reservada  { background-color: var(--color-media); }
+.tramo-disponible { background-color: var(--color-acento); }
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 14px;
+  color: var(--color-texto-claro);
+  font-size: 14px;
+  list-style: none;
+}
+
+.leyenda .punto {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-radius: 3px;
+}
+
+/* --- Cajas de resumen (niveles de uso y severidades) --- */
+.resumen-niveles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+  margin-bottom: 24px;
+}
+
+.nivel-caja {
+  flex: 1 1 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 18px;
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-left-width: 5px;
+  border-radius: 6px;
+}
+
+.nivel-caja strong { font-size: 24px; }
+.nivel-caja span   { color: var(--color-texto-claro); font-size: 13px; }
+
+.nivel-normal, .caja-leve { border-left-color: var(--color-disponible); }
+.nivel-alta,   .caja-alta { border-left-color: var(--color-alta); }
+.nivel-critica, .caja-critica { border-left-color: var(--color-critica); }
+.caja-media { border-left-color: var(--color-media); }
+
+/* --- 2. Mini barra de uso dentro de la tabla --- */
+.mini-barra {
+  display: inline-block;
+  width: 90px;
+  height: 8px;
+  margin-right: 8px;
+  overflow: hidden;
+  vertical-align: middle;
+  background-color: var(--color-fondo);
+  border-radius: 4px;
+}
+
+.mini-barra .relleno { height: 100%; }
+
+.texto-uso {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* --- Detalle de incidencia --- */
+.descripcion-incidencia {
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.acciones-incidencia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 20px;
+  margin-bottom: 32px;
+  border-top: 1px solid var(--color-borde);
+}
+
+.form-en-linea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.form-en-linea select {
+  padding: 8px 12px;
+  font-family: inherit;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+}
+
+.subtitulo-columna {
+  margin-top: 24px;
+}
+
+.form-bitacora {
+  display: flex;
+  gap: 10px;
+}
+
+.form-bitacora .bitacora-input {
+  flex: 1;
+}
+
+/* --- Registrar: segmentos elegidos como etiquetas con "x" --- */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 12px;
+  color: var(--color-primario);
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #e0eff9;
+  border: 1px solid #b9d8ee;
+  border-radius: 999px;
+}
+
+/* La "x" es un <button>: le quitamos el aspecto de botón */
+.chip-x {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  color: var(--color-primario);
+  font-size: 16px;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.chip-x:hover {
+  color: white;
+  background-color: var(--color-critica);
+}
+
+.agregar-segmento {
+  display: flex;
+  gap: 10px;
+}
+
+.agregar-segmento select {
+  flex: 1;
+}
+
+/* Botón invisible para que Enter registre la incidencia (ver registrar_incidencia.jsp) */
+.boton-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  opacity: 0;
+}

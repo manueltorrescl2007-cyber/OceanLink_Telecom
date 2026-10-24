@@ -1,85 +1,74 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.LinkedHashMap" %>
-<%@ page import="java.util.Map" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="beans.networkoperator.Incidencia" %>
+<%@ page import="beans.networkoperator.Observacion" %>
+<%@ page import="beans.networkoperator.Servicio" %>
 <%
-    /*
-     * DATOS DE PRUEBA (temporal, hasta tener base de datos).
-     * Cada incidencia: { segmento, severidad, estado (1 a 6), detectada, cerrada,
-     *                    servicios "ID:Cliente;ID:Cliente", bitácora "hora|autor|texto;..." }
-     * Más adelante, esto lo reemplaza el Servlet con incidenciaDao.obtenerIncidencia(id).
-     */
-    Map<String, String[]> incidencias = new LinkedHashMap<>();
-    // ---- Activas (las de "Visualizar") ----
-    incidencias.put("INC-014", new String[]{"LIM-VLP-02", "Alta",    "2", "06 oct 2026", "",
-            "SRV-118:Cliente XXYY;SRV-121:Cliente ZZUU",
-            "10:32|J. Ramos|Caída de fibra óptica detectada.;11:05|J. Ramos|Se inicia análisis de la falla."});
-    incidencias.put("INC-013", new String[]{"LIM-VLP-02", "Crítica", "4", "03 oct 2026", "",
-            "SRV-118:Cliente XXYY;SRV-130:Cliente Andina",
-            "08:15|M. Díaz|Corte total del segmento.;09:40|M. Díaz|Reparación programada con buque.;07:00|C. Mendoza|Inicia reparación en sitio."});
-    incidencias.put("INC-011", new String[]{"LIM-GYE-01", "Media",   "3", "01 oct 2026", "",
-            "SRV-140:Cliente Pacífico",
-            "14:20|A. Torres|Degradación de señal en el segmento.;16:00|A. Torres|Reparación programada para el 10 oct."});
-    incidencias.put("INC-010", new String[]{"LIM-GYE-04", "Alta",    "5", "28 sep 2026", "",
-            "SRV-152:Cliente Norte",
-            "09:10|J. Ramos|Pérdida de potencia detectada.;18:30|J. Ramos|Servicio restaurado, pendiente de cierre."});
-    // ---- Cerradas (las de "Historial") ----
-    incidencias.put("INC-009", new String[]{"LIM-VLP-01", "Media",   "6", "15 ago 2026", "18 ago 2026",
-            "SRV-101:Cliente Sur",
-            "10:00|A. Torres|Atenuación alta en el enlace.;17:45|A. Torres|Servicio restaurado y verificado.;09:00|L. Ramírez|Incidencia cerrada."});
-    incidencias.put("INC-008", new String[]{"LIM-VLP-02", "Crítica", "6", "10 jul 2026", "13 jul 2026",
-            "SRV-118:Cliente XXYY;SRV-121:Cliente ZZUU",
-            "03:20|M. Díaz|Corte de cable por anclaje.;22:10|C. Mendoza|Empalme submarino completado.;08:30|L. Ramírez|Incidencia cerrada."});
-    incidencias.put("INC-007", new String[]{"LIM-GYE-01", "Media",   "6", "20 ago 2025", "25 ago 2025",
-            "SRV-140:Cliente Pacífico",
-            "12:00|J. Ramos|Errores intermitentes de transmisión.;16:20|J. Ramos|Ajuste de amplificador, servicio estable.;10:15|L. Ramírez|Incidencia cerrada."});
-    incidencias.put("INC-006", new String[]{"LIM-GYE-04", "Alta",    "6", "01 jul 2025", "05 jul 2025",
-            "SRV-152:Cliente Norte",
-            "07:30|A. Torres|Falla en estación de aterrizaje.;19:00|C. Mendoza|Equipo reemplazado.;09:45|L. Ramírez|Incidencia cerrada."});
+    Incidencia inc = (Incidencia) request.getAttribute("incidencia");
+    String siguienteEstado = (String) request.getAttribute("siguienteEstado");
+    ArrayList<Observacion> listaObservaciones = (ArrayList<Observacion>) request.getAttribute("listaObservaciones");
+    ArrayList<Servicio> listaServicios = (ArrayList<Servicio>) request.getAttribute("listaServicios");
+    if (listaObservaciones == null) { listaObservaciones = new ArrayList<>(); }
+    if (listaServicios == null) { listaServicios = new ArrayList<>(); }
 
-    // Incidencia pedida en la URL: incidencias-detalle.jsp?id=INC-013
-    String id = request.getParameter("id");
-    String[] inc = (id != null) ? incidencias.get(id) : null;
+    String ok = request.getParameter("ok");
+    String error = request.getParameter("error");
 
-    int estado = (inc != null) ? Integer.parseInt(inc[2]) : 0;
-    boolean cerrada = (estado == 6);
+    String servlet = request.getContextPath() + "/IncidenciaServlet";
 
-    // Opción del menú y migas según si está activa o cerrada
-    String paginaActiva = cerrada ? "historial" : "visualizar";
-    String origen = cerrada ? "Historial" : "Visualizar";
-    String paginaOrigen = cerrada ? "historial.jsp" : "incidencias-visualizar.jsp";
+    String[] estados = {"Detectada", "En analisis", "Reparacion programada", "En reparacion", "Servicio restaurado", "Cerrada"};
+    String[] pasos   = {"Detectada", "En análisis", "Rep. programada", "En reparación", "Restaurado", "Cerrada"};
+    String[] severidades = {"Leve", "Media", "Alta", "Critica"};
 
-    // Clase CSS de la severidad: "Crítica" -> "severidad-critica"
-    String claseSeveridad = "";
+    int pasoActual = 0;
+    boolean cerrada = false;
     if (inc != null) {
-        claseSeveridad = "severidad-" + inc[1].toLowerCase().replace("í", "i");
+        for (int i = 0; i < estados.length; i++) {
+            if (estados[i].equals(inc.getEstado())) {
+                pasoActual = i + 1;
+            }
+        }
+        cerrada = "Cerrada".equals(inc.getEstado());
     }
 
-    String[] pasos = {"Detectada", "En análisis", "Rep. prog.", "En rep.", "Restaurado", "Cerrada"};
+    String textoBoton = "";
+    if (siguienteEstado != null) {
+        if ("Servicio restaurado".equals(siguienteEstado)) {
+            textoBoton = "Registrar restauración del servicio";
+        } else if ("Cerrada".equals(siguienteEstado)) {
+            textoBoton = "Cerrar incidencia";
+        } else {
+
+            String[] textos = {"Detectada", "En análisis", "Reparación programada", "En reparación", "Restaurado", "Cerrada"};
+            for (int i = 0; i < estados.length; i++) {
+                if (estados[i].equals(siguienteEstado)) {
+                    textoBoton = "Pasar a: " + textos[i];
+                }
+            }
+        }
+    }
+
+    String paginaActiva = cerrada ? "historial" : "visualizar";
 %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OceanLink - <%= (inc != null) ? id : "Incidencia no encontrada" %></title>
-    <%-- 1. Estilos comunes (barra superior y menú lateral) --%>
+    <title>OceanLink - <%= inc != null ? inc.getCodigo() : "Incidencia no encontrada" %></title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
-    <%-- 2. Estilos del contenido del Network Operator --%>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=5">
 </head>
 <body>
 
-<%-- Pieza 1: barra superior --%>
 <jsp:include page="header.jsp" />
 
 <div class="contenedor">
 
-    <%-- Pieza 2: menú lateral (resalta Visualizar o Historial según el estado) --%>
     <jsp:include page="sidebar.jsp">
         <jsp:param name="activePage" value="<%= paginaActiva %>" />
     </jsp:include>
 
-    <%-- Pieza 3: contenido de la página --%>
     <main class="contenido-principal">
 
         <section class="encabezado-panel">
@@ -91,66 +80,119 @@
 
         <section class="card">
             <h2 class="card-title">Incidencia no encontrada</h2>
-            <p class="ayuda">
-                No existe la incidencia solicitada.
-                <a href="incidencias-visualizar.jsp">Volver a incidencias activas</a>
-            </p>
+            <p class="ayuda"><a href="<%= servlet %>">Volver a incidencias activas</a></p>
         </section>
 
         <% } else { %>
 
+        <% if ("creada".equals(ok)) { %>
+            <p class="mensaje mensaje-ok">Incidencia <strong><%= inc.getCodigo() %></strong> registrada correctamente.</p>
+        <% } %>
+        <% if ("estado".equals(error)) { %>
+            <p class="mensaje mensaje-error">No se pudo cambiar el estado: la incidencia ya no estaba en el paso esperado. No se pueden saltar pasos.</p>
+        <% } %>
+
         <section class="card">
             <p class="migas">
-                Incidencias / <a href="<%= paginaOrigen %>"><%= origen %></a> / <%= id %>
+                Incidencias /
+                <% if (cerrada) { %>
+                    <a href="<%= servlet %>?action=historial">Historial</a>
+                <% } else { %>
+                    <a href="<%= servlet %>">Visualizar</a>
+                <% } %>
+                / <%= inc.getCodigo() %>
             </p>
 
             <div class="titulo-incidencia">
-                <h3><%= id %></h3>
-                <span class="badge <%= claseSeveridad %>"><%= inc[1] %></span>
+                <h3><%= inc.getCodigo() %></h3>
+                <span class="badge <%= inc.getClaseSeveridad() %>"><%= inc.getSeveridadTexto() %></span>
             </div>
 
             <p class="segment-context">
-                Segmento: <strong><%= inc[0] %></strong> · Detectada el <%= inc[3] %>
-                <% if (cerrada) { %> · Cerrada el <%= inc[4] %><% } %>
+                Segmento: <strong><%= inc.getCodigosSegmentos() %></strong> · Detectada el <%= inc.getFechaRegistro() %>
+                <% if (inc.getFechaRestauracion() != null) { %> · Restaurada el <%= inc.getFechaRestauracion() %><% } %>
+                <% if (cerrada) { %> · Cerrada el <%= inc.getFechaCierre() %><% } %>
             </p>
 
-            <!-- Stepper: flujo de la incidencia (RF18) -->
+            <p class="descripcion-incidencia">
+                <strong><%= inc.getTitulo() %>.</strong> <%= inc.getDescripcion() %>
+                <span class="ayuda">(registrada por <%= inc.getUsuario().getNombre() %>)</span>
+            </p>
+
             <div class="stepper">
                 <% for (int i = 1; i <= pasos.length; i++) {
-                       String clase = (i < estado || cerrada) ? "completado" : (i == estado ? "actual" : "");
+                       String clase = (i < pasoActual || cerrada) ? "completado" : (i == pasoActual ? "actual" : "");
                 %>
                 <div class="paso <%= clase %>">
-                    <div class="circulo"><%= clase.equals("completado") ? "&#10003;" : String.valueOf(i) %></div>
+                    <div class="circulo"><%= "completado".equals(clase) ? "&#10003;" : String.valueOf(i) %></div>
                     <p><%= pasos[i - 1] %></p>
                 </div>
                 <% } %>
             </div>
 
-            <!-- Dos columnas: servicios afectados / bitácora -->
+            <% if (!cerrada) { %>
+
+            <div class="acciones-incidencia">
+
+                <form method="POST" action="<%= servlet %>?action=avanzar">
+                    <input type="hidden" name="idIncidencia" value="<%= inc.getIdIncidencia() %>">
+                    <input type="hidden" name="estadoActual" value="<%= inc.getEstado() %>">
+                    <button type="submit" class="btn-primary"><%= textoBoton %></button>
+                </form>
+
+                <form method="POST" action="<%= servlet %>?action=severidad" class="form-en-linea">
+                    <input type="hidden" name="idIncidencia" value="<%= inc.getIdIncidencia() %>">
+                    <label for="severidad">Severidad:</label>
+                    <select id="severidad" name="severidad">
+                        <% for (String sev : severidades) { %>
+                            <option value="<%= sev %>" <%= sev.equals(inc.getSeveridad()) ? "selected" : "" %>>
+                                <%= "Critica".equals(sev) ? "Crítica" : sev %>
+                            </option>
+                        <% } %>
+                    </select>
+                    <button type="submit" class="btn-secundario">Guardar</button>
+                </form>
+
+            </div>
+            <% } %>
+
             <div class="dos-columnas">
                 <div class="columna">
+
                     <h4>Servicios y clientes afectados</h4>
-                    <% for (String servicio : inc[5].split(";")) {
-                           String[] partes = servicio.split(":"); %>
+                    <% if (listaServicios.isEmpty()) { %>
+                        <p class="ayuda">Ningún servicio activo pasa por los segmentos de esta incidencia.</p>
+                    <% } else {
+                           for (Servicio sv : listaServicios) { %>
                     <div class="tarjeta">
-                        <span><%= partes[0] %></span>
-                        <span><%= partes[1] %></span>
+                        <span>SRV-<%= sv.getIdServicio() %></span>
+                        <span><%= sv.getSolicitud().getCliente().getNombre() %></span>
                     </div>
-                    <% } %>
+                    <%     }
+                       } %>
                 </div>
 
                 <div class="columna">
+
                     <h4>Bitácora</h4>
-                    <% for (String registro : inc[6].split(";")) {
-                           String[] partes = registro.split("\\|"); %>
+                    <% if (listaObservaciones.isEmpty()) { %>
+                        <p class="ayuda">Aún no hay observaciones.</p>
+                    <% } else {
+                           for (Observacion o : listaObservaciones) { %>
                     <div class="registro">
-                        <strong><%= partes[0] %> - <%= partes[1] %></strong>
-                        <p><%= partes[2] %></p>
+                        <strong><%= o.getFechaHora() %> - <%= o.getUsuario().getNombre() %></strong>
+                        <p><%= o.getMensaje() %></p>
                     </div>
-                    <% } %>
+                    <%     }
+                       } %>
 
                     <% if (!cerrada) { %>
-                    <input type="text" class="bitacora-input" placeholder="Agregar observación...">
+
+                    <form method="POST" action="<%= servlet %>?action=observar" class="form-bitacora">
+                        <input type="hidden" name="idIncidencia" value="<%= inc.getIdIncidencia() %>">
+                        <input type="text" name="mensaje" class="bitacora-input" placeholder="Agregar observación..." required>
+                        <button type="submit" class="btn-primary btn-chico">Agregar</button>
+                    </form>
                     <% } else { %>
                     <p class="ayuda">Incidencia cerrada: ya no se pueden agregar observaciones.</p>
                     <% } %>
