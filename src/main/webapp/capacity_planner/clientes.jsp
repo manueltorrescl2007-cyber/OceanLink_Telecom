@@ -2,6 +2,7 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="beans.Cliente" %>
 <%@ page import="beans.Solicitud" %>
+<%@ page import="beans.Servicio" %>
 <%!
     // Mostrar texto de la base de datos sin interpretarlo como HTML.
     private String texto(String valor) {
@@ -71,12 +72,22 @@
         }
     }
 
-    // Cantidad de tarjetas de EJEMPLO: todavía no se consulta ese módulo.
-    ArrayList<Solicitud> solicitudesCliente =
-            (ArrayList<Solicitud>) request.getAttribute("solicitudesCliente");
+        ArrayList<Solicitud> solicitudesCliente =
+                (ArrayList<Solicitud>) request.getAttribute("solicitudesCliente");
 
-    int totalSolicitudes = solicitudesCliente.size();
-    int totalServicios = 2;
+        ArrayList<Servicio> serviciosCliente =
+                (ArrayList<Servicio>) request.getAttribute("listaServiciosCliente");
+
+        if (solicitudesCliente == null) {
+            solicitudesCliente = new ArrayList<>();
+        }
+
+        if (serviciosCliente == null) {
+            serviciosCliente = new ArrayList<>();
+        }
+
+        int totalSolicitudes = solicitudesCliente.size();
+        int totalServicios = serviciosCliente.size();
 %>
 <!doctype html>
 <html lang="es">
@@ -93,7 +104,7 @@
 <header class="barra-superior">
     <div class="zona-logo">
         <label for="controlMenu" class="boton-menu" title="Ocultar o mostrar menú">☰</label>
-        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner.jsp" class="logo">OceanLink</a>
+        <a href="${pageContext.request.contextPath}/CapacityPlannerServlet" class="logo">OceanLink</a>
     </div>
     <div class="usuario">
         <div class="foto-usuario">
@@ -113,7 +124,7 @@
         <div class="contenido-menu">
             <h2>Menú</h2>
             <nav class="navegacion-lateral" aria-label="Menú principal">
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner.jsp">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/CapacityPlannerServlet">Dashboard</a>
                 <a href="<%= servlet %>" class="activo">Clientes</a>
                 <a href="${pageContext.request.contextPath}/capacity_planner/solicitudes.jsp">Solicitudes</a>
                 <!-- Checkbox y label abren Infraestructura sin JavaScript -->
@@ -200,7 +211,7 @@
                     <span class="icono-opcion">★</span>
                     <span class="texto-opcion">
                         <strong>Servicios contratados</strong>
-                        <small>Vista de ejemplo · pendiente de conectar</small>
+                        <small><%= totalServicios %> servicio(s) registrados</small>
                     </span>
                     <span class="flecha">›</span>
                 </a>
@@ -222,12 +233,15 @@
                 </a>
             </div>
         </section>
-        <!-- DETALLE: solo aparece después de pulsar una opción del resumen -->
+        <!-- DETALLE del cliente seleccionado -->
         <% if (cliente != null && detalleSeleccionado != null) { %>
         <section class="panel-detalle">
             <div class="encabezado-detalle">
                 <div>
-                    <p class="subtitulo-detalle">Cliente <%= texto(nombreCliente) %></p>
+                    <p class="subtitulo-detalle">
+                        Cliente <%= texto(nombreCliente) %>
+                    </p>
+
                     <h2>
                         <% if ("solicitudes".equals(detalleSeleccionado)) { %>
                             Solicitudes asociadas
@@ -240,9 +254,14 @@
                         <% } %>
                     </h2>
                 </div>
-                <a class="cerrar-detalle" href="<%= servlet %>?id=<%= idCliente %>" aria-label="Cerrar detalle">&times;</a>
+
+                <a class="cerrar-detalle"
+                   href="<%= servlet %>?id=<%= idCliente %>"
+                   aria-label="Cerrar detalle">&times;</a>
             </div>
+
             <div class="contenido-detalle">
+
                 <% if ("solicitudes".equals(detalleSeleccionado)) { %>
 
                     <% if (solicitudesCliente.isEmpty()) { %>
@@ -259,7 +278,6 @@
                                 claseEstado = "aprobada";
                             }
                     %>
-
                         <article class="tarjeta-detalle">
                             <div>
                                 <strong>
@@ -282,43 +300,82 @@
                                 <%= texto(s.getEstado()) %>
                             </span>
                         </article>
-
                     <%  }
                        } %>
+
                 <% } else if ("servicios".equals(detalleSeleccionado)) { %>
-                    <p>Estas tarjetas son ejemplos del diseño; no corresponden a servicios reales de este cliente.</p>
-                    <!-- Tarjetas de ejemplo -->
-                    <article class="tarjeta-detalle servicio">
-                        <strong>SER-<%= idCliente %>01</strong>
-                        <p><b>Solicitud:</b> SOL-<%= idCliente %>01</p>
-                        <p><b>Ruta:</b> LAX-LUR-R01</p>
-                        <p><b>Capacidad asignada:</b> 50 Gbps</p>
-                        <p><b>Estado:</b> <span class="badge pendiente">Pendiente</span></p>
-                    </article>
-                    <% if (totalServicios >= 2) { %>
-                    <article class="tarjeta-detalle servicio">
-                        <strong>SER-<%= idCliente %>02</strong>
-                        <p><b>Solicitud:</b> SOL-<%= idCliente %>03</p>
-                        <p><b>Ruta:</b> GYE-LUR-R01</p>
-                        <p><b>Capacidad asignada:</b> 30 Gbps</p>
-                        <p><b>Estado:</b> <span class="badge activa">Activo</span></p>
-                    </article>
-                    <% } %>
+
+                    <% if (serviciosCliente.isEmpty()) { %>
+                        <p>Este cliente todavía no tiene servicios registrados.</p>
+                    <% } else {
+                        for (Servicio servicio : serviciosCliente) {
+                            String claseEstado = "pendiente";
+
+                            if ("Activo".equals(servicio.getEstado())) {
+                                claseEstado = "activa";
+                            } else if ("Cancelado".equals(servicio.getEstado())) {
+                                claseEstado = "inactiva";
+                            }
+                    %>
+                        <article class="tarjeta-detalle servicio">
+                            <strong>SER-<%= servicio.getIdServicio() %></strong>
+
+                            <p>
+                                <b>Solicitud:</b>
+                                SOL-<%= servicio.getIdSolicitud() %>
+                            </p>
+
+                            <p>
+                                <b>Ruta:</b>
+                                <%= texto(servicio.getNombreRuta()) %>
+                            </p>
+
+                            <p>
+                                <b>Capacidad asignada:</b>
+                                <%= servicio.getCapacidadAsignada() %> Gbps
+                            </p>
+
+                            <p>
+                                <b>Estado:</b>
+                                <span class="badge <%= claseEstado %>">
+                                    <%= texto(servicio.getEstado()) %>
+                                </span>
+                            </p>
+
+                            <a href="${pageContext.request.contextPath}/ServicioServlet?servicio=<%= servicio.getIdServicio() %>">
+                                Ver servicio
+                            </a>
+                        </article>
+                    <%  }
+                       } %>
+
                 <% } else if ("contacto".equals(detalleSeleccionado)) { %>
+
                     <article class="tarjeta-detalle contacto">
                         <p><b>Empresa:</b> <%= texto(nombreCliente) %></p>
                         <p><b>Correo:</b> <%= texto(correoCliente) %></p>
                         <p><b>Teléfono:</b> <%= texto(telefonoCliente) %></p>
                     </article>
+
                 <% } else { %>
+
                     <article class="tarjeta-detalle contacto">
                         <p><b>ID:</b> <%= idCliente %></p>
                         <p><b>Nombre:</b> <%= texto(nombreCliente) %></p>
                         <p><b>Razón social:</b> <%= texto(razonSocial) %></p>
                         <p><b>RUC:</b> <%= texto(rucCliente) %></p>
-                        <p><b>Estado:</b> <span class="badge <%= estadoCliente.equals("activo") ? "activa" : "inactiva" %>"><%= estadoCliente.equals("activo") ? "Activo" : "Inactivo" %></span></p>
+                        <p>
+                            <b>Estado:</b>
+                            <span class="badge <%= "activo".equals(estadoCliente)
+                                    ? "activa" : "inactiva" %>">
+                                <%= "activo".equals(estadoCliente)
+                                        ? "Activo" : "Inactivo" %>
+                            </span>
+                        </p>
                     </article>
+
                 <% } %>
+
             </div>
         </section>
         <% } %>

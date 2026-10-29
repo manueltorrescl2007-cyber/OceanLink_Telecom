@@ -47,7 +47,7 @@
 <header class="barra-superior">
     <div class="zona-logo">
         <label for="controlMenu" class="boton-menu" title="Ocultar o mostrar menú">☰</label>
-        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner.jsp" class="logo">OceanLink</a>
+        <a href="${pageContext.request.contextPath}/CapacityPlannerServlet" class="logo">OceanLink</a>
     </div>
     <div class="usuario">
         <div class="foto-usuario">
@@ -67,7 +67,7 @@
         <div class="contenido-menu">
             <h2>Menú</h2>
             <nav class="navegacion-lateral" aria-label="Menú principal">
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner.jsp">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/CapacityPlannerServlet">Dashboard</a>
                 <a href="<%= servlet %>" class="activo">Clientes</a>
                 <a href="${pageContext.request.contextPath}/capacity_planner/solicitudes.jsp">Solicitudes</a>
                 <!-- Checkbox y label abren Infraestructura sin JavaScript -->

@@ -118,7 +118,7 @@
     <div class="zona-logo">
         <label for="controlMenu" class="boton-menu"
                title="Ocultar o mostrar menú">☰</label>
-        <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner.jsp"
+        <a href="${pageContext.request.contextPath}/CapacityPlannerServlet"
            class="logo">OceanLink</a>
     </div>
     <div class="usuario">
@@ -135,7 +135,7 @@
         <div class="contenido-menu">
             <h2>Menú</h2>
             <nav class="navegacion-lateral" aria-label="Menú principal">
-                <a href="${pageContext.request.contextPath}/capacity_planner/capacity_planner.jsp">
+                <a href="${pageContext.request.contextPath}/CapacityPlannerServlet">
                     Dashboard
                 </a>
                 <a href="${pageContext.request.contextPath}/ClienteServlet">

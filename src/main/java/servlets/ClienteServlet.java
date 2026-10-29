@@ -5,7 +5,8 @@ import daos.ClienteDao;
 import beans.Solicitud;
 import daos.SolicitudDao;
 import java.util.ArrayList;
-
+import daos.ServicioDao;
+import beans.Servicio;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -144,12 +145,14 @@ public class ClienteServlet extends HttpServlet {
   }
 
   // Consultar los datos que necesita la vista
+  // Consultar los datos que necesita la vista
   private void mostrarClientes(HttpServletRequest request,
                                HttpServletResponse response)
     throws SQLException, ServletException, IOException {
 
     ClienteDao clienteDao = new ClienteDao();
     SolicitudDao solicitudDao = new SolicitudDao();
+    ServicioDao servicioDao = new ServicioDao();
 
     String buscar = texto(request.getParameter("buscar"));
     String estado = texto(request.getParameter("estadoFiltro"));
@@ -177,23 +180,27 @@ public class ClienteServlet extends HttpServlet {
       cliente = clienteDao.obtenerCliente(idCliente);
     }
 
-    // Mostrar el primer cliente si no hay uno seleccionado.
+    // Mostrar el primer cliente si no hay uno seleccionado
     if (cliente == null && !clientes.isEmpty()) {
       cliente = clientes.get(0);
     }
 
     request.setAttribute("clienteSeleccionado", cliente);
 
-    // Consultar las solicitudes del cliente seleccionado.
+    // Consultar las solicitudes y servicios del mismo cliente
     ArrayList<Solicitud> solicitudes = new ArrayList<>();
+    ArrayList<Servicio> servicios = new ArrayList<>();
 
     if (cliente != null) {
       solicitudes = solicitudDao.listarSolicitudesPorCliente(
-        cliente.getIdCliente()
-      );
+        cliente.getIdCliente());
+
+      servicios = servicioDao.listarServiciosPorCliente(
+        cliente.getIdCliente());
     }
 
     request.setAttribute("solicitudesCliente", solicitudes);
+    request.setAttribute("listaServiciosCliente", servicios);
 
     request.getRequestDispatcher("/capacity_planner/clientes.jsp")
       .forward(request, response);
