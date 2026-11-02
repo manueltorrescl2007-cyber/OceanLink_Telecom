@@ -37,6 +37,9 @@ public class MantenimientoServlet extends HttpServlet {
   private static final String VISTA_EDICION =
     "/Maintenance_coordinator/editar_mantenimiento.jsp";
 
+  private static final String VISTA_ESTADO =
+    "/Maintenance_coordinator/estado.jsp";
+
   // GET para consultar información y mostrar vistas
 
   @Override
@@ -46,6 +49,8 @@ public class MantenimientoServlet extends HttpServlet {
   ) throws ServletException, IOException {
 
     request.setCharacterEncoding("UTF-8");
+    System.out.println("Hora Java: " + LocalDateTime.now());
+    System.out.println("Zona horaria Java: " + java.time.ZoneId.systemDefault());
 
     String accion = request.getParameter("accion");
 
@@ -58,6 +63,9 @@ public class MantenimientoServlet extends HttpServlet {
       switch (accion) {
 
         case "listar":
+
+          // Actualizamos los estados según las fechas de MySQL.
+          mantenimientoDao.actualizarEstadosAutomaticamente();
 
           request.setAttribute(
             "mantenimientos",
@@ -76,18 +84,42 @@ public class MantenimientoServlet extends HttpServlet {
 
 
         case "historial":
+
+          // Actualizamos los estados según las fechas de MySQL.
+          mantenimientoDao.actualizarEstadosAutomaticamente();
+
+          // Recuperamos únicamente los mantenimientos finalizados y cancelados.
           request.setAttribute(
             "historialMantenimientos",
             mantenimientoDao.listarHistorial()
           );
 
+          // Recuperamos los códigos de los segmentos.
+          request.setAttribute(
+            "segmentos",
+            segmentoDao.listarSegmentos()
+          );
+
           request.getRequestDispatcher(VISTA_HISTORIAL)
             .forward(request, response);
+
           break;
 
 
         case "editar":
+
+          // Garantizamos que el estado esté actualizado antes de editar.
+          mantenimientoDao.actualizarEstadosAutomaticamente();
+
           mostrarEdicion(request, response);
+
+          break;
+
+
+        case "estado":
+
+          mostrarEstado(request, response);
+
           break;
 
         case "nuevo":
@@ -250,6 +282,47 @@ public class MantenimientoServlet extends HttpServlet {
   }
 
 
+// Mostrar el estado de un mantenimiento específico
+
+
+  private void mostrarEstado(
+    HttpServletRequest request,
+    HttpServletResponse response
+  ) throws ServletException, IOException {
+
+    // Obtener el ID enviado desde la URL.
+    int id = obtenerIdPositivo(
+      request.getParameter("idMantenimiento"),
+      "El ID del mantenimiento no es válido."
+    );
+
+    // Actualizar los estados automáticamente.
+    mantenimientoDao.actualizarEstadosAutomaticamente();
+
+    // Buscar el mantenimiento correspondiente en MySQL.
+    Mantenimiento mantenimiento =
+      mantenimientoDao.obtenerMantenimiento(id);
+
+    // Verificar que el mantenimiento exista.
+    if (mantenimiento == null) {
+      response.sendError(
+        HttpServletResponse.SC_NOT_FOUND,
+        "No se encontró el mantenimiento solicitado."
+      );
+      return;
+    }
+
+    // Enviar el objeto a estado.jsp.
+    request.setAttribute(
+      "mantenimiento",
+      mantenimiento
+    );
+
+    // Mostrar la vista.
+    request.getRequestDispatcher(VISTA_ESTADO)
+      .forward(request, response);
+  }
+
   // =========================================================
   // POST: crear un mantenimiento
   // =========================================================
@@ -342,7 +415,7 @@ public class MantenimientoServlet extends HttpServlet {
       response.sendError(
         HttpServletResponse.SC_CONFLICT,
         "No se pudo cancelar el mantenimiento. "
-          + "Verifica que exista y esté programado."
+          + "Verifica que exista y no haya finalizado ni sido cancelado."
       );
       return;
     }

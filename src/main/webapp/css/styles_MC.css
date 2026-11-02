@@ -375,3 +375,15 @@
 .filters-bar .form-field {
   flex: 1;
 }
+
+/* ESTADO: CANCELADO */
+span.badge.badge-cancelado {
+  background-color: #FCE8E6;
+  color: #B42318;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
+  white-space: nowrap;
+}

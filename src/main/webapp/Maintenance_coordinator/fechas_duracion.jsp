@@ -1,3 +1,4 @@
+
 <%@ page language="java"
          contentType="text/html; charset=UTF-8"
          pageEncoding="UTF-8" %>
@@ -27,7 +28,7 @@
     (Map<Integer, String>)
       request.getAttribute("segmentos");
 
-  // El listado siempre debe recibir los datos del Servlet.
+  // Esta vista debe recibir los datos del Servlet.
   if (mantenimientos == null || segmentos == null) {
     response.sendRedirect(
       request.getContextPath()
@@ -38,10 +39,11 @@
 
   DateTimeFormatter formatoFecha =
     DateTimeFormatter.ofPattern(
-      "dd/MM/yyyy", Locale.forLanguageTag("es-PE")
+      "dd/MM/yyyy",
+      Locale.forLanguageTag("es-PE")
     );
 
-  // Conservamos al menos diez filas en la tabla.
+  // Mantener al menos 10 filas.
   int totalFilas = Math.max(10, mantenimientos.size());
 
   String resultado = request.getParameter("resultado");
@@ -85,11 +87,11 @@
       <div class="card">
 
         <h2 class="card-title">
-          Fechas y duración de mantenimientos programados
+          Fechas y duración de mantenimientos
         </h2>
 
+        <!-- MENSAJES DE RESULTADO -->
 
-        <!-- MENSAJE DE RESULTADO -->
         <% if ("actualizado".equals(resultado)) { %>
 
         <p style="color: green; font-weight: bold;">
@@ -112,6 +114,7 @@
 
 
         <!-- BARRA SUPERIOR -->
+
         <div class="table-toolbar">
 
           <div class="table-toolbar-left">
@@ -119,36 +122,24 @@
             Vista de Tabla
           </div>
 
-          <div class="table-toolbar-icons">
-
-            <a
-              href="${pageContext.request.contextPath}/MantenimientoServlet?accion=listar"
-              title="Actualizar listado"
-              aria-label="Actualizar listado">
-
-              &#8635;
-
-            </a>
-
-            <span title="Más opciones">&#8942;</span>
-
-          </div>
-
         </div>
 
 
         <!-- TABLA DE MANTENIMIENTOS -->
+
         <div class="data-table-wrapper">
 
           <table class="data-table">
 
             <thead>
             <tr>
+              <th>ID</th>
               <th>Segmento</th>
               <th>Tipo de mantenimiento</th>
               <th>Fecha de inicio</th>
               <th>Fecha de fin</th>
               <th>Prioridad</th>
+              <th>Estado</th>
               <th>Notas / Descripción</th>
               <th>Acciones</th>
             </tr>
@@ -164,6 +155,7 @@
                   Mantenimiento m =
                     mantenimientos.get(i);
 
+                  // PRIORIDAD
                   String prioridad = m.getPrioridad();
 
                   String badgeClass = "badge-leve";
@@ -178,12 +170,14 @@
                     badgeClass = "badge-critica";
                   }
 
+                  // SEGMENTO
                   String codigoSegmento =
                     segmentos.getOrDefault(
                       m.getIdSegmento(),
                       "Segmento #" + m.getIdSegmento()
                     );
 
+                  // FECHAS
                   String fechaInicio =
                     m.getFechaInicio() == null
                       ? "—"
@@ -195,45 +189,79 @@
                       ? "—"
                       : m.getFechaFin()
                       .format(formatoFecha);
+
+                  // ESTADO CALCULADO POR EL DAO
+                  String estado = m.getEstado();
+
+                  String estadoVisible =
+                    "En ejecucion".equals(estado)
+                      ? "En ejecución"
+                      : estado;
+
+                  String badgeEstado = "badge-programado";
+
+                  if ("En ejecucion".equals(estado)) {
+                    badgeEstado = "badge-en-progreso";
+
+                  } else if ("Finalizado".equals(estado)) {
+                    badgeEstado = "badge-finalizado";
+                  }
+
+                  boolean puedeEditar =
+                    "Programado".equals(estado);
+
+                  boolean puedeCancelar =
+                    "Programado".equals(estado)
+                      || "En ejecucion".equals(estado);
             %>
 
             <tr>
+
+              <!-- ID: ENLACE A ESTADO -->
+              <td>
+                <a
+                  href="${pageContext.request.contextPath}/MantenimientoServlet?accion=estado&idMantenimiento=<%= m.getIdMantenimiento() %>"
+                  title="Ver estado del mantenimiento"
+                  style="font-weight: bold; text-decoration: underline;">
+
+                  <%= m.getIdMantenimiento() %>
+
+                </a>
+              </td>
 
               <!-- SEGMENTO -->
               <td>
                 <%= escaparHtml(codigoSegmento) %>
               </td>
 
-
               <!-- TIPO -->
               <td>
                 <%= escaparHtml(m.getTipo()) %>
               </td>
-
 
               <!-- FECHA INICIO -->
               <td>
                 <%= fechaInicio %>
               </td>
 
-
               <!-- FECHA FIN -->
               <td>
                 <%= fechaFin %>
               </td>
 
-
               <!-- PRIORIDAD -->
               <td>
-
-                                    <span class="badge <%= badgeClass %>">
-
-                                        <%= escaparHtml(prioridad) %>
-
-                                    </span>
-
+                                <span class="badge <%= badgeClass %>">
+                                    <%= escaparHtml(prioridad) %>
+                                </span>
               </td>
 
+              <!-- ESTADO -->
+              <td>
+                                <span class="badge <%= badgeEstado %>">
+                                    <%= escaparHtml(estadoVisible) %>
+                                </span>
+              </td>
 
               <!-- DESCRIPCIÓN -->
               <td>
@@ -242,40 +270,72 @@
                 ) %>
               </td>
 
-
               <!-- ACCIONES -->
               <td>
+                <div style="display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;">
 
-                <% if ("Programado".equals(
-                  m.getEstado())) { %>
+                  <% if (puedeEditar) { %>
 
-                <a
-                  href="${pageContext.request.contextPath}/MantenimientoServlet?accion=editar&idMantenimiento=<%= m.getIdMantenimiento() %>"
-                  class="btn btn-primary">
+                  <a
+                    href="${pageContext.request.contextPath}/MantenimientoServlet?accion=editar&idMantenimiento=<%= m.getIdMantenimiento() %>"
+                    class="btn btn-primary"
+                    style="padding: 8px 20px;
+                   font-size: 14px;
+                   min-width: 90px;
+                   text-align: center;
+                   box-sizing: border-box;">
 
-                  Editar
+                    Editar
 
-                </a>
+                  </a>
 
-                <% } else { %>
+                  <% } %>
 
-                <span>
-                                            <%= escaparHtml(m.getEstado()) %>
-                                        </span>
+                  <% if (puedeCancelar) { %>
 
-                <% } %>
+                  <form
+                    action="${pageContext.request.contextPath}/MantenimientoServlet"
+                    method="POST"
+                    style="margin: 0;"
+                    onsubmit="return confirm('¿Estás seguro de que deseas cancelar el mantenimiento #<%= m.getIdMantenimiento() %>? Esta acción no se puede deshacer.');">
 
+                    <input
+                      type="hidden"
+                      name="accion"
+                      value="cancelar">
+
+                    <input
+                      type="hidden"
+                      name="idMantenimiento"
+                      value="<%= m.getIdMantenimiento() %>">
+
+                    <button
+                      type="submit"
+                      class="btn btn-primary"
+                      style="padding: 8px 20px;
+                       font-size: 14px;
+                       min-width: 90px;
+                       text-align: center;
+                       box-sizing: border-box;
+                       background-color: #b42318;
+                       border-color: #b42318;">
+
+                      Cancelar
+
+                    </button>
+
+                  </form>
+
+                  <% } %>
+
+                </div>
               </td>
-
-            </tr>
-
-            <%
-            } else {
-            %>
 
             <!-- FILAS VACÍAS DEL DISEÑO ORIGINAL -->
             <tr class="row-empty">
-
               <td>&nbsp;</td>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
@@ -283,7 +343,8 @@
               <td>&nbsp;</td>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
-
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
             </tr>
 
             <%

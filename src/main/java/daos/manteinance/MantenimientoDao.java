@@ -2,6 +2,7 @@
 package daos.manteinance;
 
 import beans.maintenance.Mantenimiento;
+import utils.EstadoMantenimientoUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,7 +22,7 @@ public class MantenimientoDao extends daos.BaseDao {
     String sql = """
                 SELECT *
                 FROM mantenimientos
-                WHERE estado <> 'Cancelado'
+                WHERE estado NOT IN ('Cancelado', 'Finalizado')
                 ORDER BY fecha_inicio DESC
                 """;
 
@@ -43,22 +44,34 @@ public class MantenimientoDao extends daos.BaseDao {
 
   // ===== READ: LISTAR HISTORIAL COMPLETO =====
 
+
   public ArrayList<Mantenimiento> listarHistorial() {
 
     ArrayList<Mantenimiento> lista = new ArrayList<>();
 
     String sql = """
-                SELECT *
-                FROM mantenimientos
-                ORDER BY fecha_inicio DESC
-                """;
+        SELECT *
+        FROM mantenimientos
+        ORDER BY fecha_inicio DESC
+        """;
 
     try (Connection conn = getConnection();
          PreparedStatement pstmt = conn.prepareStatement(sql);
          ResultSet rs = pstmt.executeQuery()) {
 
       while (rs.next()) {
-        lista.add(mapearMantenimiento(rs));
+
+        Mantenimiento m = mapearMantenimiento(rs);
+
+        String estadoReal =
+          EstadoMantenimientoUtil.calcularEstado(m);
+
+        if ("Finalizado".equals(estadoReal) ||
+          "Cancelado".equals(estadoReal)) {
+
+          m.setEstado(estadoReal);
+          lista.add(m);
+        }
       }
 
     } catch (SQLException e) {
@@ -68,6 +81,7 @@ public class MantenimientoDao extends daos.BaseDao {
 
     return lista;
   }
+
 
   // ===== READ: OBTENER POR ID =====
 
@@ -87,7 +101,14 @@ public class MantenimientoDao extends daos.BaseDao {
       try (ResultSet rs = pstmt.executeQuery()) {
 
         if (rs.next()) {
-          return mapearMantenimiento(rs);
+
+          Mantenimiento m = mapearMantenimiento(rs);
+
+          m.setEstado(
+            EstadoMantenimientoUtil.calcularEstado(m)
+          );
+
+          return m;
         }
       }
 
@@ -97,6 +118,39 @@ public class MantenimientoDao extends daos.BaseDao {
     }
 
     return null;
+  }
+
+  // ACTUALIZAR ESTADOS DE MANERA AUTOMÁTICA SEGÚN LA FECHA
+
+  public void actualizarEstadosAutomaticamente() {
+
+    String sql = """
+            UPDATE mantenimientos
+            SET estado = CASE
+            WHEN fecha_fin IS NOT NULL
+                 AND fecha_fin < NOW()
+                THEN 'Finalizado'
+
+            WHEN fecha_inicio IS NOT NULL
+                 AND fecha_inicio <= NOW()
+                 AND (fecha_fin IS NULL OR fecha_fin >= NOW())
+                THEN 'En ejecucion'
+
+            ELSE 'Programado'
+            END
+            WHERE estado IN ('Programado', 'En ejecucion')
+            """;
+
+    try (Connection conn = getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+      pstmt.executeUpdate();
+
+    } catch (SQLException e) {
+      throw new IllegalStateException(
+        "Error al actualizar los estados automáticamente", e
+      );
+    }
   }
 
   // CREACIÓN DE NUEVOS MANTENIMIENTOS
@@ -138,17 +192,18 @@ public class MantenimientoDao extends daos.BaseDao {
 
   public boolean actualizarMantenimiento(Mantenimiento m) {
 
-    String sql = """
-                UPDATE mantenimientos
-                SET id_segmento = ?,
-                    tipo = ?,
-                    prioridad = ?,
-                    fecha_inicio = ?,
-                    fecha_fin = ?,
-                    descripcion_general = ?
-                WHERE id_mantenimiento = ?
-                  AND estado = 'Programado'
-                """;
+        String sql = """
+                    UPDATE mantenimientos
+                    SET id_segmento = ?,
+                        tipo = ?,
+                        prioridad = ?,
+                        fecha_inicio = ?,
+                        fecha_fin = ?,
+                        descripcion_general = ?
+                    WHERE id_mantenimiento = ?
+                      AND estado <> 'Cancelado'
+                      AND fecha_inicio > NOW()
+                    """;
 
     try (Connection conn = getConnection();
          PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -176,15 +231,16 @@ public class MantenimientoDao extends daos.BaseDao {
 
   // CANCELACIÓN DE MANTENIMIENTOS (BORRADO LÓGICO)
 
+
   public boolean cancelarMantenimiento(int idMantenimiento) {
 
     String sql = """
-                UPDATE mantenimientos
-                SET estado = 'Cancelado'
-                WHERE id_mantenimiento = ?
-                  AND estado = 'Programado'
-                """; // AQUI SE ENTIENDE QUE SOLO SE PUEDE CANCELAR LOS MANTENIMIENTOS QUE ESTEN EN ESTADO DE PROGRAMADOS
-                    // NO SE PUEDE CANCELAR MANTENIMIENTOS QUE YA ESTEN EN ESTADO AVANZADO
+        UPDATE mantenimientos
+        SET estado = 'Cancelado'
+        WHERE id_mantenimiento = ?
+          AND estado <> 'Cancelado'
+          AND fecha_fin > NOW()
+        """;
 
     try (Connection conn = getConnection();
          PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -198,6 +254,7 @@ public class MantenimientoDao extends daos.BaseDao {
         "Error al cancelar mantenimiento", e);
     }
   }
+
 
   // MAPEO DE UN SQL A UN BEAN DE MANTENIMIENTO
 
