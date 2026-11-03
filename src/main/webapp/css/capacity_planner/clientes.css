@@ -908,3 +908,52 @@
   background-position: right 14px center;
 }
 
+.tarjeta-detalle .enlace-ver-solicitud {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #1c8c9c;
+  text-decoration: none;
+}
+
+.tarjeta-detalle .enlace-ver-solicitud:hover {
+  color: #0b3d5c;
+}
+
+/* Tarjeta de servicio en horizontal */
+.tarjeta-detalle.servicio {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 28px;
+  padding: 24px;
+}
+
+.tarjeta-detalle.servicio > strong {
+  margin: 0;
+  font-size: 17px;
+  color: #0b3d5c;
+}
+
+.tarjeta-detalle.servicio > p {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.tarjeta-detalle.servicio > p > b {
+  color: #64748b;
+}
+
+.tarjeta-detalle.servicio > a {
+  margin-top: 0 !important;
+  white-space: nowrap;
+}

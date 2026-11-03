@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="beans.Solicitud" %>
+<%@ page import="beans.capacityplanner.Solicitud" %>
 <%!
     private String texto(String valor) {
         if (valor == null) return "";
@@ -163,7 +163,11 @@
             <!-- Estado actual: siempre visible, aunque lo gestione Servicios. -->
             <p class="cambio-estado">Estado actual: <strong><%= s.getEstado() %></strong></p>
             <% if (editable) { %>
-            <form method="post" action="<%= servlet %>" class="formulario-filtro cambio-estado">
+            <form method="post" action="<%= servlet %>"
+                  class="formulario-filtro cambio-estado"
+                  onsubmit="if (this.elements['estado'].value === 'Aprobada') {
+                      return confirm('¿Confirmas que deseas aprobar esta solicitud? Una vez aprobada, podrá utilizarse para crear un servicio.');
+                  }">
                 <input type="hidden" name="action" value="cambiarEstado">
                 <input type="hidden" name="id_solicitud" value="<%= s.getIdSolicitud() %>">
                 <label for="estadoSolicitud">Evaluación:</label>

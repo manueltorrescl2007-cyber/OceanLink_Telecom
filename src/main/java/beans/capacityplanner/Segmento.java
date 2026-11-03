@@ -1,4 +1,4 @@
-package beans;
+package beans.capacityplanner;
 
 public class Segmento {
 

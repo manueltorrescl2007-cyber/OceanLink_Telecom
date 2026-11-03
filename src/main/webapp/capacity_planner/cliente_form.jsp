@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="beans.Cliente" %>
+<%@ page import="beans.capacityplanner.Cliente" %>
 <%!
     // Mostrar texto de la base de datos sin interpretarlo como HTML.
     private String texto(String valor) {

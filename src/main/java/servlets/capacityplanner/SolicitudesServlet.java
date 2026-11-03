@@ -1,8 +1,8 @@
-package servlets;
+package servlets.capacityplanner;
 
-import beans.Solicitud;
-import daos.ClienteDao;
-import daos.SolicitudDao;
+import beans.capacityplanner.Solicitud;
+import daos.capacityplanner.ClienteDao;
+import daos.capacityplanner.SolicitudDao;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

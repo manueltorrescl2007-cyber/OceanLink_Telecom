@@ -1,8 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="beans.Cliente" %>
-<%@ page import="beans.Solicitud" %>
-<%@ page import="beans.Servicio" %>
+<%@ page import="beans.capacityplanner.Cliente" %>
+<%@ page import="beans.capacityplanner.Solicitud" %>
+<%@ page import="beans.capacityplanner.Servicio" %>
 <%!
     // Mostrar texto de la base de datos sin interpretarlo como HTML.
     private String texto(String valor) {
@@ -166,9 +166,82 @@
         <% } %>
         <section class="seccion-clientes">
             <div class="panel-clientes">
-                <div class="titulo-seccion">
+                <div class="titulo-seccion"
+                     style="display: flex; align-items: center;
+                            justify-content: space-between; gap: 16px;">
+
                     <h2>Clientes frecuentes</h2>
-                    <span class="cantidad-clientes"><%= clientes.size() %></span>
+
+                    <div style="display: flex; align-items: center; gap: 16px;">
+
+                        <details style="position: relative;">
+                            <summary aria-label="Buscar clientes"
+                                     title="Buscar clientes"
+                                     style="display: flex; align-items: center;
+                                            cursor: pointer; color: #1c8c9c;">
+                                <svg width="23" height="23" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor"
+                                     stroke-width="2" stroke-linecap="round"
+                                     aria-hidden="true">
+                                    <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                                    <path d="M16 16L21 21"></path>
+                                </svg>
+                            </summary>
+
+                            <form method="get" action="<%= servlet %>"
+                                  style="position: absolute; right: 0; top: 36px;
+                                         z-index: 10; width: 280px;
+                                         max-width: 70vw; padding: 16px;
+                                         box-sizing: border-box; background: white;
+                                         border: 1px solid #d9e1e8;
+                                         border-radius: 10px;
+                                         box-shadow: 0 4px 16px #00000015;">
+
+                                <div style="display: flex; align-items: center;
+                                            justify-content: space-between; margin-bottom: 8px;">
+
+                                    <label for="buscarCliente"
+                                           style="font-size: 14px; color: #0b3d5c;">
+                                        Buscar cliente
+                                    </label>
+
+                                    <button type="button"
+                                            aria-label="Cerrar buscador"
+                                            onclick="this.closest('details').open = false;"
+                                            style="border: none; background: transparent;
+                                                   color: #64748b; font-size: 22px;
+                                                   line-height: 1; cursor: pointer;
+                                                   padding: 4px;">
+                                        &times;
+                                    </button>
+
+                                </div>
+
+                                <input type="search"
+                                       id="buscarCliente"
+                                       name="buscar"
+                                       placeholder="Escribe tu búsqueda..."
+                                       value="<%= texto(request.getParameter("buscar")) %>"
+                                       style="width: 100%; box-sizing: border-box;
+                                              padding: 10px 12px;
+                                              border: 1px solid #d9e1e8;
+                                              border-radius: 6px;
+                                              font-size: 14px;">
+
+                                <div style="display: flex; align-items: center;
+                                            gap: 12px; margin-top: 12px;">
+                                    <button type="submit" class="boton primario">
+                                        Buscar
+                                    </button>
+                                </div>
+                            </form>
+                        </details>
+
+                        <span class="cantidad-clientes">
+                            <%= clientes.size() %>
+                        </span>
+
+                    </div>
                 </div>
                 <!-- LISTA: conserva el orden calculado a partir de los clics -->
                 <ul class="lista-clientes">
@@ -250,7 +323,7 @@
                         <% } else if ("contacto".equals(detalleSeleccionado)) { %>
                             Información de contacto
                         <% } else { %>
-                            Datos del cliente
+                            Estado del cliente
                         <% } %>
                     </h2>
                 </div>
@@ -291,8 +364,18 @@
                                     <%= s.getCapacidadSolicitada() %> Gbps
                                 </p>
 
-                                <a href="${pageContext.request.contextPath}/SolicitudesServlet?id=<%= s.getIdSolicitud() %>">
-                                    Ver solicitud
+                                <a href="${pageContext.request.contextPath}/SolicitudesServlet?id=<%= s.getIdSolicitud() %>"
+                                   style="display: inline-block;
+                                          margin-top: 10px;
+                                          padding: 6px 12px;
+                                          font-size: 13px;
+                                          font-weight: 600;
+                                          line-height: 1.4;
+                                          color: #0b3d5c;
+                                          background: #e5eef3;
+                                          border-radius: 6px;
+                                          text-decoration: none;">
+                                    Ver solicitud →
                                 </a>
                             </div>
 
@@ -317,61 +400,102 @@
                                 claseEstado = "inactiva";
                             }
                     %>
-                        <article class="tarjeta-detalle servicio">
-                            <strong>SER-<%= servicio.getIdServicio() %></strong>
+                        <article class="tarjeta-detalle servicio"
+                                 style="display: flex; flex-direction: row; flex-wrap: wrap;
+                                        align-items: center; justify-content: space-between;
+                                        gap: 24px; padding: 24px;">
 
-                            <p>
-                                <b>Solicitud:</b>
-                                SOL-<%= servicio.getIdSolicitud() %>
-                            </p>
+                            <strong style="margin: 0; font-size: 17px;">
+                                SER-<%= servicio.getIdServicio() %>
+                            </strong>
 
-                            <p>
-                                <b>Ruta:</b>
-                                <%= texto(servicio.getNombreRuta()) %>
-                            </p>
+                            <div>
+                                <p style="margin: 0 0 8px;">Solicitud</p>
+                                <strong>SOL-<%= servicio.getIdSolicitud() %></strong>
+                            </div>
 
-                            <p>
-                                <b>Capacidad asignada:</b>
-                                <%= servicio.getCapacidadAsignada() %> Gbps
-                            </p>
+                            <div>
+                                <p style="margin: 0 0 8px;">Ruta</p>
+                                <strong><%= texto(servicio.getNombreRuta()) %></strong>
+                            </div>
 
-                            <p>
-                                <b>Estado:</b>
+                            <div>
+                                <p style="margin: 0 0 8px;">Capacidad asignada</p>
+                                <strong><%= servicio.getCapacidadAsignada() %> Gbps</strong>
+                            </div>
+
+                            <div>
+                                <p style="margin: 0 0 8px;">Estado</p>
                                 <span class="badge <%= claseEstado %>">
                                     <%= texto(servicio.getEstado()) %>
                                 </span>
-                            </p>
+                            </div>
 
-                            <a href="${pageContext.request.contextPath}/ServicioServlet?servicio=<%= servicio.getIdServicio() %>">
-                                Ver servicio
+                            <a href="${pageContext.request.contextPath}/ServicioServlet?servicio=<%= servicio.getIdServicio() %>"
+                               style="display: inline-block; margin: 0; padding: 8px 14px;
+                                      font-size: 13px; font-weight: 600; line-height: 1.4;
+                                      color: #0b3d5c; background: #e5eef3;
+                                      border-radius: 6px; text-decoration: none;
+                                      white-space: nowrap;">
+                                Ver servicio →
                             </a>
+
                         </article>
                     <%  }
                        } %>
 
                 <% } else if ("contacto".equals(detalleSeleccionado)) { %>
 
-                    <article class="tarjeta-detalle contacto">
-                        <p><b>Empresa:</b> <%= texto(nombreCliente) %></p>
-                        <p><b>Correo:</b> <%= texto(correoCliente) %></p>
-                        <p><b>Teléfono:</b> <%= texto(telefonoCliente) %></p>
+                    <article class="tarjeta-detalle contacto"
+                             style="display: flex; flex-direction: row; flex-wrap: wrap;
+                                    align-items: center; justify-content: space-between;
+                                    gap: 24px; padding: 24px;">
+
+                        <div>
+                            <p style="margin: 0 0 8px;">Empresa</p>
+                            <strong><%= texto(nombreCliente) %></strong>
+                        </div>
+
+                        <div>
+                            <p style="margin: 0 0 8px;">Correo electrónico</p>
+                            <strong><%= texto(correoCliente) %></strong>
+                        </div>
+
+                        <div>
+                            <p style="margin: 0 0 8px;">Teléfono</p>
+                            <strong><%= texto(telefonoCliente) %></strong>
+                        </div>
+
                     </article>
 
                 <% } else { %>
 
-                    <article class="tarjeta-detalle contacto">
-                        <p><b>ID:</b> <%= idCliente %></p>
-                        <p><b>Nombre:</b> <%= texto(nombreCliente) %></p>
-                        <p><b>Razón social:</b> <%= texto(razonSocial) %></p>
-                        <p><b>RUC:</b> <%= texto(rucCliente) %></p>
-                        <p>
-                            <b>Estado:</b>
+                    <article class="tarjeta-detalle contacto"
+                             style="display: flex; flex-direction: row; flex-wrap: wrap;
+                                    align-items: center; justify-content: space-between;
+                                    gap: 24px; padding: 24px;">
+
+                        <div>
+                            <p style="margin: 0 0 8px;">Cliente</p>
+                            <strong><%= texto(nombreCliente) %></strong>
+                        </div>
+
+                        <div>
+                            <p style="margin: 0 0 8px;">Estado actual</p>
                             <span class="badge <%= "activo".equals(estadoCliente)
                                     ? "activa" : "inactiva" %>">
-                                <%= "activo".equals(estadoCliente)
-                                        ? "Activo" : "Inactivo" %>
+                                <%= "activo".equals(estadoCliente) ? "Activo" : "Inactivo" %>
                             </span>
-                        </p>
+                        </div>
+
+                        <button class="boton <%= "activo".equals(estadoCliente)
+                                    ? "peligro" : "primario" %>"
+                                type="button"
+                                popovertarget="modalEliminarCliente">
+                            <%= "activo".equals(estadoCliente)
+                                    ? "Desactivar cliente" : "Activar cliente" %>
+                        </button>
+
                     </article>
 
                 <% } %>

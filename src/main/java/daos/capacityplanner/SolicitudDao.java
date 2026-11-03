@@ -1,6 +1,7 @@
-package daos;
+package daos.capacityplanner;
 
-import beans.Solicitud;
+import beans.capacityplanner.Solicitud;
+import daos.BaseDao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

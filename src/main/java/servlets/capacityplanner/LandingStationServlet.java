@@ -1,7 +1,7 @@
-package servlets;
+package servlets.capacityplanner;
 
-import beans.LandingStation;
-import daos.LandingStationDao;
+import beans.capacityplanner.LandingStation;
+import daos.capacityplanner.LandingStationDao;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

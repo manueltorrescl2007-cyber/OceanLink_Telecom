@@ -1,10 +1,10 @@
-package servlets;
+package servlets.capacityplanner;
 
-import beans.Segmento;
-import beans.Solicitud;
-import daos.SegmentoDao;
-import daos.ServicioDao;
-import daos.SolicitudDao;
+import beans.capacityplanner.Segmento;
+import beans.capacityplanner.Solicitud;
+import daos.capacityplanner.SegmentoDao;
+import daos.capacityplanner.ServicioDao;
+import daos.capacityplanner.SolicitudDao;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

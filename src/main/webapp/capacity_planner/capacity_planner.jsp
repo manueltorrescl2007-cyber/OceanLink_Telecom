@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="beans.Solicitud" %>
+<%@ page import="beans.capacityplanner.Solicitud" %>
 <%
     String servlet = request.getContextPath() + "/CapacityPlannerServlet";
 

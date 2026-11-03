@@ -1,8 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="beans.Ruta" %>
-<%@ page import="beans.Segmento" %>
-<%@ page import="beans.LandingStation" %>
+<%@ page import="beans.capacityplanner.Ruta" %>
+<%@ page import="beans.capacityplanner.Segmento" %>
+<%@ page import="beans.capacityplanner.LandingStation" %>
 <%!
     private String texto(String valor) {
         return valor == null ? "" : valor.replace("&", "&amp;")

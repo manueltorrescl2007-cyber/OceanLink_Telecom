@@ -1,4 +1,4 @@
-package beans;
+package beans.capacityplanner;
 import java.util.ArrayList;
 
 public class Ruta {

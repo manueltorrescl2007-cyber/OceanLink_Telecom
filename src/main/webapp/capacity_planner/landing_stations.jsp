@@ -1,8 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="beans.LandingStation" %>
+<%@ page import="beans.capacityplanner.LandingStation" %>
 <%!
-    // Protege los textos del formulario al mostrarlos en HTML.
+
     public String texto(String valor) {
         if (valor == null) return "";
         return valor.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -37,7 +37,7 @@
 
     String[] formulario = {"", "", "", "", "Activa"};
 
-    // Cargar los datos de la estación que se quiere editar.
+
     for (LandingStation estacion : estaciones) {
         if (String.valueOf(estacion.getIdLanding()).equals(editar)) {
             formulario = new String[]{
@@ -50,7 +50,7 @@
         }
     }
 
-    // Recuperar lo escrito si el servlet devuelve un error.
+
     LandingStation datos =
             (LandingStation) request.getAttribute("estacionFormulario");
 

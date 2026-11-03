@@ -1,4 +1,4 @@
-package beans;
+package beans.capacityplanner;
 
 import java.sql.Timestamp;
 
