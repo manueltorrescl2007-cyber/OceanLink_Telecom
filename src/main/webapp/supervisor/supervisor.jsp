@@ -114,19 +114,18 @@
 
           <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/supervisor/capacidad.jsp"
-               class="subopcion">
+            <a href="${pageContext.request.contextPath}/TarjetasServletSuper" class="subopcion activo">Capacidad</a>
                 Capacidad
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/rutas.jsp"
+            <a href="${pageContext.request.contextPath}/RutaServletSuper"
                class="subopcion">
                 Rutas
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/segmentos.jsp"
+            <a href="${pageContext.request.contextPath}/SegmentoServletSuper"
                class="subopcion">
                 Segmentos
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/landing_stations.jsp"
+            <a href="${pageContext.request.contextPath}/LandingStationServletSuper"
                class="subopcion">
                 Landing stations
             </a>
