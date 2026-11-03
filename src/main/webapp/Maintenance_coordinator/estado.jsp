@@ -1,96 +1,212 @@
+
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.*" %>
+<%@ page import="beans.maintenance.Mantenimiento" %>
+<%@ page import="java.util.Arrays" %>
+<%@ page import="java.util.List" %>
+
+<%
+  // Recuperamos el mantenimiento enviado por MantenimientoServlet.
+  Mantenimiento mantenimiento =
+    (Mantenimiento) request.getAttribute("mantenimiento");
+
+  // Si no recibimos el objeto, no podemos mostrar el seguimiento.
+  if (mantenimiento == null) {
+    response.sendError(
+      HttpServletResponse.SC_NOT_FOUND,
+      "No se encontró la información del mantenimiento."
+    );
+    return;
+  }
+
+  String estadoActual = mantenimiento.getEstado();
+
+  // Etapas normales del mantenimiento.
+  List<String> pasos = Arrays.asList(
+    "Programado",
+    "En ejecucion",
+    "Finalizado"
+  );
+
+  int indiceActual = pasos.indexOf(estadoActual);
+
+  // Formateamos las fechas para mostrarlas en la vista.
+  java.time.format.DateTimeFormatter formato =
+    java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+  String fechaInicio = mantenimiento.getFechaInicio() != null
+    ? mantenimiento.getFechaInicio().format(formato)
+    : "No definida";
+
+  String fechaFin = mantenimiento.getFechaFin() != null
+    ? mantenimiento.getFechaFin().format(formato)
+    : "No definida";
+
+  boolean cancelado = "Cancelado".equals(estadoActual);
+%>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oceanlink - Estado</title>
-    <link rel="stylesheet"
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oceanlink - Estado</title>
+
+  <link rel="stylesheet"
         href="${pageContext.request.contextPath}/css/barras.css">
 
-    <link rel="stylesheet"
+  <link rel="stylesheet"
         href="${pageContext.request.contextPath}/css/styles_MC.css">
 </head>
+
 <body>
 
-<%
-    /*
-        En una implementación real "estadoActual" vendría de un Servlet/DAO
-        según el ID de mantenimiento seleccionado. Valores posibles:
-        "programado" | "en-progreso" | "testing" | "finalizado".
-        Aquí se deja fijo en "testing" para reflejar el wireframe.
-    */
-    String estadoActual = "testing";
-
-    List<String> pasos = Arrays.asList("programado", "en-progreso", "testing", "finalizado");
-    List<String> etiquetas = Arrays.asList("Programado", "En progreso", "Testing", "Finalizado");
-    int indiceActual = pasos.indexOf(estadoActual);
-%>
-
 <jsp:include page="header.jsp">
-  <jsp:param name="pageTitle" value="Registro y actualizaci&oacute;n de actividades de mantenimiento" />
+  <jsp:param name="pageTitle"
+             value="Registro y actualización de actividades de mantenimiento" />
 </jsp:include>
 
 <div class="contenedor">
 
-    <jsp:include page="sidebar.jsp">
-        <jsp:param name="activePage" value="estado" />
-    </jsp:include>
+  <jsp:include page="sidebar.jsp">
+    <jsp:param name="activePage" value="fechas" />
+  </jsp:include>
 
+  <main class="contenido-principal">
 
+    <div class="content-container">
+      <div class="card">
 
-    <main class="contenido-principal">
+        <h2 class="card-title">
+          Seguimiento del mantenimiento #<%= mantenimiento.getIdMantenimiento() %>
+        </h2>
 
-        <div class="content-container">
-            <div class="card">
-                <h2 class="card-title">Estado de mantenimientos programados</h2>
+        <div class="detalle-mantenimiento">
 
-                <div class="inline-field">
-                    <label for="idMantenimiento">ID</label>
-                    <select id="idMantenimiento" name="idMantenimiento">
-                        <option value="" selected disabled>Seleccione un ID</option>
-                        <option value="REV-0405">REV-0405</option>
-                        <option value="REV-0406">REV-0406</option>
-                        <option value="REV-0407">REV-0407</option>
-                    </select>
-                </div>
+          <%
+            String claseEstado;
 
-                <div class="stepper">
-                    <%
-                        for (int i = 0; i < pasos.size(); i++) {
-                            String stepClass = "";
-                            if (i < indiceActual) {
-                                stepClass = "completed";
-                            } else if (i == indiceActual) {
-                                stepClass = "active";
-                            }
-                    %>
-                        <div class="stepper-step <%= stepClass %>">
-                            <div class="stepper-circle"></div>
-                            <span class="stepper-label"><%= etiquetas.get(i) %></span>
-                        </div>
-                    <%
-                        }
-                    %>
-                </div>
+            switch (estadoActual) {
+              case "Programado":
+                claseEstado = "badge-programado";
+                break;
 
-                <div class="bitacora">BITACORA DE INTERVENCIÓN
+              case "En ejecucion":
+                claseEstado = "badge-en-progreso";
+                break;
 
-                  14:42 - Técnico llegó al sitio de inserción
-                  14:46 - Inicio de revisión de conectores ópticos
-                  15:09 - Detección de degradación leve en fibra secundaria, se procede a reemplazarlo</div>
+              case "Finalizado":
+                claseEstado = "badge-finalizado";
+                break;
 
-                <form action="RegistrarIncidenciaServlet" method="post">
-                    <input type="text"
-                           name="nuevaIncidencia"
-                           class="bitacora-input"
-                           placeholder="Registrar nueva incidencia">
-                </form>
+              case "Cancelado":
+                claseEstado = "badge-cancelado";
+                break;
 
-            </div>
+              default:
+                claseEstado = "";
+            }
+
+            String nombreEstado = "En ejecucion".equals(estadoActual)
+              ? "En ejecución"
+              : estadoActual;
+          %>
+
+          <p>
+            <strong>Estado actual:</strong>
+
+            <span
+              class="badge <%= claseEstado %>"
+              style="<%= "Cancelado".equals(estadoActual)
+            ? "display:inline-block; background-color:#FCE8E6; color:#B42318; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;"
+            : "" %>">
+
+        <%= nombreEstado %>
+
+    </span>
+          </p>
+
+          <p>
+            <strong>Tipo:</strong>
+            <%= mantenimiento.getTipo() %>
+          </p>
+
+          <p>
+            <strong>Prioridad:</strong>
+            <%= mantenimiento.getPrioridad() %>
+          </p>
+
+          <p>
+            <strong>Fecha de inicio:</strong>
+            <%= fechaInicio %>
+          </p>
+
+          <p>
+            <strong>Fecha de fin:</strong>
+            <%= fechaFin %>
+          </p>
+
+          <p>
+            <strong>Descripción:</strong>
+            <%= mantenimiento.getDescripcionGeneral() %>
+          </p>
+
         </div>
-    </main>
+
+        <h3>Progreso del mantenimiento</h3>
+
+        <% if (cancelado) { %>
+
+        <div class="estado-cancelado">
+          Este mantenimiento ha sido cancelado.
+        </div>
+
+        <% } else { %>
+
+        <div class="stepper">
+
+          <% for (int i = 0; i < pasos.size(); i++) {
+
+            String stepClass = "";
+
+            if (i < indiceActual) {
+              stepClass = "completed";
+            } else if (i == indiceActual) {
+              stepClass = "active";
+            }
+
+          %>
+
+          <div class="stepper-step <%= stepClass %>">
+
+            <div class="stepper-circle"></div>
+
+            <span class="stepper-label">
+                                    <%= pasos.get(i).equals("En ejecucion")
+                                      ? "En ejecución"
+                                      : pasos.get(i) %>
+                                </span>
+
+          </div>
+
+          <% } %>
+
+        </div>
+
+        <% } %>
+
+        <div class="bitacora">
+          <strong>BITÁCORA DE INTERVENCIÓN</strong>
+
+          <p>14:42 - Técnico llegó al sitio de intervención.</p>
+          <p>14:46 - Inicio de revisión de conectores ópticos.</p>
+          <p>15:09 - Detección de degradación leve en fibra secundaria. Se procede a su reemplazo.</p>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
 </div>
 
 </body>

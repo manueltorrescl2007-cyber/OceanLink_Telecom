@@ -180,7 +180,7 @@ public class LoginServlet extends HttpServlet {
 
       // Conservamos la vista de entrada que ya utilizaban
       // para el coordinador de mantenimiento.
-      case 5 -> "/MantenimientoServlet?accion=nuevo";
+      case 5 -> "/MantenimientoServlet?accion=listar";
 
       default -> null;
     };

@@ -1,77 +1,58 @@
+
 <%--
     sidebar.jsp
     Componente reutilizable de menú lateral.
     Recibe el parámetro "activePage" para resaltar la sección activa.
-    Valores esperados: nuevo | fechas | estado | historial
+    Valores esperados: fechas | nuevo | historial
+
+    La página "Estado" no aparece en el menú lateral.
+    Se accederá a ella desde los detalles de un mantenimiento.
 --%>
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
 <%
-    String activePage = request.getParameter("activePage");
-    if (activePage == null) {
-        activePage = "";
-    }
+  String activePage = request.getParameter("activePage");
+
+  if (activePage == null) {
+    activePage = "";
+  }
 %>
+
 <aside class="menu-lateral">
+
   <div class="contenido-menu">
-      <h2>Menú</h2>
+
+    <h2>Menú</h2>
+
     <nav class="navegacion-lateral">
 
+      <!-- Fechas y duración -->
+      <a
+        href="${pageContext.request.contextPath}/MantenimientoServlet?accion=listar"
+        class="<%= "fechas".equals(activePage) ? "activo" : "" %>"
+      >
+        Fechas y duración
+      </a>
 
-        <a href="${pageContext.request.contextPath}/MantenimientoServlet?accion=nuevo"
-           class="<%= "nuevo".equals(activePage) ? "activo" : "" %>">
-            Nuevo mantenimiento
-        </a>
+      <!-- Nuevo mantenimiento -->
+      <a
+        href="${pageContext.request.contextPath}/MantenimientoServlet?accion=nuevo"
+        class="<%= "nuevo".equals(activePage) ? "activo" : "" %>"
+      >
+        Nuevo mantenimiento
+      </a>
 
-
-      <!-- Grupo de mantenimientos -->
-      <div class="grupo-menu">
-
-        <!-- Control del submenu -->
-        <input
-          type="checkbox"
-          id="control-mantenimientos"
-          class="control-submenu"
-        >
-
-        <!-- titulo del grupo -->
-        <label
-          for="control-mantenimientos"
-          class="titulo-grupo"
-        >
-          <span>Mantenimientos</span>
-
-          <span class="flecha-submenu"></span>
-        </label>
-
-        <!-- opciones del menu lateral -->
-        <div class="contenido-submenu">
-
-          <a
-            href="${pageContext.request.contextPath}/MantenimientoServlet?accion=listar"
-            class="subopcion <%= "fechas".equals(activePage) ? "activo" : "" %>"
-          >
-            Fechas y duración
-          </a>
-
-          <a
-            href="${pageContext.request.contextPath}/Maintenance_coordinator/estado.jsp"
-            class="subopcion <%= "estado".equals(activePage) ? "activo" : "" %>"
-          >
-            Estado
-          </a>
-
-          <a
-            href="${pageContext.request.contextPath}/MantenimientoServlet?accion=historial"
-            class="subopcion <%= "historial".equals(activePage) ? "activo" : "" %>"
-          >
-            Historial
-          </a>
-
-        </div>
-
-      </div>
+      <!-- Historial -->
+      <a
+        href="${pageContext.request.contextPath}/MantenimientoServlet?accion=historial"
+        class="<%= "historial".equals(activePage) ? "activo" : "" %>"
+      >
+        Historial
+      </a>
 
     </nav>
+
   </div>
 
   <!-- Configuración -->
