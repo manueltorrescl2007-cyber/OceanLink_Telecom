@@ -93,7 +93,7 @@
             class="boton-menu"
             title="Ocultar o mostrar menú">☰</label>
 
-    <a href="${pageContext.request.contextPath}/supervisor/supervisor.jsp"
+    <a href="${pageContext.request.contextPath}/DashboardServletSuper"
        class="logo">
         OceanLink
     </a>
@@ -121,7 +121,7 @@
            aria-label="Menú principal">
 
         <!-- Dashboard -->
-        <a href="${pageContext.request.contextPath}/supervisor/supervisor.jsp"
+        <a href="${pageContext.request.contextPath}/DashboardServletSuper"
            class="activo">
             Dashboard general
         </a>
