@@ -1,78 +1,80 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<!-- Datos estáticos, falta unir SQL -->
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="beans.capacityplanner.Servicio" %>
+<%@ page import="beans.capacityplanner.Solicitud" %>
+<%@ page import="beans.capacityplanner.Ruta" %>
+<%@ page import="beans.capacityplanner.Segmento" %>
+<%!
+  private String texto(String valor) {
+    return valor == null ? "" : valor.replace("&", "&amp;")
+      .replace("<", "&lt;").replace(">", "&gt;")
+      .replace("\"", "&quot;").replace("'", "&#39;");
+  }
+
+  private Ruta buscarRuta(ArrayList<Ruta> rutas, int idRuta) {
+    for (Ruta ruta : rutas) {
+      if (ruta.getIdRuta() == idRuta) {
+        return ruta;
+      }
+    }
+    return null;
+  }
+%>
 <%
-    // DATOS DE EJEMPLO: independientes de las demás páginas y de MySQL.
-    // Campos: ID, solicitud, ruta, capacidad, fecha de activación, estado.
-    // Cliente, origen y destino son datos que luego se obtendrán de la solicitud.
-    String[][] ejemplos = {
-        {"1", "1", "LAX-LUR-R01", "50", "06/10/2026 10:30", "Activo", "Pacifico", "Los Ángeles", "Lurín"},
-        {"2", "2", "LUR-VAL-R01", "20", "Sin activar", "Pendiente", "Claro", "Lurín", "Valparaíso"},
-        {"3", "3", "GYE-LUR-R01", "30", "06/10/2026 12:00", "Suspendido", "Movistar", "Guayaquil", "Lurín"}
-    };
-    // La sesión conserva únicamente los servicios de este mockup.
-    String[][] servicios = (String[][]) session.getAttribute("serviciosMockupIndependiente");
-    if (servicios == null) {
-        servicios = ejemplos;
-        session.setAttribute("serviciosMockupIndependiente", servicios);
-    }
-    String error = "";
+  String servlet = request.getContextPath() + "/ServicioServletSuper";
 
-    // GUARDADO DE PRUEBA HABILITADO: recibe el formulario y agrega una fila al arreglo.
-    if ("POST".equals(request.getMethod()) && "guardar".equals(request.getParameter("accion"))) {
-        String solicitud = request.getParameter("id_solicitud");
-        String ruta = request.getParameter("id_ruta");
-        int capacidad = 0;
-        try {
-            capacidad = Integer.parseInt(request.getParameter("capacidad_asignada"));
-        } catch (NumberFormatException e) {
-            // Si no es un número entero válido, queda en cero.
-        }
+  ArrayList<Servicio> servicios =
+    (ArrayList<Servicio>) request.getAttribute("listaServicios");
 
-        // Opciones de ejemplo: solicitud, ruta compatible, cliente, origen y destino.
-        String[][] opciones = {
-            {"1", "4", "Pacifico", "Los Ángeles", "Lurín", "LAX-LUR-R01"},
-            {"2", "13", "Claro", "Lurín", "Valparaíso", "LUR-VAL-R01"},
-            {"3", "12", "Movistar", "Guayaquil", "Lurín", "GYE-LUR-R01"}
-        };
-        int seleccion = -1;
-        for (int i = 0; i < opciones.length; i++) {
-            if (opciones[i][0].equals(solicitud)) seleccion = i;
-        }
-        if (seleccion < 0 || capacidad <= 0) {
-            error = "Seleccione una solicitud e ingrese una capacidad entera mayor que cero.";
-        } else if (!opciones[seleccion][1].equals(ruta)) {
-            error = "Seleccione una ruta que coincida con el origen y destino de la solicitud.";
-        } else {
-            // Busca el siguiente ID y copia los servicios al arreglo más grande.
-            int siguienteId = 1;
-            String[][] nuevos = new String[servicios.length + 1][];
-            for (int i = 0; i < servicios.length; i++) {
-                nuevos[i] = servicios[i];
-                int id = Integer.parseInt(servicios[i][0]);
-                if (id >= siguienteId) siguienteId = id + 1;
-            }
-            String[] opcion = opciones[seleccion];
-            nuevos[servicios.length] = new String[] {
-                String.valueOf(siguienteId), solicitud, opcion[5], String.valueOf(capacidad),
-                "Sin activar", "Pendiente", opcion[2], opcion[3], opcion[4]
-            };
-            session.setAttribute("serviciosMockupIndependiente", nuevos);
-            // Evita guardar otra vez cuando se actualiza el navegador.
-            response.sendRedirect("servicios.jsp?guardado=1&servicio=" + siguienteId);
-            return;
-        }
+  ArrayList<Solicitud> solicitudes =
+    (ArrayList<Solicitud>) request.getAttribute("listaSolicitudes");
+
+  ArrayList<Ruta> rutas =
+    (ArrayList<Ruta>) request.getAttribute("listaRutas");
+
+  if (servicios == null || solicitudes == null || rutas == null) {
+    response.sendRedirect(servlet);
+    return;
+  }
+
+  Servicio seleccionado =
+    (Servicio) request.getAttribute("servicioSeleccionado");
+
+  ArrayList<Segmento> segmentosServicio =
+    (ArrayList<Segmento>) request.getAttribute("segmentosServicio");
+
+  Servicio formulario =
+    (Servicio) request.getAttribute("servicioFormulario");
+
+  int idSolicitudActual = formulario != null
+    ? formulario.getIdSolicitud() : -1;
+
+  int idRutaActual = formulario != null
+    ? formulario.getIdRuta() : -1;
+
+  String error = (String) request.getAttribute("error");
+  if (error == null) {
+    error = "";
+  }
+
+  String filtro = (String) request.getAttribute("filtroEstado");
+  if (filtro == null) {
+    filtro = "";
+  }
+
+  String[] estados = {"Pendiente", "Activo", "Suspendido", "Cancelado"};
+
+  boolean nuevo = "nuevo".equals(request.getParameter("ventana"))
+    || Boolean.TRUE.equals(request.getAttribute("mostrarFormulario"));
+
+  int rutasActivas = 0;
+  for (Ruta ruta : rutas) {
+    if ("activa".equals(ruta.getEstado())) {
+      rutasActivas++;
     }
-    // Los cuatro estados permitidos en servicios.estado del SQL.
-    String[] estados = {"Pendiente", "Activo", "Suspendido", "Cancelado"};
-    String filtro = request.getParameter("estado");
-    if (filtro == null) filtro = "Todos";
-    int detalle = -1;
-    int cantidad = 0;
-    for (int i = 0; i < servicios.length; i++) {
-        if (servicios[i][0].equals(request.getParameter("servicio"))) detalle = i;
-        if (filtro.equals("Todos") || filtro.equals(servicios[i][5])) cantidad++;
-    }
-    boolean nuevo = "nuevo".equals(request.getParameter("ventana")) || !error.isEmpty();
+  }
+
+  boolean puedeCrear = !solicitudes.isEmpty() && rutasActivas > 0;
 %>
 
 <!-- Contenido JSP -->
@@ -86,7 +88,7 @@
     <title>OceanLink | Dashboard</title>
 
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/supervisor/servicios.css?v=2">
+          href="${pageContext.request.contextPath}/css/capacity_planner/servicios.css?v=2">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
 </head>
@@ -150,7 +152,7 @@
             id="control-incidencias"
             class="control-submenu"
           >
-           <!-- Al hacer clic, marca o desmarca el checkbox -->
+          <!-- Al hacer clic, marca o desmarca el checkbox -->
           <label for="control-incidencias"
                  class="titulo-grupo">
             <span>Incidencias</span>
@@ -158,14 +160,14 @@
           </label>
           <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/supervisor/visualizar.jsp"
+            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper"
                class="subopcion">
-                Visualizar
+              Visualizar
             </a>
 
-            <a href="${pageContext.request.contextPath}/supervisor/historial_incidencias.jsp"
+            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper?action=historial"
                class="subopcion">
-                Historial de incidencias
+              Historial de incidencias
             </a>
           </div>
         </div>
@@ -189,21 +191,21 @@
 
           <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/supervisor/capacidad.jsp"
+            <a href="${pageContext.request.contextPath}/TarjetasServletSuper"
                class="subopcion">
-                Capacidad
+              Capacidad
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/rutas.jsp"
+            <a href="${pageContext.request.contextPath}/RutaServletSuper"
                class="subopcion">
-                Rutas
+              Rutas
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/segmentos.jsp"
+            <a href="${pageContext.request.contextPath}/SegmentoServletSuper"
                class="subopcion">
-                Segmentos
+              Segmentos
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/landing_stations.jsp"
+            <a href="${pageContext.request.contextPath}/LandingStationServletSuper"
                class="subopcion">
-                Landing stations
+              Landing stations
             </a>
           </div>
         </div>
@@ -217,7 +219,7 @@
           >
 
           <label for="control-servicios-clientes"
-                  class="titulo-grupo">
+                 class="titulo-grupo">
             <span class="texto-grupo">
                 Servicios y clientes
             </span>
@@ -225,19 +227,19 @@
           </label>
           <div class="contenido-submenu">
 
-            <a href="${pageContext.request.contextPath}/supervisor/clientes.jsp"
+            <a href="${pageContext.request.contextPath}/ClienteServletSuper"
                class="subopcion">
-                Clientes
+              Clientes
             </a>
 
-            <a href="${pageContext.request.contextPath}/supervisor/servicios.jsp"
+            <a href="${pageContext.request.contextPath}/ServicioServletSuper"
                class="subopcion activo">
-                Servicios
+              Servicios
             </a>
             <a
-                    href="${pageContext.request.contextPath}/supervisor/solicitudes.jsp"
-                    class="subopcion">
-                Solicitudes
+              href="${pageContext.request.contextPath}/SolicitudesServletSuper"
+              class="subopcion">
+              Solicitudes
             </a>
           </div>
         </div>
@@ -252,8 +254,8 @@
           >
 
           <label
-                  for="control-mantenimientos"
-                  class="titulo-grupo">
+            for="control-mantenimientos"
+            class="titulo-grupo">
 
             <span class="texto-grupo">
                 Mantenimientos
@@ -266,18 +268,19 @@
           <div class="contenido-submenu">
 
             <a
-                    href="${pageContext.request.contextPath}/supervisor/programacion.jsp"
-                    class="subopcion">
-                Programación
+              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
+              class="subopcion">
+              Programación
             </a>
 
             <a
-                    href="${pageContext.request.contextPath}/supervisor/historial_programados.jsp"
-                    class="subopcion">
-                Historial de programados
+              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
+              class="subopcion">
+              Historial de programados
             </a>
           </div>
         </div>
+
         <!-- Reportes -->
         <a href="${pageContext.request.contextPath}/supervisor/reportes.jsp">
             Reportes
@@ -303,57 +306,215 @@
   <!-- Contenido principal -->
   <main class="contenido-principal pagina-servicios">
     <section class="encabezado-pagina">
-        <div class="encabezado-panel"><h2>Supervisor</h2><h1>Servicios</h1></div>
+      <div class="encabezado-panel">
+        <h2>Supervisor</h2>
+        <h1>Servicios</h1>
+      </div>
     </section>
+
     <% if ("1".equals(request.getParameter("guardado"))) { %>
-    <p role="status" style="margin-bottom: 16px; color: #237b51;">Servicio guardado. Ya aparece en la tabla como Pendiente.</p>
+    <p role="status" style="margin-bottom: 16px; color: #237b51;">
+      Servicio creado como Pendiente. La capacidad quedó reservada.
+    </p>
     <% } %>
-    <!-- FILTRO: recarga únicamente esta página. -->
+
+    <% if ("1".equals(request.getParameter("activado"))) { %>
+    <p role="status" style="margin-bottom: 16px; color: #237b51;">
+      Servicio activado. La capacidad reservada pasó a ocupada.
+    </p>
+    <% } %>
+
+    <% if ("1".equals(request.getParameter("cancelado"))) { %>
+    <p role="status" style="margin-bottom: 16px; color: #237b51;">
+      Servicio cancelado. Su capacidad fue liberada.
+    </p>
+    <% } %>
+
+    <% if (!error.isEmpty() && !nuevo) { %>
+    <p class="mensaje-error" role="alert"><%= texto(error) %></p>
+    <% } %>
+
+    <% if ("1".equals(request.getParameter("suspendido"))) { %>
+    <p role="status" style="margin-bottom: 16px; color: #237b51;">
+      Servicio suspendido. Su capacidad permanece asignada.
+    </p>
+    <% } %>
+
+    <% if ("1".equals(request.getParameter("reactivado"))) { %>
+    <p role="status" style="margin-bottom: 16px; color: #237b51;">
+      Servicio reactivado. Conserva su capacidad asignada.
+    </p>
+    <% } %>
+
     <section class="barra-herramientas">
-        <form method="get" action="servicios.jsp" class="formulario-filtro">
-            <label for="estado">Estado:</label>
-            <select id="estado" name="estado">
-                <option value="Todos">Todos</option>
-                <% for (String estado : estados) { %>
-                <option value="<%= estado %>" <%= estado.equals(filtro) ? "selected" : "" %>><%= estado %></option>
-                <% } %>
-            </select>
-            <button class="boton secundario" type="submit">Filtrar</button>
-        </form>
-        <span><%= cantidad %> servicios</span>
+      <form method="get" action="<%= servlet %>"
+            class="formulario-filtro">
+        <label for="estado">Estado:</label>
+        <select id="estado" name="estado">
+          <option value="">Todos</option>
+          <% for (String estado : estados) { %>
+          <option value="<%= estado %>"
+            <%= estado.equals(filtro) ? "selected" : "" %>>
+            <%= estado %>
+          </option>
+          <% } %>
+        </select>
+        <button class="boton secundario" type="submit">Filtrar</button>
+      </form>
+      <span><%= servicios.size() %> servicios</span>
     </section>
-    <!-- TABLA: pulsa el ID para abrir el detalle. -->
+
     <section class="contenedor-tabla">
-        <table>
-            <thead><tr><th>ID</th><th>Cliente</th><th>Origen</th><th>Destino</th><th>Capacidad</th><th>Ruta</th><th>Estado</th></tr></thead>
-            <tbody>
-            <% for (String[] servicio : servicios) {
-                if (filtro.equals("Todos") || filtro.equals(servicio[5])) { %>
-            <tr>
-                <td><a class="enlace-servicio" href="servicios.jsp?servicio=<%= servicio[0] %>">SER-<%= servicio[0] %></a></td>
-                <td><%= servicio[6] %></td><td><%= servicio[7] %></td><td><%= servicio[8] %></td>
-                <td><%= servicio[3] %> Gbps</td><td><%= servicio[2] %></td>
-                <td><span class="estado <%= servicio[5].toLowerCase() %>"><%= servicio[5] %></span></td>
-            </tr>
-            <% } } %>
-            <% if (cantidad == 0) { %><tr><td colspan="7">No hay servicios con este estado.</td></tr><% } %>
-            </tbody>
-        </table>
+      <table>
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Cliente</th>
+          <th>Origen</th>
+          <th>Destino</th>
+          <th>Capacidad</th>
+          <th>Ruta</th>
+          <th>Estado</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% for (Servicio servicio : servicios) {
+          Ruta ruta = buscarRuta(rutas, servicio.getIdRuta());
+        %>
+        <tr>
+          <td>
+            <a class="enlace-servicio"
+               href="<%= servlet %>?servicio=<%= servicio.getIdServicio() %>">
+              SER-<%= servicio.getIdServicio() %>
+            </a>
+          </td>
+          <td><%= texto(servicio.getNombreCliente()) %></td>
+          <td>
+            <%= ruta != null
+              ? texto(ruta.getNombreOrigen()) : "—" %>
+          </td>
+          <td>
+            <%= ruta != null
+              ? texto(ruta.getNombreDestino()) : "—" %>
+          </td>
+          <td><%= servicio.getCapacidadAsignada() %> Gbps</td>
+          <td><%= texto(servicio.getNombreRuta()) %></td>
+          <td>
+                            <span class="estado <%= texto(servicio.getEstado()).toLowerCase(java.util.Locale.ROOT) %>">
+                                <%= texto(servicio.getEstado()) %>
+                            </span>
+          </td>
+        </tr>
+        <% } %>
+
+        <% if (servicios.isEmpty()) { %>
+        <tr>
+          <td colspan="7">No hay servicios con este estado.</td>
+        </tr>
+        <% } %>
+        </tbody>
+      </table>
     </section>
-    <!-- DETALLE: solo muestra datos, no modifica Solicitudes. -->
-    <% if (detalle >= 0) { String[] servicio = servicios[detalle]; %>
+
+    <% if (seleccionado != null) {
+      Ruta rutaDetalle = buscarRuta(rutas, seleccionado.getIdRuta());
+    %>
     <section class="panel-detalle">
-        <div class="encabezado-detalle"><h2>Detalle de SER-<%= servicio[0] %></h2><a href="servicios.jsp" aria-label="Cerrar detalle">&times;</a></div>
-        <div class="datos-detalle">
-            <div><span>Solicitud asociada</span><strong>SOL-<%= servicio[1] %></strong></div>
-            <div><span>Cliente</span><strong><%= servicio[6] %></strong></div>
-            <div><span>Ruta asignada</span><strong><%= servicio[2] %></strong></div>
-            <div><span>Capacidad asignada</span><strong><%= servicio[3] %> Gbps</strong></div>
-            <div><span>Fecha de activación</span><strong><%= servicio[4] %></strong></div>
-            <div><span>Estado</span><strong><%= servicio[5] %></strong></div>
-            <div><span>Origen</span><strong><%= servicio[7] %></strong></div>
-            <div><span>Destino</span><strong><%= servicio[8] %></strong></div>
+      <div class="encabezado-detalle">
+        <h2>Detalle de SER-<%= seleccionado.getIdServicio() %></h2>
+        <a href="<%= servlet %>" aria-label="Cerrar detalle">&times;</a>
+      </div>
+
+      <div class="datos-detalle">
+        <div>
+          <span>Solicitud asociada</span>
+          <strong>
+            <a href="${pageContext.request.contextPath}/SolicitudesServletSuper?id=<%= seleccionado.getIdSolicitud() %>">
+              SOL-<%= seleccionado.getIdSolicitud() %>
+            </a>
+          </strong>
         </div>
+        <div>
+          <span>Cliente</span>
+          <strong><%= texto(seleccionado.getNombreCliente()) %></strong>
+        </div>
+        <div>
+          <span>Ruta asignada</span>
+          <strong>
+            <a href="${pageContext.request.contextPath}/RutaServletSuper?detalle=<%= seleccionado.getIdRuta() %>">
+              <%= texto(seleccionado.getNombreRuta()) %>
+            </a>
+          </strong>
+        </div>
+        <div>
+          <span>Capacidad asignada</span>
+          <strong><%= seleccionado.getCapacidadAsignada() %> Gbps</strong>
+        </div>
+        <div>
+          <span>Fecha de activación</span>
+          <strong>
+            <%= seleccionado.getFechaActivacion() == null
+              ? "Sin activar"
+              : seleccionado.getFechaActivacion().toString() %>
+          </strong>
+        </div>
+        <div>
+          <span>Estado del servicio</span>
+          <strong><%= texto(seleccionado.getEstado()) %></strong>
+        </div>
+        <div>
+          <span>Origen</span>
+          <strong>
+            <%= rutaDetalle != null
+              ? texto(rutaDetalle.getNombreOrigen()) : "—" %>
+          </strong>
+        </div>
+        <div>
+          <span>Destino</span>
+          <strong>
+            <%= rutaDetalle != null
+              ? texto(rutaDetalle.getNombreDestino()) : "—" %>
+          </strong>
+        </div>
+        <div>
+          <span>Estado de la solicitud</span>
+          <strong><%= texto(seleccionado.getEstadoSolicitud()) %></strong>
+        </div>
+      </div>
+
+      <% if (segmentosServicio != null && !segmentosServicio.isEmpty()) {
+        int orden = 1;
+      %>
+      <h3>Segmentos de la ruta</h3>
+      <div class="contenedor-tabla">
+        <table>
+          <thead>
+          <tr>
+            <th>Orden</th>
+            <th>Segmento</th>
+            <th>Reservada total</th>
+            <th>Ocupada total</th>
+            <th>Estado</th>
+          </tr>
+          </thead>
+          <tbody>
+          <% for (Segmento segmento : segmentosServicio) { %>
+          <tr>
+            <td><%= orden++ %></td>
+            <td><%= texto(segmento.getCodigo()) %></td>
+            <td><%= segmento.getCapacidadReservada() %> Gbps</td>
+            <td><%= segmento.getCapacidadOcupada() %> Gbps</td>
+            <td><%= texto(segmento.getEstado()) %></td>
+          </tr>
+          <% } %>
+          </tbody>
+        </table>
+      </div>
+      <p class="ayuda">
+        Las capacidades de cada segmento incluyen todos
+        los servicios que lo utilizan.
+      </p>
+      <% } %>
     </section>
     <% } %>
   </main>

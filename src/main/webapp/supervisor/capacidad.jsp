@@ -79,22 +79,24 @@
   ArrayList<Solicitud> acciones =
     (ArrayList<Solicitud>) request.getAttribute("accionesPendientes");
 %>
-
 <!-- Contenido visual -->
 <!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>OceanLink | Dashboard</title>
+  <title>OceanLink | Dashboard</title>
 
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/capacity_planner/capacity_planner.css">
-    <link rel="stylesheet"
-        href="${pageContext.request.contextPath}/css/network_operator/network_operator.css">
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/barras.css">
+  <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/capacity_planner/capacity_planner.css">
+  <link rel="stylesheet"
+      href="${pageContext.request.contextPath}/css/network_operator/network_operator.css">
+  <link rel="stylesheet"
+      href="${pageContext.request.contextPath}/css/supervisor/capacidad.css">
+  <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/barras.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 </head>
 
 <body>
@@ -195,7 +197,8 @@
 
           <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/TarjetasServletSuper" class="subopcion activo">Capacidad</a>
+            <a href="${pageContext.request.contextPath}/TarjetasServletSuper" class="subopcion activo">
+              Capacidad</a>
             <a href="${pageContext.request.contextPath}/RutaServletSuper"
                class="subopcion">
                 Rutas
@@ -228,18 +231,18 @@
           </label>
           <div class="contenido-submenu">
 
-            <a href="${pageContext.request.contextPath}/supervisor/clientes.jsp"
+            <a href="${pageContext.request.contextPath}/ClienteServletSuper"
                class="subopcion">
                 Clientes
             </a>
 
-            <a href="${pageContext.request.contextPath}/supervisor/servicios.jsp"
+            <a href="${pageContext.request.contextPath}/ServicioServletSuper"
                class="subopcion">
                 Servicios
             </a>
             <a
-                    href="${pageContext.request.contextPath}/supervisor/solicitudes.jsp"
-                    class="subopcion">
+                href="${pageContext.request.contextPath}/SolicitudesServletSuper"
+                class="subopcion">
                 Solicitudes
             </a>
           </div>
@@ -269,13 +272,13 @@
           <div class="contenido-submenu">
 
             <a
-                    href="${pageContext.request.contextPath}/supervisor/programacion.jsp"
+                    href="${pageContext.request.contextPath}/programacion.jsp"
                     class="subopcion">
                 Programación
             </a>
 
             <a
-                    href="${pageContext.request.contextPath}/supervisor/historial_programados.jsp"
+                    href="${pageContext.request.contextPath}/historial_programados.jsp"
                     class="subopcion">
                 Historial de programados
             </a>
@@ -443,15 +446,12 @@
           </li>
           <% } %>
         </ul>
-
         <a href="${pageContext.request.contextPath}/SolicitudesServletSuper"
            class="boton-nuevo">
           Ver solicitudes
         </a>
       </article>
-
     </section>
-
   </main>
 </div>
 

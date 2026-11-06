@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
-@WebServlet(name = "LandingStationServlet", value = "/LandingStationServlet")
+@WebServlet(name = "LandingStationServletSuper", value = "/LandingStationServletSuper")
 public class LandingStationServletSuper extends HttpServlet {
 
   @Override
@@ -85,3 +85,4 @@ public class LandingStationServletSuper extends HttpServlet {
     return valor == null ? "" : valor.trim();
   }
 }
+

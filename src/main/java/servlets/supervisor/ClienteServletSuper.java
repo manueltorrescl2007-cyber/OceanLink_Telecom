@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-@WebServlet(name = "ClienteServlet", value = "/ClienteServlet")
+@WebServlet(name = "ClienteServletSuper", value = "/ClienteServletSuper")
 public class ClienteServletSuper extends HttpServlet {
 
   // GET: listar clientes y mostrar el cliente seleccionado

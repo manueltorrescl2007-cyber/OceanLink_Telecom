@@ -26,6 +26,13 @@ public class EstadoRedServletSuper extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
 
+    // Las tarjetas deben cargarse primero. Si se abre este Servlet directamente,
+    // redirigir al punto de entrada del dashboard del Supervisor.
+    if (request.getAttribute("totalSolicitudes") == null) {
+      response.sendRedirect(request.getContextPath() + "/TarjetasServletSuper");
+      return;
+    }
+
     SegmentoDao segmentoDao = new SegmentoDao();
 
     String filtroEstado = request.getParameter("estado");
@@ -106,3 +113,4 @@ public class EstadoRedServletSuper extends HttpServlet {
     return false;
   }
 }
+

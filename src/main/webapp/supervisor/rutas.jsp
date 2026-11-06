@@ -174,7 +174,7 @@
             id="control-incidencias"
             class="control-submenu"
           >
-           <!-- Al hacer clic, marca o desmarca el checkbox -->
+          <!-- Al hacer clic, marca o desmarca el checkbox -->
           <label for="control-incidencias"
                  class="titulo-grupo">
             <span>Incidencias</span>
@@ -182,14 +182,14 @@
           </label>
           <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/supervisor/visualizar.jsp"
+            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper"
                class="subopcion">
-                Visualizar
+              Visualizar
             </a>
 
-            <a href="${pageContext.request.contextPath}/supervisor/historial_incidencias.jsp"
+            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper?action=historial"
                class="subopcion">
-                Historial de incidencias
+              Historial de incidencias
             </a>
           </div>
         </div>
@@ -213,18 +213,21 @@
 
           <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/supervisor/capacidad.jsp"
+            <a href="${pageContext.request.contextPath}/TarjetasServletSuper"
                class="subopcion">
-                Capacidad
+              Capacidad
             </a>
-            <a href="rutas.jsp" class="subopcion activo">Rutas</a>
-            <a href="${pageContext.request.contextPath}/supervisor/segmentos.jsp"
-               class="subopcion">
-                Segmentos
+            <a href="${pageContext.request.contextPath}/RutaServletSuper"
+               class="subopcion activo">
+              Rutas
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/landing_stations.jsp"
+            <a href="${pageContext.request.contextPath}/SegmentoServletSuper"
                class="subopcion">
-                Landing stations
+              Segmentos
+            </a>
+            <a href="${pageContext.request.contextPath}/LandingStationServletSuper"
+               class="subopcion">
+              Landing stations
             </a>
           </div>
         </div>
@@ -238,7 +241,7 @@
           >
 
           <label for="control-servicios-clientes"
-                  class="titulo-grupo">
+                 class="titulo-grupo">
             <span class="texto-grupo">
                 Servicios y clientes
             </span>
@@ -246,19 +249,19 @@
           </label>
           <div class="contenido-submenu">
 
-            <a href="${pageContext.request.contextPath}/supervisor/clientes.jsp"
+            <a href="${pageContext.request.contextPath}/ClienteServletSuper"
                class="subopcion">
-                Clientes
+              Clientes
             </a>
 
-            <a href="${pageContext.request.contextPath}/supervisor/servicios.jsp"
+            <a href="${pageContext.request.contextPath}/ServicioServletSuper"
                class="subopcion">
-                Servicios
+              Servicios
             </a>
             <a
-                    href="${pageContext.request.contextPath}/supervisor/solicitudes.jsp"
-                    class="subopcion">
-                Solicitudes
+              href="${pageContext.request.contextPath}/SolicitudesServletSuper"
+              class="subopcion">
+              Solicitudes
             </a>
           </div>
         </div>
@@ -273,8 +276,8 @@
           >
 
           <label
-                  for="control-mantenimientos"
-                  class="titulo-grupo">
+            for="control-mantenimientos"
+            class="titulo-grupo">
 
             <span class="texto-grupo">
                 Mantenimientos
@@ -287,18 +290,19 @@
           <div class="contenido-submenu">
 
             <a
-                    href="${pageContext.request.contextPath}/supervisor/programacion.jsp"
-                    class="subopcion">
-                Programación
+              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
+              class="subopcion">
+              Programación
             </a>
 
             <a
-                    href="${pageContext.request.contextPath}/supervisor/historial_programados.jsp"
-                    class="subopcion">
-                Historial de programados
+              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
+              class="subopcion">
+              Historial de programados
             </a>
           </div>
         </div>
+
         <!-- Reportes -->
         <a href="${pageContext.request.contextPath}/supervisor/reportes.jsp">
             Reportes

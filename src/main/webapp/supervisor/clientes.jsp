@@ -1,129 +1,86 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<!-- Datos estáticos, falta unir SQL -->
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="beans.capacityplanner.Cliente" %>
+<%@ page import="beans.capacityplanner.Solicitud" %>
+<%@ page import="beans.capacityplanner.Servicio" %>
+<%!
+  // Mostrar texto de la base de datos sin interpretarlo como HTML.
+  private String texto(String valor) {
+    if (valor == null) return "";
+    return valor.replace("&", "&amp;").replace("<", "&lt;")
+      .replace(">", "&gt;").replace("\"", "&quot;")
+      .replace("'", "&#39;");
+  }
+%>
 <%
-    /* 1. DATOS DE PRUEBA
-       Cada posición corresponde al mismo cliente en ambos arreglos. */
-    String[] ordenClientes = {"pacifico", "claro", "movistar"};
-    int[] clics = new int[3];
-    /* 2. CLIENTE SELECCIONADO
-       Lo obtenemos del enlace o recordamos el de la sesión. */
-    String clienteSeleccionado = request.getParameter("cliente");
-    if (clienteSeleccionado == null) {
-        clienteSeleccionado = (String) session.getAttribute("clienteSeleccionado");
-    }
-    if (!"pacifico".equals(clienteSeleccionado)
-            && !"claro".equals(clienteSeleccionado)
-            && !"movistar".equals(clienteSeleccionado)) {
-        clienteSeleccionado = "pacifico";
-    }
-    session.setAttribute("clienteSeleccionado", clienteSeleccionado);
-    /* 3. CONTAR CLICS
-       Recuperamos los contadores y aumentamos el del cliente pulsado.
-       Se guardan en la sesión, no en MySQL. */
-    String registrarVisita = request.getParameter("visita");
-    for (int i = 0; i < ordenClientes.length; i++) {
-        String clave = "clics_" + ordenClientes[i];
-        Integer contador = (Integer) session.getAttribute(clave);
-        if (contador != null) {
-            clics[i] = contador;
-        }
-        if ("1".equals(registrarVisita)
-                && ordenClientes[i].equals(clienteSeleccionado)) {
-            clics[i]++;
-        }
-        session.setAttribute(clave, clics[i]);
-    }
-    /* Evita sumar otro clic si se recarga la página después de seleccionar.
-       La nueva dirección conserva el cliente, pero ya no lleva visita=1. */
-    if ("1".equals(registrarVisita)) {
-        response.sendRedirect("clientes.jsp?cliente=" + clienteSeleccionado);
-        return;
-    }
-    /* 4. ORDENAR CLIENTES
-       Desde 5 clics, el cliente tiene prioridad.
-       Entre clientes frecuentes, aparece primero el de más clics.
-       Si ninguno es frecuente, conservamos su orden original. */
-    for (int vuelta = 0; vuelta < ordenClientes.length - 1; vuelta++) {
-        for (int i = 0; i < ordenClientes.length - 1 - vuelta; i++) {
-            int prioridadActual = 0;
-            int prioridadSiguiente = 0;
-            if (clics[i] >= 5) {
-                prioridadActual = clics[i];
-            }
-            if (clics[i + 1] >= 5) {
-                prioridadSiguiente = clics[i + 1];
-            }
-            if (prioridadSiguiente > prioridadActual) {
-                // Intercambiamos los nombres y sus contadores juntos.
-                String clienteTemporal = ordenClientes[i];
-                ordenClientes[i] = ordenClientes[i + 1];
-                ordenClientes[i + 1] = clienteTemporal;
-                int clicsTemporales = clics[i];
-                clics[i] = clics[i + 1];
-                clics[i + 1] = clicsTemporales;
-            }
-        }
-    }
-    /* 5. DETALLE QUE SE MOSTRARÁ
-       Solo aceptamos las cuatro opciones del resumen. */
-    String detalleSeleccionado = request.getParameter("detalle");
-    if (detalleSeleccionado != null
-            && !"solicitudes".equals(detalleSeleccionado)
-            && !"servicios".equals(detalleSeleccionado)
-            && !"contacto".equals(detalleSeleccionado)
-            && !"estado".equals(detalleSeleccionado)) {
-        detalleSeleccionado = null;
-    }
-    /* 6. DATOS DEL SQL: tres clientes de ejemplo del archivo recibido.
-       El Servlet cargará después la lista completa desde MySQL. */
-    int idCliente;
-    String nombreCliente;
-    String razonSocial;
-    String rucCliente;
-    String correoCliente;
-    String telefonoCliente;
-    String estadoCliente;
+  ArrayList<Cliente> clientes = (ArrayList<Cliente>) request.getAttribute("listaClientes");
+  String servlet = request.getContextPath() + "/ClienteServletSuper";
+  if (clientes == null) {
+    response.sendRedirect(servlet);
+    return;
+  }
 
-    switch (clienteSeleccionado) {
-        case "claro":
-            idCliente = 1;
-            nombreCliente = "Claro";
-            razonSocial = "Claro Telecomunicaciones S.A.C.";
-            rucCliente = "20123456789";
-            correoCliente = "contacto@claro.example";
-            telefonoCliente = "900111222";
-            estadoCliente = "activo";
-            break;
-        case "movistar":
-            idCliente = 2;
-            nombreCliente = "Movistar";
-            razonSocial = "Movistar Servicios Digitales S.A.C.";
-            rucCliente = "20234567890";
-            correoCliente = "contacto@movistar.example";
-            telefonoCliente = "900222333";
-            estadoCliente = "activo";
-            break;
-        default:
-            idCliente = 3;
-            nombreCliente = "Pacifico";
-            razonSocial = "Pacifico Conectividad S.A.C.";
-            rucCliente = "20345678901";
-            correoCliente = "contacto@pacifico.example";
-            telefonoCliente = "900333444";
-            estadoCliente = "activo";
-            break;
+  Cliente cliente = (Cliente) request.getAttribute("clienteSeleccionado");
+  if (cliente == null && !clientes.isEmpty()) cliente = clientes.get(0);
+
+  int idCliente = cliente != null ? cliente.getIdCliente() : 0;
+  String nombreCliente = cliente != null ? cliente.getNombre() : "Seleccione un cliente";
+  String razonSocial = cliente != null ? cliente.getRazonSocial() : "";
+  String rucCliente = cliente != null ? cliente.getRuc() : "";
+  String correoCliente = cliente != null ? cliente.getCorreo() : "";
+  String telefonoCliente = cliente != null ? cliente.getTelefono() : "";
+  String estadoCliente = cliente != null ? cliente.getEstado() : "";
+  String detalleSeleccionado = request.getParameter("detalle");
+  String error = (String) request.getAttribute("error");
+  String mensaje = request.getParameter("mensaje");
+
+  // Conservar tu orden de clientes frecuentes según los clics.
+  int[] clics = new int[clientes.size()];
+  for (int i = 0; i < clientes.size(); i++) {
+    String clave = "clics_cliente_" + clientes.get(i).getIdCliente();
+    Integer contador = (Integer) session.getAttribute(clave);
+    clics[i] = contador != null ? contador : 0;
+    if ("1".equals(request.getParameter("visita"))
+      && clientes.get(i).getIdCliente() == idCliente) {
+      clics[i]++;
+      session.setAttribute(clave, clics[i]);
     }
-    /* DATOS FICTICIOS: solo para mostrar el diseño.
-       No se insertan en MySQL. El Servlet los reemplazará después. */
-    int totalSolicitudes = 3;
-    int totalServicios = 2;
-    if ("claro".equals(clienteSeleccionado)) {
-        totalSolicitudes = 2;
-        totalServicios = 1;
-    } else if ("movistar".equals(clienteSeleccionado)) {
-        totalSolicitudes = 1;
-        totalServicios = 1;
+  }
+  if ("1".equals(request.getParameter("visita"))) {
+    response.sendRedirect(servlet + "?id=" + idCliente);
+    return;
+  }
+  for (int vuelta = 0; vuelta < clientes.size() - 1; vuelta++) {
+    for (int i = 0; i < clientes.size() - 1 - vuelta; i++) {
+      int actual = clics[i] >= 5 ? clics[i] : 0;
+      int siguiente = clics[i + 1] >= 5 ? clics[i + 1] : 0;
+      if (siguiente > actual) {
+        Cliente temporal = clientes.get(i);
+        clientes.set(i, clientes.get(i + 1));
+        clientes.set(i + 1, temporal);
+        int clicTemporal = clics[i];
+        clics[i] = clics[i + 1];
+        clics[i + 1] = clicTemporal;
+      }
     }
+  }
+
+  ArrayList<Solicitud> solicitudesCliente =
+    (ArrayList<Solicitud>) request.getAttribute("solicitudesCliente");
+
+  ArrayList<Servicio> serviciosCliente =
+    (ArrayList<Servicio>) request.getAttribute("listaServiciosCliente");
+
+  if (solicitudesCliente == null) {
+    solicitudesCliente = new ArrayList<>();
+  }
+
+  if (serviciosCliente == null) {
+    serviciosCliente = new ArrayList<>();
+  }
+
+  int totalSolicitudes = solicitudesCliente.size();
+  int totalServicios = serviciosCliente.size();
 %>
 
 <!doctype html>
@@ -136,7 +93,7 @@
     <title>OceanLink | Dashboard</title>
 
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/supervisor/clientes.css?v=2">
+          href="${pageContext.request.contextPath}/css/capacity_planner/clientes.css">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
 </head>
@@ -200,7 +157,7 @@
             id="control-incidencias"
             class="control-submenu"
           >
-           <!-- Al hacer clic, marca o desmarca el checkbox -->
+          <!-- Al hacer clic, marca o desmarca el checkbox -->
           <label for="control-incidencias"
                  class="titulo-grupo">
             <span>Incidencias</span>
@@ -208,14 +165,14 @@
           </label>
           <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/supervisor/visualizar.jsp"
+            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper"
                class="subopcion">
-                Visualizar
+              Visualizar
             </a>
 
-            <a href="${pageContext.request.contextPath}/supervisor/historial_incidencias.jsp"
+            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper?action=historial"
                class="subopcion">
-                Historial de incidencias
+              Historial de incidencias
             </a>
           </div>
         </div>
@@ -239,21 +196,21 @@
 
           <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/supervisor/capacidad.jsp"
+            <a href="${pageContext.request.contextPath}/TarjetasServletSuper"
                class="subopcion">
-                Capacidad
+              Capacidad
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/rutas.jsp"
+            <a href="${pageContext.request.contextPath}/RutaServletSuper"
                class="subopcion">
-                Rutas
+              Rutas
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/segmentos.jsp"
+            <a href="${pageContext.request.contextPath}/SegmentoServletSuper"
                class="subopcion">
-                Segmentos
+              Segmentos
             </a>
-            <a href="${pageContext.request.contextPath}/supervisor/landing_stations.jsp"
+            <a href="${pageContext.request.contextPath}/LandingStationServletSuper"
                class="subopcion">
-                Landing stations
+              Landing stations
             </a>
           </div>
         </div>
@@ -267,7 +224,7 @@
           >
 
           <label for="control-servicios-clientes"
-                  class="titulo-grupo">
+                 class="titulo-grupo">
             <span class="texto-grupo">
                 Servicios y clientes
             </span>
@@ -275,19 +232,19 @@
           </label>
           <div class="contenido-submenu">
 
-            <a href="${pageContext.request.contextPath}/supervisor/clientes.jsp"
+            <a href="${pageContext.request.contextPath}/ClienteServletSuper"
                class="subopcion activo">
-                Clientes
+              Clientes
             </a>
 
-            <a href="${pageContext.request.contextPath}/supervisor/servicios.jsp"
+            <a href="${pageContext.request.contextPath}/ServicioServletSuper"
                class="subopcion">
-                Servicios
+              Servicios
             </a>
             <a
-                    href="${pageContext.request.contextPath}/supervisor/solicitudes.jsp"
-                    class="subopcion">
-                Solicitudes
+              href="${pageContext.request.contextPath}/SolicitudesServletSuper"
+              class="subopcion">
+              Solicitudes
             </a>
           </div>
         </div>
@@ -302,8 +259,8 @@
           >
 
           <label
-                  for="control-mantenimientos"
-                  class="titulo-grupo">
+            for="control-mantenimientos"
+            class="titulo-grupo">
 
             <span class="texto-grupo">
                 Mantenimientos
@@ -316,18 +273,19 @@
           <div class="contenido-submenu">
 
             <a
-                    href="${pageContext.request.contextPath}/supervisor/programacion.jsp"
-                    class="subopcion">
-                Programación
+              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
+              class="subopcion">
+              Programación
             </a>
 
             <a
-                    href="${pageContext.request.contextPath}/supervisor/historial_programados.jsp"
-                    class="subopcion">
-                Historial de programados
+              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
+              class="subopcion">
+              Historial de programados
             </a>
           </div>
         </div>
+
         <!-- Reportes -->
         <a href="${pageContext.request.contextPath}/supervisor/reportes.jsp">
             Reportes
@@ -353,160 +311,336 @@
   <!-- Contenido principal -->
   <main class="contenido-principal">
     <section class="encabezado-panel">
-        <h2>Supervisor</h2>
-        <h1>Clientes</h1>
+      <h2>Supervisor</h2>
+      <h1>Clientes</h1>
     </section>
+    <% if (error != null) { %><p role="alert"><%= texto(error) %></p><% } %>
+    <% if ("creado".equals(mensaje) || "actualizado".equals(mensaje)
+      || "activado".equals(mensaje) || "desactivado".equals(mensaje)) { %>
+    <p role="status">Operación realizada correctamente.</p>
+    <% } %>
     <section class="seccion-clientes">
       <div class="panel-clientes">
-          <div class="titulo-seccion">
-              <h2>Clientes frecuentes</h2>
-              <span class="cantidad-clientes">3</span>
+        <div class="titulo-seccion"
+             style="display: flex; align-items: center;
+                            justify-content: space-between; gap: 16px;">
+
+          <h2>Clientes frecuentes</h2>
+
+          <div style="display: flex; align-items: center; gap: 16px;">
+
+            <details style="position: relative;">
+              <summary aria-label="Buscar clientes"
+                       title="Buscar clientes"
+                       style="display: flex; align-items: center;
+                                            cursor: pointer; color: #1c8c9c;">
+                <svg width="23" height="23" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round"
+                     aria-hidden="true">
+                  <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                  <path d="M16 16L21 21"></path>
+                </svg>
+              </summary>
+
+              <form method="get" action="<%= servlet %>"
+                    style="position: absolute; right: 0; top: 36px;
+                                         z-index: 10; width: 280px;
+                                         max-width: 70vw; padding: 16px;
+                                         box-sizing: border-box; background: white;
+                                         border: 1px solid #d9e1e8;
+                                         border-radius: 10px;
+                                         box-shadow: 0 4px 16px #00000015;">
+
+                <div style="display: flex; align-items: center;
+                                            justify-content: space-between; margin-bottom: 8px;">
+
+                  <label for="buscarCliente"
+                         style="font-size: 14px; color: #0b3d5c;">
+                    Buscar cliente
+                  </label>
+
+                  <button type="button"
+                          aria-label="Cerrar buscador"
+                          onclick="this.closest('details').open = false;"
+                          style="border: none; background: transparent;
+                                                   color: #64748b; font-size: 22px;
+                                                   line-height: 1; cursor: pointer;
+                                                   padding: 4px;">
+                    &times;
+                  </button>
+
+                </div>
+
+                <input type="search"
+                       id="buscarCliente"
+                       name="buscar"
+                       placeholder="Escribe tu búsqueda..."
+                       value="<%= texto(request.getParameter("buscar")) %>"
+                       style="width: 100%; box-sizing: border-box;
+                                              padding: 10px 12px;
+                                              border: 1px solid #d9e1e8;
+                                              border-radius: 6px;
+                                              font-size: 14px;">
+
+                <div style="display: flex; align-items: center;
+                                            gap: 12px; margin-top: 12px;">
+                  <button type="submit" class="boton primario">
+                    Buscar
+                  </button>
+                </div>
+              </form>
+            </details>
+
+            <span class="cantidad-clientes">
+                            <%= clientes.size() %>
+                        </span>
+
           </div>
-          <!-- LISTA: conserva el orden calculado a partir de los clics -->
-          <ul class="lista-clientes">
-              <% for (String codigoCliente : ordenClientes) {
-                  String nombreLista;
-                  String razonLista;
-                  switch (codigoCliente) {
-                      case "claro":
-                          nombreLista = "Claro";
-                          razonLista = "Claro Telecomunicaciones S.A.C.";
-                          break;
-                      case "movistar":
-                          nombreLista = "Movistar";
-                          razonLista = "Movistar Servicios Digitales S.A.C.";
-                          break;
-                      default:
-                          nombreLista = "Pacifico";
-                          razonLista = "Pacifico Conectividad S.A.C.";
-                          break;
-                  }
-              %>
-              <li class="<%= clienteSeleccionado.equals(codigoCliente) ? "cliente-seleccionado" : "" %>">
-                  <a class="cliente-enlace" href="clientes.jsp?cliente=<%= codigoCliente %>&amp;visita=1">
-                      <span class="avatar-cliente"><%= nombreLista.substring(0, 1) %></span>
-                      <span class="datos-cliente">
-                          <strong><%= nombreLista %></strong>
-                          <small><%= razonLista %></small>
-                          <small><%= "pacifico".equals(codigoCliente) ? "2 servicios contratados" : "1 servicio contratado" %></small>
-                      </span>
-                  </a>
-              </li>
-              <% } %>
-          </ul>
+        </div>
+        <!-- LISTA: conserva el orden calculado a partir de los clics -->
+        <ul class="lista-clientes">
+          <% for (Cliente c : clientes) { %>
+          <li class="<%= c.getIdCliente() == idCliente ? "cliente-seleccionado" : "" %>">
+            <a class="cliente-enlace" href="<%= servlet %>?id=<%= c.getIdCliente() %>&amp;visita=1">
+              <span class="avatar-cliente"><%= texto(c.getNombre().isEmpty() ? "" : c.getNombre().substring(0, 1)) %></span>
+              <span class="datos-cliente">
+                                <strong><%= texto(c.getNombre()) %></strong>
+                                <small><%= texto(c.getRazonSocial()) %></small>
+                                <small><%= "activo".equals(c.getEstado()) ? "Activo" : "Inactivo" %></small>
+                            </span>
+            </a>
+          </li>
+          <% } %>
+        </ul>
+        <% if (clientes.isEmpty()) { %><p>No hay clientes registrados.</p><% } %>
       </div>
       <!-- RESUMEN: se actualiza según el cliente seleccionado -->
       <div class="panel-resumen">
-          <div class="encabezado-resumen">
-              <span class="etiqueta-resumen">Resumen</span>
-              <strong class="titulo-resumen"><%= nombreCliente %></strong>
-          </div>
-          <a class="opcion-resumen" href="clientes.jsp?cliente=<%= clienteSeleccionado %>&amp;detalle=solicitudes">
-              <span class="icono-opcion">★</span>
-              <span class="texto-opcion">
-                  <strong>Solicitudes asociadas</strong>
-                  <small><%= totalSolicitudes %> solicitudes registradas</small>
-              </span>
-              <span class="flecha">›</span>
-          </a>
-          <a class="opcion-resumen" href="clientes.jsp?cliente=<%= clienteSeleccionado %>&amp;detalle=servicios">
-              <span class="icono-opcion">★</span>
-              <span class="texto-opcion">
-                  <strong>Servicios contratados</strong>
-                  <small><%= totalServicios %> servicios contratados</small>
-              </span>
-              <span class="flecha">›</span>
-          </a>
-          <a class="opcion-resumen" href="clientes.jsp?cliente=<%= clienteSeleccionado %>&amp;detalle=contacto">
-              <span class="icono-opcion">★</span>
-              <span class="texto-opcion">
-                  <strong>Contacto</strong>
-                  <small><%= correoCliente %></small>
-              </span>
-              <span class="flecha">›</span>
-          </a>
-          <a class="opcion-resumen" href="clientes.jsp?cliente=<%= clienteSeleccionado %>&amp;detalle=estado">
-              <span class="icono-opcion">★</span>
-              <span class="texto-opcion">
-                  <strong>Estado</strong>
-                  <small><%= estadoCliente.equals("activo") ? "Activo" : "Inactivo" %></small>
-              </span>
-              <span class="flecha">›</span>
-          </a>
+        <div class="encabezado-resumen">
+          <span class="etiqueta-resumen">Resumen</span>
+          <strong class="titulo-resumen"><%= texto(nombreCliente) %></strong>
+        </div>
+        <a class="opcion-resumen" href="<%= servlet %>?id=<%= idCliente %>&amp;detalle=solicitudes">
+          <span class="icono-opcion">★</span>
+          <span class="texto-opcion">
+                        <strong>Solicitudes asociadas</strong>
+                        <small><%= totalSolicitudes %> solicitud(es) registradas</small>
+                    </span>
+          <span class="flecha">›</span>
+        </a>
+        <a class="opcion-resumen" href="<%= servlet %>?id=<%= idCliente %>&amp;detalle=servicios">
+          <span class="icono-opcion">★</span>
+          <span class="texto-opcion">
+                        <strong>Servicios contratados</strong>
+                        <small><%= totalServicios %> servicio(s) registrados</small>
+                    </span>
+          <span class="flecha">›</span>
+        </a>
+        <a class="opcion-resumen" href="<%= servlet %>?id=<%= idCliente %>&amp;detalle=contacto">
+          <span class="icono-opcion">★</span>
+          <span class="texto-opcion">
+                        <strong>Contacto</strong>
+                        <small><%= texto(correoCliente) %></small>
+                    </span>
+          <span class="flecha">›</span>
+        </a>
+        <a class="opcion-resumen" href="<%= servlet %>?id=<%= idCliente %>&amp;detalle=estado">
+          <span class="icono-opcion">★</span>
+          <span class="texto-opcion">
+                        <strong>Estado</strong>
+                        <small><%= estadoCliente.equals("activo") ? "Activo" : "Inactivo" %></small>
+                    </span>
+          <span class="flecha">›</span>
+        </a>
       </div>
     </section>
-    <!-- DETALLE: solo aparece después de pulsar una opción del resumen -->
-    <% if (detalleSeleccionado != null) { %>
+    <!-- DETALLE del cliente seleccionado -->
+    <% if (cliente != null && detalleSeleccionado != null) { %>
     <section class="panel-detalle">
       <div class="encabezado-detalle">
         <div>
-            <p class="subtitulo-detalle">Cliente <%= nombreCliente %></p>
-            <h2>
-                <% if ("solicitudes".equals(detalleSeleccionado)) { %>
-                    Solicitudes asociadas
-                <% } else if ("servicios".equals(detalleSeleccionado)) { %>
-                    Servicios contratados
-                <% } else if ("contacto".equals(detalleSeleccionado)) { %>
-                    Información de contacto
-                <% } else { %>
-                    Datos del cliente
-                <% } %>
-            </h2>
+          <p class="subtitulo-detalle">
+            Cliente <%= texto(nombreCliente) %>
+          </p>
+
+          <h2>
+            <% if ("solicitudes".equals(detalleSeleccionado)) { %>
+            Solicitudes asociadas
+            <% } else if ("servicios".equals(detalleSeleccionado)) { %>
+            Servicios contratados
+            <% } else if ("contacto".equals(detalleSeleccionado)) { %>
+            Información de contacto
+            <% } else { %>
+            Estado del cliente
+            <% } %>
+          </h2>
         </div>
-        <a class="cerrar-detalle" href="clientes.jsp?cliente=<%= clienteSeleccionado %>" aria-label="Cerrar detalle">&times;</a>
+
+        <a class="cerrar-detalle"
+           href="<%= servlet %>?id=<%= idCliente %>"
+           aria-label="Cerrar detalle">&times;</a>
       </div>
+
       <div class="contenido-detalle">
+
         <% if ("solicitudes".equals(detalleSeleccionado)) { %>
-            <!-- Solicitudes ficticias del cliente seleccionado -->
-            <article class="tarjeta-detalle">
-                <div><strong>SOL-<%= idCliente %>01 · Los Ángeles — Lurín</strong><p>Capacidad solicitada: 50 Gbps</p></div>
-                <span class="badge aprobada">Aprobada</span>
-            </article>
-            <% if (totalSolicitudes >= 2) { %>
-            <article class="tarjeta-detalle">
-                <div><strong>SOL-<%= idCliente %>02 · Lurín — Valparaíso</strong><p>Capacidad solicitada: 20 Gbps</p></div>
-                <span class="badge pendiente">En evaluación</span>
-            </article>
-            <% } %>
-            <% if (totalSolicitudes >= 3) { %>
-            <article class="tarjeta-detalle">
-                <div><strong>SOL-<%= idCliente %>03 · Guayaquil — Lurín</strong><p>Capacidad solicitada: 30 Gbps</p></div>
-                <span class="badge aprobada">Activa</span>
-            </article>
-            <% } %>
+
+        <% if (solicitudesCliente.isEmpty()) { %>
+        <p>Este cliente todavía no tiene solicitudes registradas.</p>
+        <% } else {
+          for (Solicitud s : solicitudesCliente) {
+            String claseEstado = "pendiente";
+
+            if ("Rechazada".equals(s.getEstado())) {
+              claseEstado = "rechazada";
+            } else if ("Aprobada".equals(s.getEstado())
+              || "Provisionada".equals(s.getEstado())
+              || "Activa".equals(s.getEstado())) {
+              claseEstado = "aprobada";
+            }
+        %>
+        <article class="tarjeta-detalle">
+          <div>
+            <strong>
+              SOL-<%= s.getIdSolicitud() %> ·
+              <%= texto(s.getNombreOrigen()) %> —
+              <%= texto(s.getNombreDestino()) %>
+            </strong>
+
+            <p>
+              Capacidad solicitada:
+              <%= s.getCapacidadSolicitada() %> Gbps
+            </p>
+
+            <a href="${pageContext.request.contextPath}/SolicitudesServletSuper?id=<%= s.getIdSolicitud() %>"
+               style="display: inline-block;
+                                          margin-top: 10px;
+                                          padding: 6px 12px;
+                                          font-size: 13px;
+                                          font-weight: 600;
+                                          line-height: 1.4;
+                                          color: #0b3d5c;
+                                          background: #e5eef3;
+                                          border-radius: 6px;
+                                          text-decoration: none;">
+              Ver solicitud →
+            </a>
+          </div>
+
+          <span class="badge <%= claseEstado %>">
+                                <%= texto(s.getEstado()) %>
+                            </span>
+        </article>
+        <%  }
+        } %>
+
         <% } else if ("servicios".equals(detalleSeleccionado)) { %>
-            <!-- Servicios ficticios: cada servicio tiene ruta y capacidad asignada -->
-            <article class="tarjeta-detalle servicio">
-                <strong>SER-<%= idCliente %>01</strong>
-                <p><b>Solicitud:</b> SOL-<%= idCliente %>01</p>
-                <p><b>Ruta:</b> LAX-LUR-R01</p>
-                <p><b>Capacidad asignada:</b> 50 Gbps</p>
-                <p><b>Estado:</b> <span class="badge pendiente">Pendiente</span></p>
-            </article>
-            <% if (totalServicios >= 2) { %>
-            <article class="tarjeta-detalle servicio">
-                <strong>SER-<%= idCliente %>02</strong>
-                <p><b>Solicitud:</b> SOL-<%= idCliente %>03</p>
-                <p><b>Ruta:</b> GYE-LUR-R01</p>
-                <p><b>Capacidad asignada:</b> 30 Gbps</p>
-                <p><b>Estado:</b> <span class="badge activa">Activo</span></p>
-            </article>
-            <% } %>
+
+        <% if (serviciosCliente.isEmpty()) { %>
+        <p>Este cliente todavía no tiene servicios registrados.</p>
+        <% } else {
+          for (Servicio servicio : serviciosCliente) {
+            String claseEstado = "pendiente";
+
+            if ("Activo".equals(servicio.getEstado())) {
+              claseEstado = "activa";
+            } else if ("Cancelado".equals(servicio.getEstado())) {
+              claseEstado = "inactiva";
+            }
+        %>
+        <article class="tarjeta-detalle servicio"
+                 style="display: flex; flex-direction: row; flex-wrap: wrap;
+                                        align-items: center; justify-content: space-between;
+                                        gap: 24px; padding: 24px;">
+
+          <strong style="margin: 0; font-size: 17px;">
+            SER-<%= servicio.getIdServicio() %>
+          </strong>
+
+          <div>
+            <p style="margin: 0 0 8px;">Solicitud</p>
+            <strong>SOL-<%= servicio.getIdSolicitud() %></strong>
+          </div>
+
+          <div>
+            <p style="margin: 0 0 8px;">Ruta</p>
+            <strong><%= texto(servicio.getNombreRuta()) %></strong>
+          </div>
+
+          <div>
+            <p style="margin: 0 0 8px;">Capacidad asignada</p>
+            <strong><%= servicio.getCapacidadAsignada() %> Gbps</strong>
+          </div>
+
+          <div>
+            <p style="margin: 0 0 8px;">Estado</p>
+            <span class="badge <%= claseEstado %>">
+                                    <%= texto(servicio.getEstado()) %>
+                                </span>
+          </div>
+
+          <a href="${pageContext.request.contextPath}/ServicioServletSuper?servicio=<%= servicio.getIdServicio() %>"
+             style="display: inline-block; margin: 0; padding: 8px 14px;
+                                      font-size: 13px; font-weight: 600; line-height: 1.4;
+                                      color: #0b3d5c; background: #e5eef3;
+                                      border-radius: 6px; text-decoration: none;
+                                      white-space: nowrap;">
+            Ver servicio →
+          </a>
+
+        </article>
+        <%  }
+        } %>
+
         <% } else if ("contacto".equals(detalleSeleccionado)) { %>
-            <article class="tarjeta-detalle contacto">
-                <p><b>Empresa:</b> <%= nombreCliente %></p>
-                <p><b>Correo:</b> <%= correoCliente %></p>
-                <p><b>Teléfono:</b> <%= telefonoCliente %></p>
-            </article>
+
+        <article class="tarjeta-detalle contacto"
+                 style="display: flex; flex-direction: row; flex-wrap: wrap;
+                                    align-items: center; justify-content: space-between;
+                                    gap: 24px; padding: 24px;">
+
+          <div>
+            <p style="margin: 0 0 8px;">Empresa</p>
+            <strong><%= texto(nombreCliente) %></strong>
+          </div>
+
+          <div>
+            <p style="margin: 0 0 8px;">Correo electrónico</p>
+            <strong><%= texto(correoCliente) %></strong>
+          </div>
+
+          <div>
+            <p style="margin: 0 0 8px;">Teléfono</p>
+            <strong><%= texto(telefonoCliente) %></strong>
+          </div>
+
+        </article>
+
         <% } else { %>
-            <article class="tarjeta-detalle contacto">
-                <p><b>ID:</b> <%= idCliente %></p>
-                <p><b>Nombre:</b> <%= nombreCliente %></p>
-                <p><b>Razón social:</b> <%= razonSocial %></p>
-                <p><b>RUC:</b> <%= rucCliente %></p>
-                <p><b>Estado:</b> <span class="badge <%= estadoCliente.equals("activo") ? "activa" : "inactiva" %>"><%= estadoCliente.equals("activo") ? "Activo" : "Inactivo" %></span></p>
-            </article>
+
+        <article class="tarjeta-detalle contacto"
+                 style="display: flex; flex-direction: row; flex-wrap: wrap;
+                                    align-items: center; justify-content: space-between;
+                                    gap: 24px; padding: 24px;">
+
+          <div>
+            <p style="margin: 0 0 8px;">Cliente</p>
+            <strong><%= texto(nombreCliente) %></strong>
+          </div>
+
+          <div>
+            <p style="margin: 0 0 8px;">Estado actual</p>
+            <span class="badge <%= "activo".equals(estadoCliente)
+                                    ? "activa" : "inactiva" %>">
+                                <%= "activo".equals(estadoCliente) ? "Activo" : "Inactivo" %>
+                            </span>
+          </div>
+
+        </article>
+
         <% } %>
+
       </div>
     </section>
     <% } %>
