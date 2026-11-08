@@ -2,8 +2,11 @@ package servlets.maintenance;
 
 import beans.maintenance.Mantenimiento;
 import beans.Usuario;
+import beans.maintenance.ActividadMantenimiento;
+
 import daos.manteinance.MantenimientoDao;
 import daos.manteinance.SegmentoDao;
+import daos.manteinance.ActividadMantenimientoDao;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Set;
+import java.util.List;
 
 @WebServlet(name = "MantenimientoServlet", value = "/MantenimientoServlet")
 public class MantenimientoServlet extends HttpServlet {
@@ -26,6 +30,9 @@ public class MantenimientoServlet extends HttpServlet {
 
   private final SegmentoDao segmentoDao =
     new SegmentoDao(); // CREACIÓN DEL OBJETO SEGMENTO
+
+  private final ActividadMantenimientoDao actividadMantenimientoDao =
+    new ActividadMantenimientoDao(); // declaramos nuestro DAO para las actividades (bitacora) del mantenimiento
 
   // Rutas de las vistas que ya existen o crearemos después.
   private static final String VISTA_LISTADO =
@@ -159,9 +166,8 @@ public class MantenimientoServlet extends HttpServlet {
   }
 
 
-  // =========================================================
+
   // POST: registrar, actualizar o cancelar
-  // =========================================================
 
   @Override
   protected void doPost(
@@ -198,6 +204,9 @@ public class MantenimientoServlet extends HttpServlet {
           cancelarMantenimiento(request, response);
           break;
 
+        case "comentar":
+          agregarComentario(request, response);
+          break;
 
         default:
           response.sendError(
@@ -231,9 +240,7 @@ public class MantenimientoServlet extends HttpServlet {
   }
 
 
-  // =========================================================
   // GET: preparar la edición de un mantenimiento
-  // =========================================================
 
   private void mostrarEdicion(
     HttpServletRequest request,
@@ -312,20 +319,20 @@ public class MantenimientoServlet extends HttpServlet {
       return;
     }
 
-    // Enviar el objeto a estado.jsp.
-    request.setAttribute(
-      "mantenimiento",
-      mantenimiento
-    );
+    // Recuperamos las actividades asociadas al mantenimiento
+    List<ActividadMantenimiento> actividades = actividadMantenimientoDao.listaPorMantenimiento(id);
+
+    // Enviar el objeto mantenimiento y sus actividades (bitacora) a estado.jsp.
+
+    request.setAttribute("mantenimiento", mantenimiento);
+    request.setAttribute("actividades", actividades);
 
     // Mostrar la vista.
     request.getRequestDispatcher(VISTA_ESTADO)
       .forward(request, response);
   }
 
-  // =========================================================
   // POST: crear un mantenimiento
-  // =========================================================
 
   private void crearMantenimiento(
     HttpServletRequest request,
@@ -361,9 +368,9 @@ public class MantenimientoServlet extends HttpServlet {
   }
 
 
-  // =========================================================
+
   // POST: actualizar un mantenimiento
-  // =========================================================
+
 
   private void actualizarMantenimiento(
     HttpServletRequest request,
@@ -394,9 +401,9 @@ public class MantenimientoServlet extends HttpServlet {
   }
 
 
-  // =========================================================
+
   // POST: cancelar un mantenimiento
-  // =========================================================
+
 
   private void cancelarMantenimiento(
     HttpServletRequest request,
@@ -423,10 +430,61 @@ public class MantenimientoServlet extends HttpServlet {
     redirigirListado(request, response, "cancelado");
   }
 
+  // POST: Agregar un comentario a la bitacora
 
-  // =========================================================
+  private void agregarComentario(HttpServletRequest request, HttpServletResponse response)
+    throws IOException {
+
+    // Primero obtenemos el id del mantenimiento en el que vamos a comentar
+    int id = obtenerIdPositivo(request.getParameter("idMantenimiento"), "El ID del mantenimiento no es valido");
+
+    // Obtenemos el usuario autenticado en ese momento
+    Integer idUsuario = obtenerIdUsuarioSesion(request);
+
+    if (idUsuario == null) {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Debe iniciar sesión para registrar el comentario");
+
+      return;
+    }
+
+    // Comprobamos que el mantenimiento exista
+
+    Mantenimiento mantenimiento = mantenimientoDao.obtenerMantenimiento(id);
+
+    if (mantenimiento == null) {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND, "No se encontró el mantenimiento");
+      return;
+    }
+
+    // Recuperamos comentarios pasados
+    String comentario = obtenerParametro(request, "comentario");
+
+    // Construimos el bean de la actividad
+    ActividadMantenimiento actividad = new ActividadMantenimiento();
+    actividad.setIdMantenimiento(id);
+    actividad.setIdUsuario(idUsuario);
+    actividad.setDescripcionBitacora(comentario);
+    actividad.setTipoActividad("Comentario");
+
+    // Registramos la actividad
+    boolean registrado = actividadMantenimientoDao.crearActividad(actividad);
+
+    // Verificamos que se haya registrado correctamente el comentario
+    if (!registrado) {
+      throw new IllegalStateException("No se pudo registrar el comentario");
+    }
+
+    // Redirigimos al seguimiento para evitar que el usuario envie otra vez el comentario
+
+    response.sendRedirect(request.getContextPath() + "/MantenimientoServlet?accion=estado&idMantenimiento=" + id);
+
+
+  }
+
+
+
+
   // Convertir los campos del formulario en un Bean
-  // =========================================================
 
   private Mantenimiento leerFormulario(
     HttpServletRequest request
@@ -498,9 +556,9 @@ public class MantenimientoServlet extends HttpServlet {
   }
 
 
-  // =========================================================
+
   // Funciones auxiliares
-  // =========================================================
+
 
   private String obtenerParametro(
     HttpServletRequest request,

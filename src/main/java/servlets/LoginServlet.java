@@ -23,12 +23,14 @@ public class LoginServlet extends HttpServlet {
     HttpServletResponse response
   ) throws ServletException, IOException {
 
-    HttpSession sesion = request.getSession(false);
+    HttpSession sesion = request.getSession(false); // comprobamos si existe o no una sesión
 
+    // Comprobamos que la sesión exista y recuperamos el usuarioLogueado
     if (sesion != null) {
       Object objetoUsuario =
         sesion.getAttribute("usuarioLogueado");
 
+      // Comprobamos si es un objeto usuario y cual es el rol (no vacio)
       if (objetoUsuario instanceof Usuario usuario
         && usuario.getRol() != null) {
 
@@ -42,6 +44,7 @@ public class LoginServlet extends HttpServlet {
       }
     }
 
+    // Si no hay ningun usuario registrado entonces lo redirigimos a la pagina de login
     request.getRequestDispatcher("/login.jsp")
       .forward(request, response);
   }
@@ -54,11 +57,11 @@ public class LoginServlet extends HttpServlet {
 
     request.setCharacterEncoding("UTF-8");
 
+    // Obtenemos el correo y contraseña del usuario
     String correo = request.getParameter("correo");
     String contrasena = request.getParameter("password");
 
-    // Compatibilidad si todavía existiera algún formulario
-    // que envíe el parámetro anterior "username".
+    // Compatibilidad si todavía existiera algún formulario que envíe el parámetro anterior "username".
     if (correo == null) {
       correo = request.getParameter("username");
     }
@@ -133,8 +136,7 @@ public class LoginServlet extends HttpServlet {
       return;
     }
 
-    // Invalidar cualquier sesión anterior para evitar
-    // reutilizar su identificador después de iniciar sesión.
+    // Invalidar cualquier sesión anterior para evitar reutilizar su identificador después de iniciar sesión.
     HttpSession sesionAnterior = request.getSession(false);
 
     if (sesionAnterior != null) {

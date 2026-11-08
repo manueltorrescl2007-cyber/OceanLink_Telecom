@@ -43,6 +43,7 @@ public final class PasswordUtil {
       + Base64.getEncoder().encodeToString(hash);
   }
 
+  // Verificamos las contraseñas mediante el uso de hashes
   public static boolean verificarPassword(
     String password,
     String guardada
@@ -52,8 +53,7 @@ public final class PasswordUtil {
       return false;
     }
 
-    // Compatibilidad temporal con las contraseñas antiguas
-    // que se guardaron directamente en MySQL.
+    // Compatibilidad temporal con las contraseñas antiguas que se guardaron directamente en MySQL.
     if (!esHashAlmacenado(guardada)) {
       return MessageDigest.isEqual(
         password.getBytes(StandardCharsets.UTF_8),

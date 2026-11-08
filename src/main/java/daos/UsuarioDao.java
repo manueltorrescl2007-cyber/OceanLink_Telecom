@@ -19,7 +19,7 @@ public class UsuarioDao extends BaseDao {
           + "FROM usuarios u "
           + "INNER JOIN roles_usuario r ON u.id_rol = r.id_rol ";
 
-    /* ========== READ: lista de todos los usuarios (sin filtros) ========== */
+    // READ: lista de todos los usuarios (sin filtros)
     public ArrayList<Usuario> listarUsuarios() {
         return listarUsuarios(-1, null);
     }
@@ -172,7 +172,7 @@ public class UsuarioDao extends BaseDao {
     }
   }
 
-    /* ========== CREATE: nuevo usuario (estado = 'activo' por defecto en MySQL) ========== */
+    // CREATE: nuevo usuario (estado = 'activo' por defecto en MySQL)
     public void crearUsuario(Usuario usuario) {
 
       String sql =
@@ -236,7 +236,7 @@ public class UsuarioDao extends BaseDao {
         }
     }
 
-    /* ========== Ayudante: convierte la fila actual del ResultSet en un Usuario ========== */
+    // Ayudante: convierte la fila actual del ResultSet en un Usuario
     private Usuario fetchUsuario(ResultSet rs) throws SQLException {
         Rol rol = new Rol();
         rol.setIdRol(rs.getInt("id_rol"));

@@ -3,11 +3,24 @@
 <%@ page import="beans.maintenance.Mantenimiento" %>
 <%@ page import="java.util.Arrays" %>
 <%@ page import="java.util.List" %>
+<%@ page import="beans.maintenance.ActividadMantenimiento" %>
+<%@ page import ="java.time.format.DateTimeFormatter"%>
+<%@ page import ="java.util.ArrayList"%>
 
 <%
   // Recuperamos el mantenimiento enviado por MantenimientoServlet.
   Mantenimiento mantenimiento =
     (Mantenimiento) request.getAttribute("mantenimiento");
+
+  List<ActividadMantenimiento> actividades = (List<ActividadMantenimiento>) request.getAttribute("actividades");
+
+  if (actividades == null) {
+    actividades = new ArrayList<>();
+
+  }
+
+  DateTimeFormatter formatoFechaHora = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
 
   // Si no recibimos el objeto, no podemos mostrar el seguimiento.
   if (mantenimiento == null) {
@@ -42,6 +55,21 @@
     : "No definida";
 
   boolean cancelado = "Cancelado".equals(estadoActual);
+%>
+
+<%!
+  private String escaparHtml(String texto) {
+    if (texto == null) {
+      return "";
+    }
+
+    return texto
+      .replace("&", "&amp;")
+      .replace("<", "&lt;")
+      .replace(">", "&gt;")
+      .replace("\"", "&quot;")
+      .replace("'", "&#39;");
+  }
 %>
 
 <!DOCTYPE html>
@@ -197,9 +225,68 @@
         <div class="bitacora">
           <strong>BITÁCORA DE INTERVENCIÓN</strong>
 
-          <p>14:42 - Técnico llegó al sitio de intervención.</p>
-          <p>14:46 - Inicio de revisión de conectores ópticos.</p>
-          <p>15:09 - Detección de degradación leve en fibra secundaria. Se procede a su reemplazo.</p>
+          <% if (actividades.isEmpty()) { %>
+
+          <p> Aún no hay actividades registradas </p>
+
+          <% } else { %>
+
+            <% for (ActividadMantenimiento actividad: actividades) { %>
+              <div class = "actividad-bitacora">
+
+                <p>
+                  <strong>
+                    <%= escaparHtml(actividad.getNombreUsuario())%>
+                  </strong>
+
+                  <span>
+                    <%=
+                      actividad.getFechaHora() != null ?
+                      actividad.getFechaHora().format(formatoFechaHora) : ""
+                    %>
+                  </span>
+
+                </p>
+
+                <p>
+                  <%= escaparHtml(actividad.getDescripcionBitacora())%>
+                </p>
+
+                <small>
+                  <%= escaparHtml(actividad.getTipoActividad())%>
+                </small>
+
+              </div>
+
+            <% } %>
+
+          <% } %>
+
+        </div>
+
+        <div class="formulario-comentario">
+
+          <h3>
+            Agregar commentario
+          </h3>
+
+          <form action = "<%=request.getContextPath()%>/MantenimientoServlet"
+                method="POST">
+            <input type = hidden name ="accion" value ="comentar">
+
+            <input type = "hidden" name = "idMantenimiento" value ="<%=mantenimiento.getIdMantenimiento()%>">
+
+            <textarea
+                name = "comentario"
+                rows="4"
+                placeholder="Escriba un comentario/reporte sobre este mantenimiento..."
+                required></textarea>
+
+            <button type ="submit">
+              Registrar
+            </button>
+          </form>
+
         </div>
 
       </div>
