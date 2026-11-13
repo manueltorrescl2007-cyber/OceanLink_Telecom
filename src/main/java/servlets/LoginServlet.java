@@ -148,9 +148,6 @@ public class LoginServlet extends HttpServlet {
 
     // Datos consultados desde MySQL.
     sesion.setAttribute("usuarioLogueado", usuario);
-
-    // Compatibilidad con el código existente de mantenimiento.
-    sesion.setAttribute("usuario", usuario);
     sesion.setAttribute("idUsuario", usuario.getIdUsuario());
 
     // Información para navegación y futuras comprobaciones.
@@ -172,17 +169,15 @@ public class LoginServlet extends HttpServlet {
 
     String destino = switch (idRol) {
 
-      case 1 -> "/UsuarioServlet";
+      case 1 -> "/UsuarioServlet"; //Admin
 
-      case 2 -> "/supervisor/supervisor.jsp";
+      case 2 -> "/supervisor/supervisor.jsp"; // Supervisor
 
-      case 3 -> "/capacity_planner/capacity_planner.jsp";
+      case 3 -> "/capacity_planner/capacity_planner.jsp"; // capacity
 
-      case 4 -> "/network_operator/estado_red.jsp";
+      case 4 -> "/network_operator/estado_red.jsp"; //Network
 
-      // Conservamos la vista de entrada que ya utilizaban
-      // para el coordinador de mantenimiento.
-      case 5 -> "/MantenimientoServlet?accion=listar";
+      case 5 -> "/MantenimientoServlet?accion=listar"; // maintenance
 
       default -> null;
     };
