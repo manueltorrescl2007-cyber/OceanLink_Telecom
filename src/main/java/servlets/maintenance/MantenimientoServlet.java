@@ -8,6 +8,8 @@ import daos.manteinance.MantenimientoDao;
 import daos.manteinance.SegmentoDao;
 import daos.manteinance.ActividadMantenimientoDao;
 
+import services.NotificacionService;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -33,6 +35,10 @@ public class MantenimientoServlet extends HttpServlet {
 
   private final ActividadMantenimientoDao actividadMantenimientoDao =
     new ActividadMantenimientoDao(); // declaramos nuestro DAO para las actividades (bitacora) del mantenimiento
+
+  // Declaramos nuestro DAO de notifiacionService
+  private final NotificacionService notificacionService =
+    new NotificacionService();
 
   // Rutas de las vistas que ya existen o crearemos después.
   private static final String VISTA_LISTADO =
@@ -355,15 +361,18 @@ public class MantenimientoServlet extends HttpServlet {
 
     mantenimiento.setIdUsuario(idUsuario);
 
-    boolean creado =
+
+    // Registramos el mantenimiento en MySQL
+    int idMantenimiento =
       mantenimientoDao.crearMantenimiento(mantenimiento);
 
-    if (!creado) {
-      throw new IllegalStateException(
-        "No se pudo registrar el mantenimiento."
-      );
-    }
+    // Guardamos el ID generado en el Bean
+    mantenimiento.setIdMantenimiento(idMantenimiento);
 
+    // Solicitamos la notificación
+    notificacionService.notificarCreacion(mantenimiento);
+
+    // Redirigimos al listado
     redirigirListado(request, response, "creado");
   }
 
@@ -382,9 +391,15 @@ public class MantenimientoServlet extends HttpServlet {
       "El ID del mantenimiento no es válido."
     );
 
+    // Recuperar los datos anteriores desde MySQL
+    Mantenimiento anterior =
+      mantenimientoDao.obtenerMantenimiento(id);
+
+    // Leer los datos nuevos del formulario
     Mantenimiento mantenimiento = leerFormulario(request);
     mantenimiento.setIdMantenimiento(id);
 
+    // Actualizar en MySQL
     boolean actualizado =
       mantenimientoDao.actualizarMantenimiento(mantenimiento);
 
@@ -397,6 +412,23 @@ public class MantenimientoServlet extends HttpServlet {
       return;
     }
 
+    // Comprobar si realmente cambiaron las fechas
+    boolean fechasModificadas =
+      !anterior.getFechaInicio().equals(
+        mantenimiento.getFechaInicio()) ||
+        !anterior.getFechaFin().equals(mantenimiento.getFechaFin()
+        );
+
+    // Notificar únicamente si hubo reprogramación
+    if (fechasModificadas) {
+
+      notificacionService.notificarReprogramacion(
+        anterior,
+        mantenimiento
+      );
+    }
+
+    // Redirigir al listado
     redirigirListado(request, response, "actualizado");
   }
 
@@ -415,6 +447,11 @@ public class MantenimientoServlet extends HttpServlet {
       "El ID del mantenimiento no es válido."
     );
 
+    // Recuperamos los datos antes de cancelar
+    Mantenimiento anterior =
+      mantenimientoDao.obtenerMantenimiento(id);
+
+    // Intentamos cancelar el mantenimiento en MySQL
     boolean cancelado =
       mantenimientoDao.cancelarMantenimiento(id);
 
@@ -422,11 +459,18 @@ public class MantenimientoServlet extends HttpServlet {
       response.sendError(
         HttpServletResponse.SC_CONFLICT,
         "No se pudo cancelar el mantenimiento. "
-          + "Verifica que exista y no haya finalizado ni sido cancelado."
+          + "Verifica que exista y no haya finalizado "
+          + "ni sido cancelado."
       );
       return;
     }
 
+    // Notificar después de confirmar la cancelación
+    if (anterior != null) {
+      notificacionService.notificarCancelacion(anterior);
+    }
+
+    // Redirigimos al listado
     redirigirListado(request, response, "cancelado");
   }
 

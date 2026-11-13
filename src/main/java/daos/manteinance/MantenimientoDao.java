@@ -155,17 +155,22 @@ public class MantenimientoDao extends daos.BaseDao {
 
   // CREACIÓN DE NUEVOS MANTENIMIENTOS
 
-  public boolean crearMantenimiento(Mantenimiento m) {
+
+  public int crearMantenimiento(Mantenimiento m) {
 
     String sql = """
-                INSERT INTO mantenimientos
-                (id_usuario, id_segmento, tipo, prioridad,
-                 fecha_inicio, fecha_fin, descripcion_general)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """;
+        INSERT INTO mantenimientos
+        (id_usuario, id_segmento, tipo, prioridad,
+         fecha_inicio, fecha_fin, descripcion_general)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """;
 
+    // Ahora usamos RETURN_GENERATED_KEYS para recuperar las claves generadas por MySQL
     try (Connection conn = getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+         PreparedStatement pstmt = conn.prepareStatement(
+           sql,
+           java.sql.Statement.RETURN_GENERATED_KEYS
+         )) {
 
       pstmt.setInt(1, m.getIdUsuario());
       pstmt.setInt(2, m.getIdSegmento());
@@ -180,13 +185,32 @@ public class MantenimientoDao extends daos.BaseDao {
 
       pstmt.setString(7, m.getDescripcionGeneral());
 
-      return pstmt.executeUpdate() == 1;
+      int filasAfectadas = pstmt.executeUpdate();
+
+      if (filasAfectadas != 1) {
+        throw new IllegalStateException(
+          "No se pudo registrar el mantenimiento."
+        );
+      }
+
+      try (ResultSet rs = pstmt.getGeneratedKeys()) {
+
+        if (rs.next()) {
+          return rs.getInt(1); // devolvemos el ID del mantenimiento recien insertado
+        }
+
+        throw new IllegalStateException(
+          "Se creó el mantenimiento, pero no se pudo recuperar su ID."
+        );
+      }
 
     } catch (SQLException e) {
       throw new IllegalStateException(
-        "Error al crear mantenimiento", e);
+        "Error al crear mantenimiento", e
+      );
     }
   }
+
 
   // ACTUALIZACIÓN DE LOS MANTENIMIENTOS
 
