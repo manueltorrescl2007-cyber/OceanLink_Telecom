@@ -1,652 +1,411 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="java.util.LinkedHashMap" %>
-<%@ page import="java.util.Map" %>
-<%@ page import="java.util.UUID" %>
-<%@ page import="java.time.LocalDateTime" %>
-<%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="java.net.URLEncoder" %>
+<%@ page import="java.nio.charset.StandardCharsets" %>
+<%@ page import="beans.supervisor.ReporteSupervisor" %>
 
 <%
-    request.setCharacterEncoding("UTF-8");
+  List<String> listaSegmentos = (List<String>) request.getAttribute("listaSegmentos");
+  if (listaSegmentos == null) listaSegmentos = new ArrayList<>();
 
-    ArrayList<Map<String, String>> reportes =
-            (ArrayList<Map<String, String>>)
-                    session.getAttribute("reportesSupervisor");
+  List<String> listaClientes = (List<String>) request.getAttribute("listaClientes");
+  if (listaClientes == null) listaClientes = new ArrayList<>();
 
-    if (reportes == null) {
-        reportes = new ArrayList<>();
-        session.setAttribute("reportesSupervisor", reportes);
-    }
+  String[] encabezados = (String[]) request.getAttribute("encabezados");
+  if (encabezados == null) {
+    encabezados = new String[]{"Código", "Origen -> Destino", "Cap. Total", "Ocupada / Reservada", "Disponible (% Uso)", "Estado"};
+  }
 
-    String accion = request.getParameter("accion");
+  List<ReporteSupervisor> listaReporte = (List<ReporteSupervisor>) request.getAttribute("listaReporte");
+  if (listaReporte == null) listaReporte = new ArrayList<>();
 
-    if ("generar".equals(accion)) {
+  String tipoSeleccionado = (String) request.getAttribute("tipoSeleccionado");
+  if (tipoSeleccionado == null || tipoSeleccionado.isEmpty()) tipoSeleccionado = "capacidad";
 
-        String tipo = request.getParameter("tipo");
-        String desde = request.getParameter("desde");
-        String hasta = request.getParameter("hasta");
-        String segmento = request.getParameter("segmento");
-        String severidad = request.getParameter("severidad");
+  String desdeSeleccionado = (String) request.getAttribute("desdeSeleccionado");
+  if (desdeSeleccionado == null) desdeSeleccionado = "";
 
-        if (tipo != null
-                && desde != null
-                && hasta != null
-                && segmento != null
-                && severidad != null
-                && !tipo.isBlank()
-                && !desde.isBlank()
-                && !hasta.isBlank()) {
+  String hastaSeleccionado = (String) request.getAttribute("hastaSeleccionado");
+  if (hastaSeleccionado == null) hastaSeleccionado = "";
 
-            Map<String, String> reporte = new LinkedHashMap<>();
+  String segmentoSeleccionado = (String) request.getAttribute("segmentoSeleccionado");
+  if (segmentoSeleccionado == null || segmentoSeleccionado.isEmpty()) segmentoSeleccionado = "Todos";
 
-            String id = UUID.randomUUID().toString();
+  String clienteSeleccionado = (String) request.getAttribute("clienteSeleccionado");
+  if (clienteSeleccionado == null || clienteSeleccionado.isEmpty()) clienteSeleccionado = "Todos";
 
-            String fechaGeneracion =
-                    LocalDateTime.now().format(
-                            DateTimeFormatter.ofPattern(
-                                    "dd/MM/yyyy HH:mm"
-                            )
-                    );
+  String severidadSeleccionada = (String) request.getAttribute("severidadSeleccionada");
+  if (severidadSeleccionada == null || severidadSeleccionada.isEmpty()) severidadSeleccionada = "Todas";
 
-            String nombreLimpio = tipo
-                    .replace("á", "a")
-                    .replace("é", "e")
-                    .replace("í", "i")
-                    .replace("ó", "o")
-                    .replace("ú", "u")
-                    .replace(" ", "_");
+  String estadoSeleccionado = (String) request.getAttribute("estadoSeleccionado");
+  if (estadoSeleccionado == null || estadoSeleccionado.isEmpty()) estadoSeleccionado = "Todos";
 
-            String nombreArchivo =
-                    nombreLimpio + "_"
-                    + hasta.replace("-", "_")
-                    + ".pdf";
+  // Construcción de URLs para Vista Previa y Descarga del PDF
+  String paramsPdf = "tipo=" + URLEncoder.encode(tipoSeleccionado, StandardCharsets.UTF_8)
+    + "&desde=" + URLEncoder.encode(desdeSeleccionado, StandardCharsets.UTF_8)
+    + "&hasta=" + URLEncoder.encode(hastaSeleccionado, StandardCharsets.UTF_8)
+    + "&segmento=" + URLEncoder.encode(segmentoSeleccionado, StandardCharsets.UTF_8)
+    + "&cliente=" + URLEncoder.encode(clienteSeleccionado, StandardCharsets.UTF_8)
+    + "&severidad=" + URLEncoder.encode(severidadSeleccionada, StandardCharsets.UTF_8)
+    + "&estado=" + URLEncoder.encode(estadoSeleccionado, StandardCharsets.UTF_8);
 
-            reporte.put("id", id);
-            reporte.put("nombre", nombreArchivo);
-            reporte.put("tipo", tipo);
-            reporte.put("desde", desde);
-            reporte.put("hasta", hasta);
-            reporte.put("segmento", segmento);
-            reporte.put("severidad", severidad);
-            reporte.put("fecha", fechaGeneracion);
-
-            reportes.add(0, reporte);
-
-            session.setAttribute(
-                    "reportesSupervisor",
-                    reportes
-            );
-
-            response.sendRedirect(
-                    "reportes.jsp?generado=si"
-            );
-
-            return;
-        }
-    }
+  String urlPdfVista = request.getContextPath() + "/PdfReporteServletSuper?" + paramsPdf;
+  String urlPdfDescarga = request.getContextPath() + "/PdfReporteServletSuper?" + paramsPdf + "&descargar=si";
 %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <!doctype html>
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>OceanLink | Dashboard</title>
+  <title>OceanLink | Reportes</title>
 
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/supervisor/reportes.css?v=2">
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/barras.css">
+  <link rel="stylesheet"
+        href="<%= request.getContextPath() %>/css/supervisor/reportes.css?v=5">
+  <link rel="stylesheet"
+        href="<%= request.getContextPath() %>/css/barras.css">
 </head>
 
 <body>
 
-<!-- Control para abrir/cerrar el menú -->
-<input
-  type="checkbox"
-  id="controlMenu"
-  class="control-menu"
-  aria-label="Ocultar menú lateral">
+<input type="checkbox" id="controlMenu" class="control-menu" aria-label="Ocultar menú lateral">
 
-<!-- Barra superior -->
 <header class="barra-superior">
-
   <div class="zona-logo">
-
-    <label
-            for="controlMenu"
-            class="boton-menu"
-            title="Ocultar o mostrar menú">☰</label>
-
-    <a href="${pageContext.request.contextPath}/DashboardServletSuper"
-       class="logo">
-        OceanLink
-    </a>
+    <label for="controlMenu" class="boton-menu" title="Ocultar o mostrar menú">☰</label>
+    <a href="<%= request.getContextPath() %>/DashboardServletSuper" class="logo">OceanLink</a>
   </div>
 
   <div class="usuario">
     <div class="foto-usuario">SU</div>
     <div>
-        <p class="nombre-usuario">Username</p>
-        <p class="rol-usuario">Supervisor</p>
+      <p class="nombre-usuario">Username</p>
+      <p class="rol-usuario">Supervisor</p>
     </div>
   </div>
 </header>
 
 <div class="contenedor">
 
-  <!-- Barra lateral -->
   <aside class="menu-lateral">
-
     <div class="contenido-menu">
-
       <h2>Menú</h2>
+      <nav class="navegacion-lateral" aria-label="Menú principal">
 
-      <nav class="navegacion-lateral"
-           aria-label="Menú principal">
+        <a href="<%= request.getContextPath() %>/DashboardServletSuper">Dashboard general</a>
 
-        <!-- Dashboard -->
-        <a href="${pageContext.request.contextPath}/DashboardServletSuper">
-            Dashboard general
-        </a>
-
-        <!-- Incidencias -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
-          <input
-            type="checkbox"
-            id="control-incidencias"
-            class="control-submenu"
-          >
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
-          <label for="control-incidencias"
-                 class="titulo-grupo">
+          <input type="checkbox" id="control-incidencias" class="control-submenu">
+          <label for="control-incidencias" class="titulo-grupo">
             <span>Incidencias</span>
             <span class="flecha-submenu"></span>
           </label>
-          <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper"
-               class="subopcion">
-              Visualizar
-            </a>
-
-            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper?action=historial"
-               class="subopcion">
-              Historial de incidencias
-            </a>
+            <a href="<%= request.getContextPath() %>/IncidenciaServletSuper" class="subopcion">Visualizar</a>
+            <a href="<%= request.getContextPath() %>/IncidenciaServletSuper?action=historial" class="subopcion">Historial de incidencias</a>
           </div>
         </div>
 
-        <!-- Estado de la red -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
-          <input
-            type="checkbox"
-            id="controlEstadoRed"
-            class="control-submenu">
-
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
-          <label for="controlEstadoRed"
-                 class="titulo-grupo">
-            <span class="texto-grupo">
-                Estado de la red
-            </span>
-            <span class="flecha-submenu"></span>
-          </label>
-
-          <!-- Opciones que aparecen al desplegar -->
-          <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/TarjetasServletSuper"
-               class="subopcion activo">
-              Capacidad
-            </a>
-            <a href="${pageContext.request.contextPath}/RutaServletSuper"
-               class="subopcion">
-              Rutas
-            </a>
-            <a href="${pageContext.request.contextPath}/SegmentoServletSuper"
-               class="subopcion">
-              Segmentos
-            </a>
-            <a href="${pageContext.request.contextPath}/LandingStationServletSuper"
-               class="subopcion">
-              Landing stations
-            </a>
-          </div>
-        </div>
-
-        <!-- Servicios y clientes -->
-        <div class="grupo-menu">
-          <input
-            type="checkbox"
-            id="control-servicios-clientes"
-            class="control-submenu"
-          >
-
-          <label for="control-servicios-clientes"
-                 class="titulo-grupo">
-            <span class="texto-grupo">
-                Servicios y clientes
-            </span>
+          <input type="checkbox" id="controlEstadoRed" class="control-submenu">
+          <label for="controlEstadoRed" class="titulo-grupo">
+            <span class="texto-grupo">Estado de la red</span>
             <span class="flecha-submenu"></span>
           </label>
           <div class="contenido-submenu">
-
-            <a href="${pageContext.request.contextPath}/ClienteServletSuper"
-               class="subopcion">
-              Clientes
-            </a>
-
-            <a href="${pageContext.request.contextPath}/ServicioServletSuper"
-               class="subopcion">
-              Servicios
-            </a>
-            <a
-              href="${pageContext.request.contextPath}/SolicitudesServletSuper"
-              class="subopcion">
-              Solicitudes
-            </a>
+            <a href="<%= request.getContextPath() %>/TarjetasServletSuper" class="subopcion">Capacidad</a>
+            <a href="<%= request.getContextPath() %>/RutaServletSuper" class="subopcion">Rutas</a>
+            <a href="<%= request.getContextPath() %>/SegmentoServletSuper" class="subopcion">Segmentos</a>
+            <a href="<%= request.getContextPath() %>/LandingStationServletSuper" class="subopcion">Landing stations</a>
           </div>
         </div>
 
-        <!-- Mantenimientos -->
         <div class="grupo-menu">
-
-          <input
-            type="checkbox"
-            id="control-mantenimientos"
-            class="control-submenu"
-          >
-
-          <label
-            for="control-mantenimientos"
-            class="titulo-grupo">
-
-            <span class="texto-grupo">
-                Mantenimientos
-            </span>
-
+          <input type="checkbox" id="control-servicios-clientes" class="control-submenu">
+          <label for="control-servicios-clientes" class="titulo-grupo">
+            <span class="texto-grupo">Servicios y clientes</span>
             <span class="flecha-submenu"></span>
-
           </label>
-
           <div class="contenido-submenu">
-
-            <a
-              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
-              class="subopcion">
-              Programación
-            </a>
-
-            <a
-              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
-              class="subopcion">
-              Historial de programados
-            </a>
+            <a href="<%= request.getContextPath() %>/ClienteServletSuper" class="subopcion">Clientes</a>
+            <a href="<%= request.getContextPath() %>/ServicioServletSuper" class="subopcion">Servicios</a>
+            <a href="<%= request.getContextPath() %>/SolicitudesServletSuper" class="subopcion">Solicitudes</a>
           </div>
         </div>
-        <!-- Reportes -->
-        <a href="${pageContext.request.contextPath}/supervisor/reportes.jsp"
-           class="activo">
-            Reportes
-        </a>
-        <!-- Históricos -->
-        <a href="${pageContext.request.contextPath}/supervisor/historicos.jsp">
-            Históricos
-        </a>
+
+        <div class="grupo-menu">
+          <input type="checkbox" id="control-mantenimientos" class="control-submenu">
+          <label for="control-mantenimientos" class="titulo-grupo">
+            <span class="texto-grupo">Mantenimientos</span>
+            <span class="flecha-submenu"></span>
+          </label>
+          <div class="contenido-submenu">
+            <a href="<%= request.getContextPath() %>/MantenimientoServletSuper" class="subopcion">Programación</a>
+            <a href="<%= request.getContextPath() %>/MantenimientoServletSuper" class="subopcion">Historial de programados</a>
+          </div>
+        </div>
+
+        <a href="<%= request.getContextPath() %>/ReporteServletSuper" class="activo">Reportes</a>
+        <a href="<%= request.getContextPath() %>/supervisor/historicos.jsp">Históricos</a>
       </nav>
     </div>
-    <!-- parte baja -->
+
     <div class="configuracion">
       <nav aria-label="Opciones del usuario">
-          <a href="#">Perfil</a>
-          <a href="${pageContext.request.contextPath}/login.jsp"
-             class="cerrar-sesion">
-              Cerrar sesión
-          </a>
+        <a href="#">Perfil</a>
+        <a href="<%= request.getContextPath() %>/login.jsp" class="cerrar-sesion">Cerrar sesión</a>
       </nav>
     </div>
   </aside>
 
-    <!-- Contenido principal -->
-    <main class="contenido-principal">
-
-        <section class="encabezado-panel">
-
-            <h2>Supervisor</h2>
-            <h1>Generar reportes</h1>
-
-        </section>
-
-        <section class="cuadricula-reportes">
-
-            <article class="panel panel-generador">
-
-                <div class="titulo-panel">
-
-                    <div>
-                        <h2>Nuevo reporte</h2>
-
-                        <p>
-                            Selecciona la información del reporte.
-                        </p>
-                    </div>
-
-                </div>
-
-                <form
-                        method="post"
-                        action="reportes.jsp"
-                >
-
-                    <input
-                            type="hidden"
-                            name="accion"
-                            value="generar"
-                    >
-
-                    <div class="grupo-formulario">
-
-                        <label for="tipo">
-                            Tipo de reporte
-                        </label>
-
-                        <select
-                                id="tipo"
-                                name="tipo"
-                                required
-                        >
-
-                            <option value="Utilización del estado de la red">
-                                Utilización del estado de la red
-                            </option>
-
-                            <option value="Capacidad de rutas">
-                                Capacidad de rutas
-                            </option>
-
-                            <option value="Estado de segmentos">
-                                Estado de segmentos
-                            </option>
-
-                            <option value="Incidencias registradas">
-                                Incidencias registradas
-                            </option>
-
-                            <option value="Servicios y clientes">
-                                Servicios y clientes
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <p class="titulo-campo">
-                        Periodo
-                    </p>
-
-                    <div class="fila-formulario">
-
-                        <div class="grupo-formulario">
-
-                            <label for="desde">
-                                Desde
-                            </label>
-
-                            <input
-                                    type="date"
-                                    id="desde"
-                                    name="desde"
-                                    required
-                            >
-
-                        </div>
-
-                        <div class="grupo-formulario">
-
-                            <label for="hasta">
-                                Hasta
-                            </label>
-
-                            <input
-                                    type="date"
-                                    id="hasta"
-                                    name="hasta"
-                                    required
-                            >
-
-                        </div>
-
-                    </div>
-
-                    <fieldset class="grupo-opciones">
-
-                        <legend>Segmentos</legend>
-
-                        <div class="lista-opciones">
-
-                            <label class="opcion">
-                                <input
-                                        type="radio"
-                                        name="segmento"
-                                        value="Todos"
-                                        checked
-                                >
-                                <span>Todos</span>
-                            </label>
-
-                            <label class="opcion">
-                                <input
-                                        type="radio"
-                                        name="segmento"
-                                        value="Lima"
-                                >
-                                <span>Lima</span>
-                            </label>
-
-                            <label class="opcion">
-                                <input
-                                        type="radio"
-                                        name="segmento"
-                                        value="Callao"
-                                >
-                                <span>Callao</span>
-                            </label>
-
-                            <label class="opcion">
-                                <input
-                                        type="radio"
-                                        name="segmento"
-                                        value="Valparaíso"
-                                >
-                                <span>Valparaíso</span>
-                            </label>
-
-                            <label class="opcion">
-                                <input
-                                        type="radio"
-                                        name="segmento"
-                                        value="Barcelona"
-                                >
-                                <span>Barcelona</span>
-                            </label>
-
-                            <label class="opcion">
-                                <input
-                                        type="radio"
-                                        name="segmento"
-                                        value="Miami"
-                                >
-                                <span>Miami</span>
-                            </label>
-
-                        </div>
-
-                    </fieldset>
-
-                    <fieldset class="grupo-opciones">
-
-                        <legend>Severidad</legend>
-
-                        <div class="lista-opciones severidades">
-
-                            <label class="opcion">
-                                <input
-                                        type="radio"
-                                        name="severidad"
-                                        value="Todas"
-                                        checked
-                                >
-                                <span>Todas</span>
-                            </label>
-
-                            <label class="opcion">
-                                <input
-                                        type="radio"
-                                        name="severidad"
-                                        value="Crítica"
-                                >
-                                <span>Crítica</span>
-                            </label>
-
-                            <label class="opcion">
-                                <input
-                                        type="radio"
-                                        name="severidad"
-                                        value="Alta"
-                                >
-                                <span>Alta</span>
-                            </label>
-
-                            <label class="opcion">
-                                <input
-                                        type="radio"
-                                        name="severidad"
-                                        value="Media"
-                                >
-                                <span>Media</span>
-                            </label>
-
-                        </div>
-
-                    </fieldset>
-
-                    <% if ("si".equals(request.getParameter("generado"))) { %>
-
-                    <p class="mensaje-formulario correcto">
-                        El reporte fue generado correctamente.
-                    </p>
-
-                    <% } %>
-
-                    <button
-                            type="submit"
-                            class="boton-generar"
-                    >
-                        Generar reporte
-                    </button>
-
-                </form>
-
-            </article>
-
-            <article class="panel panel-generados">
-
-                <div class="titulo-panel">
-
-                    <div>
-                        <h2>Reportes generados</h2>
-
-                        <p>
-                            Consulta o descarga los reportes creados.
-                        </p>
-                    </div>
-
-                    <span class="cantidad-reportes">
-                        <%= reportes.size() %>
-                    </span>
-
-                </div>
-
-                <% if (reportes.isEmpty()) { %>
-
-                <div class="sin-reportes">
-
-                    <div class="icono-vacio">
-                        PDF
-                    </div>
-
-                    <p>
-                        Todavía no se generaron reportes.
-                    </p>
-
-                </div>
-
-                <% } else { %>
-
-                <div class="lista-reportes">
-
-                    <%
-                        for (Map<String, String> reporte : reportes) {
-                    %>
-
-                    <article class="reporte">
-
-                        <div class="icono-pdf">
-                            PDF
-                        </div>
-
-                        <div class="informacion-reporte">
-
-                            <p class="nombre-reporte">
-                                <%= reporte.get("nombre") %>
-                            </p>
-
-                            <p class="fecha-reporte">
-                                <%= reporte.get("fecha") %>
-                            </p>
-
-                        </div>
-
-                        <div class="acciones-reporte">
-
-                            <a
-                                    class="boton-accion"
-                                    href="#"
-                                    <-- href="reporte_pdf.jsp?id=<%= reporte.get("id") %>" -->
-                                    target="_blank"
-                            >
-                                Vista previa
-                            </a>
-
-                            <a
-                                    class="boton-accion"
-                                    href="#"
-                                    <-- href="reporte_pdf.jsp?id=<%= reporte.get("id") %>" -->
-                            >
-                                Descargar
-                            </a>
-
-                        </div>
-
-                    </article>
-
-                    <% } %>
-
-                </div>
-
-                <% } %>
-
-            </article>
-
-        </section>
-
-    </main>
+  <main class="contenido-principal">
+
+    <section class="encabezado-panel">
+      <h2>Supervisor</h2>
+      <h1>Generar reportes</h1>
+    </section>
+
+    <section class="cuadricula-reportes">
+
+      <!-- Panel izquierdo: Filtros adaptativos -->
+      <article class="panel panel-generador">
+        <div class="titulo-panel">
+          <div>
+            <h2>Configurar reporte</h2>
+            <p>Los filtros se adaptan automáticamente al reporte elegido.</p>
+          </div>
+        </div>
+
+        <form id="formReporte" method="get" action="<%= request.getContextPath() %>/ReporteServletSuper">
+
+          <div class="grupo-formulario">
+            <label for="tipo">Tipo de reporte</label>
+            <select id="tipo" name="tipo" onchange="cambiarTipoReporte()">
+              <option value="capacidad" <%= "capacidad".equals(tipoSeleccionado) ? "selected" : "" %>>
+                Estado y Capacidad de Segmentos
+              </option>
+              <option value="incidencias" <%= "incidencias".equals(tipoSeleccionado) ? "selected" : "" %>>
+                Incidencias de Red
+              </option>
+              <option value="mantenimientos" <%= "mantenimientos".equals(tipoSeleccionado) ? "selected" : "" %>>
+                Mantenimientos Programados y Ejecutados
+              </option>
+              <option value="clientes_servicios" <%= "clientes_servicios".equals(tipoSeleccionado) ? "selected" : "" %>>
+                Clientes, Solicitudes y Servicios
+              </option>
+              <option value="consolidado" <%= "consolidado".equals(tipoSeleccionado) ? "selected" : "" %>>
+                Resumen Ejecutivo Consolidado
+              </option>
+            </select>
+          </div>
+
+          <!-- Filtro Periodo -->
+          <div id="bloquePeriodo">
+            <p class="titulo-campo">Periodo (Opcional)</p>
+            <div class="fila-formulario">
+              <div class="grupo-formulario">
+                <label for="desde">Desde</label>
+                <input type="date" id="desde" name="desde" value="<%= desdeSeleccionado %>">
+              </div>
+              <div class="grupo-formulario">
+                <label for="hasta">Hasta</label>
+                <input type="date" id="hasta" name="hasta" value="<%= hastaSeleccionado %>">
+              </div>
+            </div>
+          </div>
+
+          <!-- Filtro Segmento -->
+          <div id="bloqueSegmento" class="grupo-formulario">
+            <label for="segmento">Segmento</label>
+            <select id="segmento" name="segmento">
+              <option value="Todos" <%= "Todos".equals(segmentoSeleccionado) ? "selected" : "" %>>Todos los segmentos</option>
+              <%
+                for (int i = 0; i < listaSegmentos.size(); i++) {
+                  String seg = listaSegmentos.get(i);
+              %>
+              <option value="<%= seg %>" <%= seg.equals(segmentoSeleccionado) ? "selected" : "" %>><%= seg %></option>
+              <%
+                }
+              %>
+            </select>
+          </div>
+
+          <!-- Filtro Cliente -->
+          <div id="bloqueCliente" class="grupo-formulario">
+            <label for="cliente">Cliente empresarial</label>
+            <select id="cliente" name="cliente">
+              <option value="Todos" <%= "Todos".equals(clienteSeleccionado) ? "selected" : "" %>>Todos los clientes</option>
+              <%
+                for (int i = 0; i < listaClientes.size(); i++) {
+                  String cli = listaClientes.get(i);
+              %>
+              <option value="<%= cli %>" <%= cli.equals(clienteSeleccionado) ? "selected" : "" %>><%= cli %></option>
+              <%
+                }
+              %>
+            </select>
+          </div>
+
+          <!-- Filtro Severidad / Prioridad -->
+          <fieldset id="bloqueSeveridad" class="grupo-opciones">
+            <legend>Severidad / Prioridad</legend>
+            <div class="lista-opciones severidades">
+              <label class="opcion">
+                <input type="radio" name="severidad" value="Todas" <%= "Todas".equals(severidadSeleccionada) ? "checked" : "" %>>
+                <span>Todas</span>
+              </label>
+              <label class="opcion">
+                <input type="radio" name="severidad" value="Critica" <%= "Critica".equals(severidadSeleccionada) ? "checked" : "" %>>
+                <span>Crítica</span>
+              </label>
+              <label class="opcion">
+                <input type="radio" name="severidad" value="Alta" <%= "Alta".equals(severidadSeleccionada) ? "checked" : "" %>>
+                <span>Alta</span>
+              </label>
+              <label class="opcion">
+                <input type="radio" name="severidad" value="Media" <%= "Media".equals(severidadSeleccionada) ? "checked" : "" %>>
+                <span>Media</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- Filtro Estado -->
+          <div id="bloqueEstado" class="grupo-formulario">
+            <label for="estado">Estado</label>
+            <select id="estado" name="estado" data-valor-actual="<%= estadoSeleccionado %>">
+              <option value="Todos">Todos los estados</option>
+            </select>
+          </div>
+
+          <p id="notaConsolidado" style="display:none; font-size: 12px; color: var(--color-texto-claro); margin-bottom: 16px;">
+            Este reporte consolida en tiempo real los indicadores globales de toda la red OceanLink (sin filtros adicionales).
+          </p>
+
+          <button type="submit" class="boton-generar">Filtrar y actualizar vista</button>
+        </form>
+      </article>
+
+      <!-- Panel derecho: Vista previa en tabla + Exportación PDF -->
+      <article class="panel panel-generados">
+        <div class="titulo-panel">
+          <div>
+            <h2>Resultados del reporte</h2>
+            <p>Vista previa de los datos filtrados listos para exportar.</p>
+          </div>
+          <span class="cantidad-reportes"><%= listaReporte.size() %></span>
+        </div>
+
+        <div class="acciones-reporte" style="margin-bottom: 16px;">
+          <a class="boton-accion" href="<%= urlPdfVista %>" target="_blank">Vista previa PDF</a>
+          <a class="boton-accion" href="<%= urlPdfDescarga %>">Descargar PDF</a>
+        </div>
+
+        <div style="overflow-x: auto; border: 1px solid var(--color-borde); border-radius: 6px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+            <tr style="background-color: var(--color-fondo); color: var(--color-primario); text-align: left;">
+              <%
+                for (int i = 0; i < encabezados.length; i++) {
+              %>
+              <th style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= encabezados[i] %></th>
+              <%
+                }
+              %>
+            </tr>
+            </thead>
+            <tbody>
+            <%
+              if (listaReporte.isEmpty()) {
+            %>
+            <tr>
+              <td colspan="6" style="padding: 16px; text-align: center; color: var(--color-texto-claro);">
+                No hay registros para los filtros seleccionados.
+              </td>
+            </tr>
+            <%
+            } else {
+              for (int i = 0; i < listaReporte.size(); i++) {
+                ReporteSupervisor fila = listaReporte.get(i);
+            %>
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde); font-weight: bold;"><%= fila.getCol1() %></td>
+              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= fila.getCol2() %></td>
+              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= fila.getCol3() %></td>
+              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= fila.getCol4() %></td>
+              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= fila.getCol5() %></td>
+              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= fila.getCol6() %></td>
+            </tr>
+            <%
+                }
+              }
+            %>
+            </tbody>
+          </table>
+        </div>
+
+      </article>
+
+    </section>
+
+  </main>
 
 </div>
+
+<script>
+  const ESTADOS_POR_TIPO = {
+    capacidad: ["Operativo", "Degradado", "En mantenimiento", "Fuera de servicio"],
+    incidencias: ["Detectada", "En analisis", "Reparacion programada", "En reparacion", "Servicio restaurado", "Cerrada"],
+    mantenimientos: ["Programado", "En ejecucion", "Finalizado", "Cancelado"],
+    clientes_servicios: ["Registrada", "En evaluacion", "Aprobada", "Provisionada", "Activa", "Pendiente por capacidad", "Rechazada"],
+    consolidado: []
+  };
+
+  function actualizarVisibilidadFiltros(mantenerValores) {
+    const tipo = document.getElementById("tipo").value;
+    const bloquePeriodo = document.getElementById("bloquePeriodo");
+    const bloqueSegmento = document.getElementById("bloqueSegmento");
+    const bloqueCliente = document.getElementById("bloqueCliente");
+    const bloqueSeveridad = document.getElementById("bloqueSeveridad");
+    const bloqueEstado = document.getElementById("bloqueEstado");
+    const notaConsolidado = document.getElementById("notaConsolidado");
+    const selectEstado = document.getElementById("estado");
+
+    bloquePeriodo.style.display = (tipo === "capacidad" || tipo === "consolidado") ? "none" : "block";
+    bloqueSegmento.style.display = (tipo === "capacidad" || tipo === "incidencias" || tipo === "mantenimientos") ? "block" : "none";
+    bloqueCliente.style.display = (tipo === "clientes_servicios") ? "block" : "none";
+    bloqueSeveridad.style.display = (tipo === "incidencias" || tipo === "mantenimientos") ? "block" : "none";
+    bloqueEstado.style.display = (tipo === "consolidado") ? "none" : "block";
+    notaConsolidado.style.display = (tipo === "consolidado") ? "block" : "none";
+
+    const valorPrevio = mantenerValores ? selectEstado.getAttribute("data-valor-actual") : "Todos";
+    selectEstado.innerHTML = '<option value="Todos">Todos los estados</option>';
+    (ESTADOS_POR_TIPO[tipo] || []).forEach(est => {
+      const opt = document.createElement("option");
+      opt.value = est;
+      opt.textContent = est;
+      if (est === valorPrevio) opt.selected = true;
+      selectEstado.appendChild(opt);
+    });
+  }
+
+  function cambiarTipoReporte() {
+    document.getElementById("desde").value = "";
+    document.getElementById("hasta").value = "";
+    document.getElementById("segmento").value = "Todos";
+    document.getElementById("cliente").value = "Todos";
+    const radioTodas = document.querySelector('input[name="severidad"][value="Todas"]');
+    if (radioTodas) radioTodas.checked = true;
+    actualizarVisibilidadFiltros(false);
+    document.getElementById("formReporte").submit();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    actualizarVisibilidadFiltros(true);
+  });
+</script>
 
 </body>
 </html>

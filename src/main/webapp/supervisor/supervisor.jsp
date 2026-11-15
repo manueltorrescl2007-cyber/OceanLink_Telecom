@@ -227,7 +227,7 @@
         </div>
 
         <!-- Reportes -->
-        <a href="${pageContext.request.contextPath}/supervisor/reportes.jsp">
+        <a href="${pageContext.request.contextPath}/ReporteServletSuper">
           Reportes
         </a>
         <!-- Históricos -->
@@ -259,29 +259,71 @@
     <!-- Indicadores reales calculados por DashboardServletSuper -->
     <section class="tarjetas">
       <article class="tarjeta">
-        <div class="information"><p>Estado de la red</p></div>
-        <div class="information"><strong><%= html((String) request.getAttribute("estadoRed")) %></strong></div>
-        <div class="information"><p>Segmentos operativos: <b><%= request.getAttribute("disponibilidad") %>%</b></p></div>
+        <div class="information">
+          <p>Estado de la red</p>
+        </div>
+        <div class="information">
+          <strong><%= html((String) request.getAttribute("estadoRed")) %></strong>
+        </div>
+        <div class="information">
+          <p>Segmentos operativos:
+            <b><%= request.getAttribute("disponibilidad") %>%</b>
+          </p>
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <div class="information">
+          <p>Incidencias activas</p>
+        </div>
+        <div class="information">
+          <strong><%= request.getAttribute("totalIncidencias") %></strong>
+        </div>
+        <div class="information">
+          <p>Críticas:
+            <b><%= request.getAttribute("incidenciasCriticas") %></b>
+            Medias:
+            <b><%= request.getAttribute("incidenciasMedias") %></b>
+          </p>
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <div class="information">
+          <p>Clientes afectados</p>
+        </div>
+        <div class="information">
+          <strong><%= request.getAttribute("clientesAfectados") %></strong>
+        </div>
+        <div class="information">
+          <p>
+            Servicios afectados:
+            <b><%= request.getAttribute("serviciosAfectados") %></b>
+          </p>
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <div class="information">
+          <p>Mantenimientos programados</p>
+        </div>
+        <div class="information">
+          <strong><%= request.getAttribute("mantenimientosProgramados") == null ? "—" : request.getAttribute("mantenimientosProgramados") %></strong>
+        </div>
+        <div class="information">
+          <p><%= request.getAttribute("mantenimientosProgramados") == null ? "Consulta no disponible" : "Próximos 7 días" %></p>
+        </div>
       </article>
       <article class="tarjeta">
-        <div class="information"><p>Incidencias activas</p></div>
-        <div class="information"><strong><%= request.getAttribute("totalIncidencias") %></strong></div>
-        <div class="information"><p>Críticas: <b><%= request.getAttribute("incidenciasCriticas") %></b> Medias: <b><%= request.getAttribute("incidenciasMedias") %></b></p></div>
-      </article>
-      <article class="tarjeta">
-        <div class="information"><p>Clientes afectados</p></div>
-        <div class="information"><strong><%= request.getAttribute("clientesAfectados") %></strong></div>
-        <div class="information"><p>Servicios afectados: <b><%= request.getAttribute("serviciosAfectados") %></b></p></div>
-      </article>
-      <article class="tarjeta">
-        <div class="information"><p>Mantenimientos programados</p></div>
-        <div class="information"><strong><%= request.getAttribute("mantenimientosProgramados") == null ? "—" : request.getAttribute("mantenimientosProgramados") %></strong></div>
-        <div class="information"><p><%= request.getAttribute("mantenimientosProgramados") == null ? "Consulta no disponible" : "Próximos 7 días" %></p></div>
-      </article>
-      <article class="tarjeta">
-        <div class="information"><p>Utilización de la red</p></div>
-        <div class="information"><strong><%= request.getAttribute("utilizacion") %>%</strong></div>
-        <div class="information"><p>Capacidad ocupada / total</p></div>
+        <div class="information">
+          <p>Utilización de la red</p>
+        </div>
+        <div class="information">
+          <strong><%= request.getAttribute("utilizacion") %>%</strong>
+        </div>
+        <div class="information">
+          <p>Capacidad ocupada / total</p>
+        </div>
       </article>
     </section>
 

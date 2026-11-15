@@ -287,7 +287,7 @@
         </div>
 
         <!-- Reportes -->
-        <a href="${pageContext.request.contextPath}/supervisor/reportes.jsp">
+        <a href="${pageContext.request.contextPath}/ReporteServletSuper">
             Reportes
         </a>
         <!-- Históricos -->
