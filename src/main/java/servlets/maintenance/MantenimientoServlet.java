@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.List;
 
@@ -31,29 +32,30 @@ public class MantenimientoServlet extends HttpServlet {
     new MantenimientoDao();
 
   private final SegmentoDao segmentoDao =
-    new SegmentoDao(); // CREACIÓN DEL OBJETO SEGMENTO
+    new SegmentoDao();
 
   private final ActividadMantenimientoDao actividadMantenimientoDao =
-    new ActividadMantenimientoDao(); // declaramos nuestro DAO para las actividades (bitacora) del mantenimiento
+    new ActividadMantenimientoDao();
 
-  // Declaramos nuestro DAO de notifiacionService
   private final NotificacionService notificacionService =
     new NotificacionService();
 
-  // Rutas de las vistas que ya existen o crearemos después.
+  private static final int TAMANO_PAGINA = 10;
+
   private static final String VISTA_LISTADO =
     "/Maintenance_coordinator/fechas_duracion.jsp";
 
   private static final String VISTA_HISTORIAL =
     "/Maintenance_coordinator/historial.jsp";
 
+  private static final String VISTA_NUEVO =
+    "/Maintenance_coordinator/nuevo_mantenimiento.jsp";
+
   private static final String VISTA_EDICION =
     "/Maintenance_coordinator/editar_mantenimiento.jsp";
 
   private static final String VISTA_ESTADO =
     "/Maintenance_coordinator/estado.jsp";
-
-  // GET para consultar información y mostrar vistas
 
   @Override
   protected void doGet(
@@ -62,12 +64,9 @@ public class MantenimientoServlet extends HttpServlet {
   ) throws ServletException, IOException {
 
     request.setCharacterEncoding("UTF-8");
-    System.out.println("Hora Java: " + LocalDateTime.now());
-    System.out.println("Zona horaria Java: " + java.time.ZoneId.systemDefault());
 
     String accion = request.getParameter("accion");
 
-    // Si no se indica una acción, mostramos el listado normal.
     if (accion == null || accion.isBlank()) {
       accion = "listar";
     }
@@ -75,64 +74,69 @@ public class MantenimientoServlet extends HttpServlet {
     try {
       switch (accion) {
 
-        case "listar":
-
-          // Actualizamos los estados según las fechas de MySQL.
+        case "listar": {
           mantenimientoDao.actualizarEstadosAutomaticamente();
 
-          request.setAttribute(
-            "mantenimientos",
-            mantenimientoDao.listarMantenimientos()
-          );
+          Integer idSegmentoFiltro = parsearIdOpcional(request.getParameter("idSegmento"));
+          String prioridadFiltro = limpiarTextoOpcional(request.getParameter("prioridad"));
 
-          request.setAttribute(
-            "segmentos",
-            segmentoDao.listarSegmentos()
-          );
+          Set<String> prioridadesValidas = Set.of("Leve", "Media", "Alta", "Crítica");
+          if (prioridadFiltro != null && !prioridadesValidas.contains(prioridadFiltro)) {
+            prioridadFiltro = null;
+          }
+
+          ArrayList<Mantenimiento> listaCompleta =
+            mantenimientoDao.listarMantenimientosFiltrados(idSegmentoFiltro, prioridadFiltro);
+
+          ArrayList<Mantenimiento> paginaLista =
+            aplicarPaginacion(request, listaCompleta);
+
+          request.setAttribute("mantenimientos", paginaLista);
+          request.setAttribute("segmentos", segmentoDao.listarSegmentos());
+          request.setAttribute("segmentoSeleccionado", idSegmentoFiltro);
+          request.setAttribute("prioridadSeleccionada", prioridadFiltro);
 
           request.getRequestDispatcher(VISTA_LISTADO)
             .forward(request, response);
 
           break;
+        }
 
-
-        case "historial":
-
-          // Actualizamos los estados según las fechas de MySQL.
+        case "historial": {
           mantenimientoDao.actualizarEstadosAutomaticamente();
 
-          // Recuperamos únicamente los mantenimientos finalizados y cancelados.
-          request.setAttribute(
-            "historialMantenimientos",
-            mantenimientoDao.listarHistorial()
-          );
+          Integer idSegmentoFiltro = parsearIdOpcional(request.getParameter("idSegmento"));
+          String estadoFiltro = limpiarTextoOpcional(request.getParameter("estado"));
 
-          // Recuperamos los códigos de los segmentos.
-          request.setAttribute(
-            "segmentos",
-            segmentoDao.listarSegmentos()
-          );
+          Set<String> estadosHistorialValidos = Set.of("Finalizado", "Cancelado");
+          if (estadoFiltro != null && !estadosHistorialValidos.contains(estadoFiltro)) {
+            estadoFiltro = null;
+          }
+
+          ArrayList<Mantenimiento> listaCompleta =
+            mantenimientoDao.listarHistorialFiltrado(idSegmentoFiltro, estadoFiltro);
+
+          ArrayList<Mantenimiento> paginaLista =
+            aplicarPaginacion(request, listaCompleta);
+
+          request.setAttribute("historialMantenimientos", paginaLista);
+          request.setAttribute("segmentos", segmentoDao.listarSegmentos());
+          request.setAttribute("segmentoSeleccionado", idSegmentoFiltro);
+          request.setAttribute("estadoSeleccionado", estadoFiltro);
 
           request.getRequestDispatcher(VISTA_HISTORIAL)
             .forward(request, response);
 
           break;
-
+        }
 
         case "editar":
-
-          // Garantizamos que el estado esté actualizado antes de editar.
           mantenimientoDao.actualizarEstadosAutomaticamente();
-
           mostrarEdicion(request, response);
-
           break;
 
-
         case "estado":
-
           mostrarEstado(request, response);
-
           break;
 
         case "nuevo":
@@ -141,9 +145,8 @@ public class MantenimientoServlet extends HttpServlet {
             segmentoDao.listarSegmentos()
           );
 
-          request.getRequestDispatcher(
-            "/Maintenance_coordinator/nuevo_mantenimiento.jsp"
-          ).forward(request, response);
+          request.getRequestDispatcher(VISTA_NUEVO)
+            .forward(request, response);
           break;
 
         default:
@@ -171,9 +174,36 @@ public class MantenimientoServlet extends HttpServlet {
     }
   }
 
+  private ArrayList<Mantenimiento> aplicarPaginacion(
+    HttpServletRequest request,
+    ArrayList<Mantenimiento> listaCompleta
+  ) {
+    int totalRegistros = listaCompleta.size();
+    int totalPaginas = Math.max(1, (int) Math.ceil((double) totalRegistros / TAMANO_PAGINA));
 
+    Integer paginaParam = parsearIdOpcional(request.getParameter("pagina"));
+    int paginaActual = (paginaParam == null) ? 1 : paginaParam;
 
-  // POST: registrar, actualizar o cancelar
+    if (paginaActual > totalPaginas) {
+      paginaActual = totalPaginas;
+    }
+
+    int indiceInicio = (paginaActual - 1) * TAMANO_PAGINA;
+    int indiceFin = Math.min(indiceInicio + TAMANO_PAGINA, totalRegistros);
+
+    ArrayList<Mantenimiento> sublista = new ArrayList<>();
+    if (totalRegistros > 0 && indiceInicio < totalRegistros) {
+      sublista.addAll(listaCompleta.subList(indiceInicio, indiceFin));
+    }
+
+    request.setAttribute("paginaActual", paginaActual);
+    request.setAttribute("totalPaginas", totalPaginas);
+    request.setAttribute("totalRegistros", totalRegistros);
+    request.setAttribute("registroInicio", totalRegistros == 0 ? 0 : indiceInicio + 1);
+    request.setAttribute("registroFin", indiceFin);
+
+    return sublista;
+  }
 
   @Override
   protected void doPost(
@@ -200,11 +230,9 @@ public class MantenimientoServlet extends HttpServlet {
           crearMantenimiento(request, response);
           break;
 
-
         case "actualizar":
           actualizarMantenimiento(request, response);
           break;
-
 
         case "cancelar":
           cancelarMantenimiento(request, response);
@@ -245,9 +273,6 @@ public class MantenimientoServlet extends HttpServlet {
     }
   }
 
-
-  // GET: preparar la edición de un mantenimiento
-
   private void mostrarEdicion(
     HttpServletRequest request,
     HttpServletResponse response
@@ -269,7 +294,6 @@ public class MantenimientoServlet extends HttpServlet {
       return;
     }
 
-    // Por ahora, solo permitimos editar mantenimientos programados.
     if (!"Programado".equals(mantenimiento.getEstado())) {
       response.sendError(
         HttpServletResponse.SC_CONFLICT,
@@ -278,45 +302,28 @@ public class MantenimientoServlet extends HttpServlet {
       return;
     }
 
-    // El JSP podrá utilizar este objeto para recuperar
-    // los valores originales del mantenimiento.
-    request.setAttribute(
-      "mantenimiento",
-      mantenimiento
-    );
-
-    request.setAttribute(
-      "segmentos",
-      segmentoDao.listarSegmentos()
-    );
+    request.setAttribute("mantenimiento", mantenimiento);
+    request.setAttribute("segmentos", segmentoDao.listarSegmentos());
 
     request.getRequestDispatcher(VISTA_EDICION)
       .forward(request, response);
   }
-
-
-// Mostrar el estado de un mantenimiento específico
-
 
   private void mostrarEstado(
     HttpServletRequest request,
     HttpServletResponse response
   ) throws ServletException, IOException {
 
-    // Obtener el ID enviado desde la URL.
     int id = obtenerIdPositivo(
       request.getParameter("idMantenimiento"),
       "El ID del mantenimiento no es válido."
     );
 
-    // Actualizar los estados automáticamente.
     mantenimientoDao.actualizarEstadosAutomaticamente();
 
-    // Buscar el mantenimiento correspondiente en MySQL.
     Mantenimiento mantenimiento =
       mantenimientoDao.obtenerMantenimiento(id);
 
-    // Verificar que el mantenimiento exista.
     if (mantenimiento == null) {
       response.sendError(
         HttpServletResponse.SC_NOT_FOUND,
@@ -325,117 +332,162 @@ public class MantenimientoServlet extends HttpServlet {
       return;
     }
 
-    // Recuperamos las actividades asociadas al mantenimiento
     List<ActividadMantenimiento> actividades = actividadMantenimientoDao.listaPorMantenimiento(id);
-
-    // Enviar el objeto mantenimiento y sus actividades (bitacora) a estado.jsp.
 
     request.setAttribute("mantenimiento", mantenimiento);
     request.setAttribute("actividades", actividades);
 
-    // Mostrar la vista.
     request.getRequestDispatcher(VISTA_ESTADO)
       .forward(request, response);
   }
 
-  // POST: crear un mantenimiento
-
   private void crearMantenimiento(
     HttpServletRequest request,
     HttpServletResponse response
-  ) throws IOException {
+  ) throws ServletException, IOException {
 
-    Mantenimiento mantenimiento = leerFormulario(request);
+    try {
+      Mantenimiento mantenimiento = leerFormulario(request);
 
-    // El usuario responsable debe provenir de la sesión
-    // autenticada, no de un ID libre enviado por el formulario.
-    Integer idUsuario = obtenerIdUsuarioSesion(request);
+      Integer idUsuario = obtenerIdUsuarioSesion(request);
 
-    if (idUsuario == null) {
-      response.sendError(
-        HttpServletResponse.SC_UNAUTHORIZED,
-        "Inicia sesión para registrar un mantenimiento."
-      );
-      return;
+      if (idUsuario == null) {
+        response.sendError(
+          HttpServletResponse.SC_UNAUTHORIZED,
+          "Inicia sesión para registrar un mantenimiento."
+        );
+        return;
+      }
+
+      mantenimiento.setIdUsuario(idUsuario);
+
+      int idMantenimiento =
+        mantenimientoDao.crearMantenimiento(mantenimiento);
+
+      mantenimiento.setIdMantenimiento(idMantenimiento);
+
+      notificacionService.notificarCreacion(mantenimiento);
+
+      redirigirListado(request, response, "creado");
+
+    } catch (DateTimeParseException e) {
+      volverAFormularioConError(request, response, VISTA_NUEVO, null, "Las fechas ingresadas no tienen un formato válido.");
+
+    } catch (IllegalArgumentException e) {
+      volverAFormularioConError(request, response, VISTA_NUEVO, null, e.getMessage());
     }
-
-    mantenimiento.setIdUsuario(idUsuario);
-
-
-    // Registramos el mantenimiento en MySQL
-    int idMantenimiento =
-      mantenimientoDao.crearMantenimiento(mantenimiento);
-
-    // Guardamos el ID generado en el Bean
-    mantenimiento.setIdMantenimiento(idMantenimiento);
-
-    // Solicitamos la notificación
-    notificacionService.notificarCreacion(mantenimiento);
-
-    // Redirigimos al listado
-    redirigirListado(request, response, "creado");
   }
-
-
-
-  // POST: actualizar un mantenimiento
-
 
   private void actualizarMantenimiento(
     HttpServletRequest request,
     HttpServletResponse response
-  ) throws IOException {
+  ) throws ServletException, IOException {
 
     int id = obtenerIdPositivo(
       request.getParameter("idMantenimiento"),
       "El ID del mantenimiento no es válido."
     );
 
-    // Recuperar los datos anteriores desde MySQL
-    Mantenimiento anterior =
-      mantenimientoDao.obtenerMantenimiento(id);
+    try {
+      Mantenimiento anterior =
+        mantenimientoDao.obtenerMantenimiento(id);
 
-    // Leer los datos nuevos del formulario
-    Mantenimiento mantenimiento = leerFormulario(request);
-    mantenimiento.setIdMantenimiento(id);
+      Mantenimiento mantenimiento = leerFormulario(request);
+      mantenimiento.setIdMantenimiento(id);
 
-    // Actualizar en MySQL
-    boolean actualizado =
-      mantenimientoDao.actualizarMantenimiento(mantenimiento);
+      boolean actualizado =
+        mantenimientoDao.actualizarMantenimiento(mantenimiento);
 
-    if (!actualizado) {
-      response.sendError(
-        HttpServletResponse.SC_CONFLICT,
-        "No se pudo actualizar. El registro puede no existir "
-          + "o haber dejado de estar programado."
-      );
-      return;
-    }
-
-    // Comprobar si realmente cambiaron las fechas
-    boolean fechasModificadas =
-      !anterior.getFechaInicio().equals(
-        mantenimiento.getFechaInicio()) ||
-        !anterior.getFechaFin().equals(mantenimiento.getFechaFin()
+      if (!actualizado) {
+        response.sendError(
+          HttpServletResponse.SC_CONFLICT,
+          "No se pudo actualizar. El registro puede no existir "
+            + "o haber dejado de estar programado."
         );
+        return;
+      }
 
-    // Notificar únicamente si hubo reprogramación
-    if (fechasModificadas) {
+      boolean fechasModificadas =
+        !anterior.getFechaInicio().equals(
+          mantenimiento.getFechaInicio()) ||
+          !anterior.getFechaFin().equals(mantenimiento.getFechaFin()
+          );
 
-      notificacionService.notificarReprogramacion(
-        anterior,
-        mantenimiento
-      );
+      if (fechasModificadas) {
+        notificacionService.notificarReprogramacion(
+          anterior,
+          mantenimiento
+        );
+      }
+
+      redirigirListado(request, response, "actualizado");
+
+    } catch (DateTimeParseException e) {
+      volverAFormularioConError(request, response, VISTA_EDICION, id, "Las fechas ingresadas no tienen un formato válido.");
+
+    } catch (IllegalArgumentException e) {
+      volverAFormularioConError(request, response, VISTA_EDICION, id, e.getMessage());
     }
-
-    // Redirigir al listado
-    redirigirListado(request, response, "actualizado");
   }
 
+  private void volverAFormularioConError(
+    HttpServletRequest request,
+    HttpServletResponse response,
+    String vistaJsp,
+    Integer idMantenimiento,
+    String mensajeError
+  ) throws ServletException, IOException {
 
+    Mantenimiento borrador = reconstruirBorrador(request);
+    if (idMantenimiento != null) {
+      borrador.setIdMantenimiento(idMantenimiento);
+    }
 
-  // POST: cancelar un mantenimiento
+    request.setAttribute("error", mensajeError);
+    request.setAttribute("mantenimiento", borrador);
+    request.setAttribute("segmentos", segmentoDao.listarSegmentos());
 
+    request.getRequestDispatcher(vistaJsp)
+      .forward(request, response);
+  }
+
+  private Mantenimiento reconstruirBorrador(HttpServletRequest request) {
+    Mantenimiento m = new Mantenimiento();
+
+    Integer idSeg = parsearIdOpcional(request.getParameter("idSegmento"));
+    if (idSeg != null) {
+      m.setIdSegmento(idSeg);
+    }
+
+    m.setTipo(limpiarTextoOpcional(request.getParameter("tipo")));
+
+    String prio = limpiarTextoOpcional(request.getParameter("prioridad"));
+    if ("Critica".equalsIgnoreCase(prio)) {
+      prio = "Crítica";
+    }
+    m.setPrioridad(prio);
+
+    try {
+      String fIni = limpiarTextoOpcional(request.getParameter("fechaInicio"));
+      if (fIni != null) {
+        m.setFechaInicio(LocalDate.parse(fIni).atStartOfDay());
+      }
+    } catch (DateTimeParseException ignored) {
+    }
+
+    try {
+      String fFin = limpiarTextoOpcional(request.getParameter("fechaFin"));
+      if (fFin != null) {
+        m.setFechaFin(LocalDate.parse(fFin).atTime(23, 59, 59));
+      }
+    } catch (DateTimeParseException ignored) {
+    }
+
+    String desc = request.getParameter("descripcionGeneral");
+    m.setDescripcionGeneral(desc == null ? "" : desc.trim());
+
+    return m;
+  }
 
   private void cancelarMantenimiento(
     HttpServletRequest request,
@@ -447,11 +499,9 @@ public class MantenimientoServlet extends HttpServlet {
       "El ID del mantenimiento no es válido."
     );
 
-    // Recuperamos los datos antes de cancelar
     Mantenimiento anterior =
       mantenimientoDao.obtenerMantenimiento(id);
 
-    // Intentamos cancelar el mantenimiento en MySQL
     boolean cancelado =
       mantenimientoDao.cancelarMantenimiento(id);
 
@@ -465,33 +515,24 @@ public class MantenimientoServlet extends HttpServlet {
       return;
     }
 
-    // Notificar después de confirmar la cancelación
     if (anterior != null) {
       notificacionService.notificarCancelacion(anterior);
     }
 
-    // Redirigimos al listado
     redirigirListado(request, response, "cancelado");
   }
-
-  // POST: Agregar un comentario a la bitacora
 
   private void agregarComentario(HttpServletRequest request, HttpServletResponse response)
     throws IOException {
 
-    // Primero obtenemos el id del mantenimiento en el que vamos a comentar
     int id = obtenerIdPositivo(request.getParameter("idMantenimiento"), "El ID del mantenimiento no es valido");
 
-    // Obtenemos el usuario autenticado en ese momento
     Integer idUsuario = obtenerIdUsuarioSesion(request);
 
     if (idUsuario == null) {
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Debe iniciar sesión para registrar el comentario");
-
       return;
     }
-
-    // Comprobamos que el mantenimiento exista
 
     Mantenimiento mantenimiento = mantenimientoDao.obtenerMantenimiento(id);
 
@@ -500,35 +541,22 @@ public class MantenimientoServlet extends HttpServlet {
       return;
     }
 
-    // Recuperamos comentarios pasados
     String comentario = obtenerParametro(request, "comentario");
 
-    // Construimos el bean de la actividad
     ActividadMantenimiento actividad = new ActividadMantenimiento();
     actividad.setIdMantenimiento(id);
     actividad.setIdUsuario(idUsuario);
     actividad.setDescripcionBitacora(comentario);
     actividad.setTipoActividad("Comentario");
 
-    // Registramos la actividad
     boolean registrado = actividadMantenimientoDao.crearActividad(actividad);
 
-    // Verificamos que se haya registrado correctamente el comentario
     if (!registrado) {
       throw new IllegalStateException("No se pudo registrar el comentario");
     }
 
-    // Redirigimos al seguimiento para evitar que el usuario envie otra vez el comentario
-
     response.sendRedirect(request.getContextPath() + "/MantenimientoServlet?accion=estado&idMantenimiento=" + id);
-
-
   }
-
-
-
-
-  // Convertir los campos del formulario en un Bean
 
   private Mantenimiento leerFormulario(
     HttpServletRequest request
@@ -543,6 +571,9 @@ public class MantenimientoServlet extends HttpServlet {
 
     String tipo = obtenerParametro(request, "tipo");
     String prioridad = obtenerParametro(request, "prioridad");
+    if ("Critica".equalsIgnoreCase(prioridad)) {
+      prioridad = "Crítica";
+    }
 
     Set<String> tiposValidos =
       Set.of("Preventivo", "Correctivo");
@@ -562,7 +593,6 @@ public class MantenimientoServlet extends HttpServlet {
       );
     }
 
-    // Los input type="date" envían fechas como yyyy-MM-dd.
     LocalDate fechaInicio = LocalDate.parse(
       obtenerParametro(request, "fechaInicio")
     );
@@ -570,6 +600,12 @@ public class MantenimientoServlet extends HttpServlet {
     LocalDate fechaFin = LocalDate.parse(
       obtenerParametro(request, "fechaFin")
     );
+
+    if (fechaInicio.isBefore(LocalDate.now())) {
+      throw new IllegalArgumentException(
+        "La fecha de inicio no puede ser anterior a la fecha actual."
+      );
+    }
 
     if (fechaFin.isBefore(fechaInicio)) {
       throw new IllegalArgumentException(
@@ -581,15 +617,12 @@ public class MantenimientoServlet extends HttpServlet {
     mantenimiento.setTipo(tipo);
     mantenimiento.setPrioridad(prioridad);
 
-    // Como el formulario maneja días, no horas:
-    // inicio a medianoche y fin al final del día seleccionado.
     LocalDateTime inicio = fechaInicio.atStartOfDay();
     LocalDateTime fin = fechaFin.atTime(23, 59, 59);
 
     mantenimiento.setFechaInicio(inicio);
     mantenimiento.setFechaFin(fin);
 
-    // La descripción es opcional en la vista.
     String descripcion = request.getParameter("descripcionGeneral");
 
     mantenimiento.setDescripcionGeneral(
@@ -599,10 +632,26 @@ public class MantenimientoServlet extends HttpServlet {
     return mantenimiento;
   }
 
-
-
   // Funciones auxiliares
 
+  private Integer parsearIdOpcional(String valor) {
+    if (valor == null || valor.isBlank()) {
+      return null;
+    }
+    try {
+      int id = Integer.parseInt(valor.trim());
+      return id > 0 ? id : null;
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+
+  private String limpiarTextoOpcional(String valor) {
+    if (valor == null || valor.isBlank()) {
+      return null;
+    }
+    return valor.trim();
+  }
 
   private String obtenerParametro(
     HttpServletRequest request,
@@ -618,7 +667,6 @@ public class MantenimientoServlet extends HttpServlet {
 
     return valor.trim();
   }
-
 
   private int obtenerIdPositivo(
     String valor,
@@ -638,7 +686,6 @@ public class MantenimientoServlet extends HttpServlet {
     }
   }
 
-
   private Integer obtenerIdUsuarioSesion(
     HttpServletRequest request
   ) {
@@ -648,8 +695,6 @@ public class MantenimientoServlet extends HttpServlet {
       return null;
     }
 
-    // Contemplamos dos nombres habituales para guardar
-    // el Bean del usuario autenticado en la sesión.
     Object usuarioSesion = sesion.getAttribute("usuarioLogueado");
 
     if (!(usuarioSesion instanceof Usuario)) {
@@ -661,7 +706,6 @@ public class MantenimientoServlet extends HttpServlet {
       return usuario.getIdUsuario();
     }
 
-    // Alternativa por si el login guarda solamente el ID.
     Object idSesion = sesion.getAttribute("idUsuario");
 
     if (idSesion instanceof Number numero
@@ -671,7 +715,6 @@ public class MantenimientoServlet extends HttpServlet {
 
     return null;
   }
-
 
   private void redirigirListado(
     HttpServletRequest request,

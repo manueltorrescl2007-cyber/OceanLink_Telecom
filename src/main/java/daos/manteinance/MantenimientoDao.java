@@ -1,4 +1,3 @@
-
 package daos.manteinance;
 
 import beans.maintenance.Mantenimiento;
@@ -16,22 +15,46 @@ public class MantenimientoDao extends daos.BaseDao {
   // ===== READ: LISTAR MANTENIMIENTOS NO CANCELADOS =====
 
   public ArrayList<Mantenimiento> listarMantenimientos() {
+    return listarMantenimientosFiltrados(null, null);
+  }
+
+  public ArrayList<Mantenimiento> listarMantenimientosFiltrados(Integer idSegmento, String prioridad) {
 
     ArrayList<Mantenimiento> lista = new ArrayList<>();
 
-    String sql = """
+    boolean filtrarSegmento = idSegmento != null && idSegmento > 0;
+    boolean filtrarPrioridad = prioridad != null && !prioridad.isBlank();
+
+    StringBuilder sql = new StringBuilder("""
                 SELECT *
                 FROM mantenimientos
                 WHERE estado NOT IN ('Cancelado', 'Finalizado')
-                ORDER BY fecha_inicio DESC
-                """;
+                """);
+
+    if (filtrarSegmento) {
+      sql.append(" AND id_segmento = ? ");
+    }
+    if (filtrarPrioridad) {
+      sql.append(" AND prioridad = ? ");
+    }
+
+    sql.append(" ORDER BY fecha_inicio DESC ");
 
     try (Connection conn = getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql);
-         ResultSet rs = pstmt.executeQuery()) {
+         PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
 
-      while (rs.next()) {
-        lista.add(mapearMantenimiento(rs));
+      int idx = 1;
+      if (filtrarSegmento) {
+        pstmt.setInt(idx++, idSegmento);
+      }
+      if (filtrarPrioridad) {
+        pstmt.setString(idx++, prioridad);
+      }
+
+      try (ResultSet rs = pstmt.executeQuery()) {
+        while (rs.next()) {
+          lista.add(mapearMantenimiento(rs));
+        }
       }
 
     } catch (SQLException e) {
@@ -44,33 +67,52 @@ public class MantenimientoDao extends daos.BaseDao {
 
   // ===== READ: LISTAR HISTORIAL COMPLETO =====
 
-
   public ArrayList<Mantenimiento> listarHistorial() {
+    return listarHistorialFiltrado(null, null);
+  }
+
+  public ArrayList<Mantenimiento> listarHistorialFiltrado(Integer idSegmento, String estadoFiltro) {
 
     ArrayList<Mantenimiento> lista = new ArrayList<>();
 
-    String sql = """
+    boolean filtrarSegmento = idSegmento != null && idSegmento > 0;
+    boolean filtrarEstado = estadoFiltro != null && !estadoFiltro.isBlank();
+
+    StringBuilder sql = new StringBuilder("""
         SELECT *
         FROM mantenimientos
-        ORDER BY fecha_inicio DESC
-        """;
+        WHERE 1 = 1
+        """);
+
+    if (filtrarSegmento) {
+      sql.append(" AND id_segmento = ? ");
+    }
+
+    sql.append(" ORDER BY fecha_inicio DESC ");
 
     try (Connection conn = getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql);
-         ResultSet rs = pstmt.executeQuery()) {
+         PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
 
-      while (rs.next()) {
+      if (filtrarSegmento) {
+        pstmt.setInt(1, idSegmento);
+      }
 
-        Mantenimiento m = mapearMantenimiento(rs);
+      try (ResultSet rs = pstmt.executeQuery()) {
+        while (rs.next()) {
 
-        String estadoReal =
-          EstadoMantenimientoUtil.calcularEstado(m);
+          Mantenimiento m = mapearMantenimiento(rs);
 
-        if ("Finalizado".equals(estadoReal) ||
-          "Cancelado".equals(estadoReal)) {
+          String estadoReal =
+            EstadoMantenimientoUtil.calcularEstado(m);
 
-          m.setEstado(estadoReal);
-          lista.add(m);
+          if ("Finalizado".equals(estadoReal) ||
+            "Cancelado".equals(estadoReal)) {
+
+            if (!filtrarEstado || estadoFiltro.equals(estadoReal)) {
+              m.setEstado(estadoReal);
+              lista.add(m);
+            }
+          }
         }
       }
 
@@ -155,7 +197,6 @@ public class MantenimientoDao extends daos.BaseDao {
 
   // CREACIÓN DE NUEVOS MANTENIMIENTOS
 
-
   public int crearMantenimiento(Mantenimiento m) {
 
     String sql = """
@@ -165,7 +206,6 @@ public class MantenimientoDao extends daos.BaseDao {
         VALUES (?, ?, ?, ?, ?, ?, ?)
         """;
 
-    // Ahora usamos RETURN_GENERATED_KEYS para recuperar las claves generadas por MySQL
     try (Connection conn = getConnection();
          PreparedStatement pstmt = conn.prepareStatement(
            sql,
@@ -196,7 +236,7 @@ public class MantenimientoDao extends daos.BaseDao {
       try (ResultSet rs = pstmt.getGeneratedKeys()) {
 
         if (rs.next()) {
-          return rs.getInt(1); // devolvemos el ID del mantenimiento recien insertado
+          return rs.getInt(1);
         }
 
         throw new IllegalStateException(
@@ -216,7 +256,7 @@ public class MantenimientoDao extends daos.BaseDao {
 
   public boolean actualizarMantenimiento(Mantenimiento m) {
 
-        String sql = """
+    String sql = """
                     UPDATE mantenimientos
                     SET id_segmento = ?,
                         tipo = ?,
@@ -254,7 +294,6 @@ public class MantenimientoDao extends daos.BaseDao {
   }
 
   // CANCELACIÓN DE MANTENIMIENTOS (BORRADO LÓGICO)
-
 
   public boolean cancelarMantenimiento(int idMantenimiento) {
 

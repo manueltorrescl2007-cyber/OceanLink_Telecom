@@ -4,9 +4,9 @@
 
 <%@ page import="beans.maintenance.Mantenimiento" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="java.time.LocalDate" %>
 
 <%!
-  // Escapa caracteres especiales antes de mostrarlos en HTML.
   private String escaparHtml(String valor) {
     if (valor == null) return "";
 
@@ -33,6 +33,9 @@
     );
     return;
   }
+
+  String error = (String) request.getAttribute("error");
+  String hoy = LocalDate.now().toString();
 
   String fechaInicio = mantenimiento.getFechaInicio() == null
     ? ""
@@ -65,7 +68,7 @@
 
 <jsp:include page="header.jsp">
   <jsp:param name="pageTitle"
-             value="Registro y actualizaci&oacute;n de actividades de mantenimiento"/>
+             value="Registro y actualización de actividades de mantenimiento"/>
 </jsp:include>
 
 <div class="contenedor">
@@ -83,6 +86,12 @@
         <h2 class="card-title">
           Editar mantenimiento
         </h2>
+
+        <% if (error != null && !error.isBlank()) { %>
+        <div style="background-color: #FCE8E6; color: #B42318; border: 1px solid #F5C2C0; padding: 12px 16px; border-radius: 6px; margin-bottom: 18px; font-size: 13.5px; font-weight: 600;">
+          <%= escaparHtml(error) %>
+        </div>
+        <% } %>
 
         <form
           action="${pageContext.request.contextPath}/MantenimientoServlet"
@@ -185,6 +194,7 @@
               type="date"
               id="fechaInicio"
               name="fechaInicio"
+              min="<%= hoy %>"
               value="<%= fechaInicio %>"
               required>
 
@@ -203,6 +213,7 @@
               type="date"
               id="fechaFin"
               name="fechaFin"
+              min="<%= hoy %>"
               value="<%= fechaFin %>"
               required>
 

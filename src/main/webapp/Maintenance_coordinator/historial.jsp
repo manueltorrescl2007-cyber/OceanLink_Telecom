@@ -4,6 +4,8 @@
 
 <%@ page import="beans.maintenance.Mantenimiento" %>
 <%@ page import="java.util.*" %>
+<%@ page import="java.net.URLEncoder" %>
+<%@ page import="java.nio.charset.StandardCharsets" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 
 <%!
@@ -19,7 +21,6 @@
 %>
 
 <%
-  // Recuperamos los datos enviados por el Servlet.
   ArrayList<Mantenimiento> historial =
     (ArrayList<Mantenimiento>)
       request.getAttribute("historialMantenimientos");
@@ -28,7 +29,6 @@
     (Map<Integer, String>)
       request.getAttribute("segmentos");
 
-  // Evitamos acceder directamente a la JSP sin pasar por el Servlet.
   if (historial == null || segmentos == null) {
     response.sendRedirect(
       request.getContextPath()
@@ -37,12 +37,42 @@
     return;
   }
 
+  Integer segmentoSeleccionado =
+    (Integer) request.getAttribute("segmentoSeleccionado");
+
+  String estadoSeleccionado =
+    (String) request.getAttribute("estadoSeleccionado");
+
+  int paginaActual = request.getAttribute("paginaActual") != null
+    ? (Integer) request.getAttribute("paginaActual") : 1;
+  int totalPaginas = request.getAttribute("totalPaginas") != null
+    ? (Integer) request.getAttribute("totalPaginas") : 1;
+  int totalRegistros = request.getAttribute("totalRegistros") != null
+    ? (Integer) request.getAttribute("totalRegistros") : historial.size();
+  int registroInicio = request.getAttribute("registroInicio") != null
+    ? (Integer) request.getAttribute("registroInicio") : (historial.isEmpty() ? 0 : 1);
+  int registroFin = request.getAttribute("registroFin") != null
+    ? (Integer) request.getAttribute("registroFin") : historial.size();
+
+  // Base de URL conservando los filtros activos para los enlaces de paginación
+  StringBuilder basePaginacion = new StringBuilder(
+    request.getContextPath() + "/MantenimientoServlet?accion=historial"
+  );
+  if (segmentoSeleccionado != null) {
+    basePaginacion.append("&idSegmento=").append(segmentoSeleccionado);
+  }
+  if (estadoSeleccionado != null && !estadoSeleccionado.isBlank()) {
+    basePaginacion.append("&estado=")
+      .append(URLEncoder.encode(estadoSeleccionado, StandardCharsets.UTF_8));
+  }
+  String urlBase = basePaginacion.toString();
+
   DateTimeFormatter formatoFecha =
     DateTimeFormatter.ofPattern(
       "dd/MM/yyyy", Locale.forLanguageTag("es-PE")
     );
 
-  int totalFilas = Math.max(5, historial.size());
+  String[] estadosHistorial = {"Finalizado", "Cancelado"};
 %>
 
 <!DOCTYPE html>
@@ -85,11 +115,65 @@
           Historial de mantenimientos
         </h2>
 
+        <!-- BARRA DE FILTROS (SEGMENTO Y ESTADO) -->
+        <form action="${pageContext.request.contextPath}/MantenimientoServlet"
+              method="GET"
+              class="filters-bar"
+              style="align-items: flex-end; flex-wrap: wrap;">
+
+          <input type="hidden" name="accion" value="historial">
+
+          <div class="form-field">
+            <label for="filtroSegmento">Segmento</label>
+            <select id="filtroSegmento" name="idSegmento">
+              <option value="">Todos los segmentos</option>
+              <%
+                for (Map.Entry<Integer, String> entry : segmentos.entrySet()) {
+                  boolean seleccionado = segmentoSeleccionado != null
+                    && segmentoSeleccionado.equals(entry.getKey());
+              %>
+              <option value="<%= entry.getKey() %>" <%= seleccionado ? "selected" : "" %>>
+                <%= escaparHtml(entry.getValue()) %>
+              </option>
+              <%
+                }
+              %>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="filtroEstado">Estado</label>
+            <select id="filtroEstado" name="estado">
+              <option value="">Todos los estados</option>
+              <%
+                for (String est : estadosHistorial) {
+                  boolean seleccionado = est.equals(estadoSeleccionado);
+              %>
+              <option value="<%= est %>" <%= seleccionado ? "selected" : "" %>>
+                <%= est %>
+              </option>
+              <%
+                }
+              %>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a href="${pageContext.request.contextPath}/MantenimientoServlet?accion=historial"
+               class="btn btn-secondary"
+               style="text-decoration: none; display: inline-flex; align-items: center;">
+              Limpiar
+            </a>
+          </div>
+
+        </form>
+
         <!-- BARRA SUPERIOR -->
         <div class="table-toolbar">
 
           <div class="table-toolbar-left">
-            <span>&#9638;</span>
+            <span>▦</span>
             Vista de Tabla
           </div>
 
@@ -113,29 +197,36 @@
             <tbody>
 
             <%
-              for (int i = 0; i < totalFilas; i++) {
+              if (historial.isEmpty()) {
+            %>
+            <tr>
+              <td colspan="5" style="text-align: center; padding: 20px; color: var(--color-texto-claro);">
+                No se encontraron registros en el historial con los filtros seleccionados.
+              </td>
+            </tr>
+            <%
+            } else {
+              for (int i = 0; i < historial.size(); i++) {
 
-                if (i < historial.size()) {
+                Mantenimiento m = historial.get(i);
 
-                  Mantenimiento m = historial.get(i);
+                String codigoSegmento =
+                  segmentos.getOrDefault(
+                    m.getIdSegmento(),
+                    "Segmento #" + m.getIdSegmento()
+                  );
 
-                  String codigoSegmento =
-                    segmentos.getOrDefault(
-                      m.getIdSegmento(),
-                      "Segmento #" + m.getIdSegmento()
-                    );
+                String fechaFin =
+                  m.getFechaFin() == null
+                    ? "—"
+                    : m.getFechaFin().format(formatoFecha);
 
-                  String fechaFin =
-                    m.getFechaFin() == null
-                      ? "—"
-                      : m.getFechaFin().format(formatoFecha);
+                String estado = m.getEstado();
 
-                  String estado = m.getEstado();
-
-                  String badgeClass =
-                    "Finalizado".equals(estado)
-                      ? "badge-finalizado"
-                      : "badge-cancelado";
+                String badgeClass =
+                  "Finalizado".equals(estado)
+                    ? "badge-finalizado"
+                    : "badge-cancelado";
             %>
 
             <tr>
@@ -144,17 +235,15 @@
               <td>
                 <a
                   href="${pageContext.request.contextPath}/MantenimientoServlet?accion=estado&idMantenimiento=<%= m.getIdMantenimiento() %>">
-
                   <%= m.getIdMantenimiento() %>
-
                 </a>
               </td>
 
               <!-- SEGMENTO -->
               <td>
-                                <span class="badge badge-segmento">
-                                    <%= escaparHtml(codigoSegmento) %>
-                                </span>
+                <span class="badge badge-segmento">
+                  <%= escaparHtml(codigoSegmento) %>
+                </span>
               </td>
 
               <!-- TIPO -->
@@ -169,29 +258,15 @@
 
               <!-- ESTADO -->
               <td>
-                  <span
-                    class="badge <%= badgeClass %>"
-                    style="<%= "Cancelado".equals(estado)
-                          ? "display:inline-block; background-color:#FCE8E6; color:#B42318; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;"
-                          : "" %>">
-
-                      <%= escaparHtml(estado) %>
-
-                  </span>
+                <span
+                  class="badge <%= badgeClass %>"
+                  style="<%= "Cancelado".equals(estado)
+                        ? "display:inline-block; background-color:#FCE8E6; color:#B42318; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;"
+                        : "" %>">
+                  <%= escaparHtml(estado) %>
+                </span>
               </td>
 
-            </tr>
-
-            <%
-            } else {
-            %>
-
-            <tr class="row-empty">
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
             </tr>
 
             <%
@@ -204,6 +279,48 @@
           </table>
 
         </div>
+
+        <!-- BARRA DE PAGINACIÓN -->
+        <% if (totalRegistros > 0) { %>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 16px;">
+          <span style="font-size: 13px; color: var(--color-texto-claro);">
+            Mostrando <%= registroInicio %>–<%= registroFin %> de <%= totalRegistros %> registros (Página <%= paginaActual %> de <%= totalPaginas %>)
+          </span>
+
+          <% if (totalPaginas > 1) { %>
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <% if (paginaActual > 1) { %>
+            <a href="<%= urlBase %>&pagina=<%= paginaActual - 1 %>"
+               class="btn btn-secondary"
+               style="padding: 6px 12px; font-size: 13px; text-decoration: none;">
+              Anterior
+            </a>
+            <% } %>
+
+            <%
+              for (int p = 1; p <= totalPaginas; p++) {
+                boolean esActual = (p == paginaActual);
+            %>
+            <a href="<%= urlBase %>&pagina=<%= p %>"
+               class="btn <%= esActual ? "btn-primary" : "btn-secondary" %>"
+               style="padding: 6px 12px; font-size: 13px; text-decoration: none;">
+              <%= p %>
+            </a>
+            <%
+              }
+            %>
+
+            <% if (paginaActual < totalPaginas) { %>
+            <a href="<%= urlBase %>&pagina=<%= paginaActual + 1 %>"
+               class="btn btn-secondary"
+               style="padding: 6px 12px; font-size: 13px; text-decoration: none;">
+              Siguiente
+            </a>
+            <% } %>
+          </div>
+          <% } %>
+        </div>
+        <% } %>
 
       </div>
 
