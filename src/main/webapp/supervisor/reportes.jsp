@@ -143,13 +143,13 @@
             <span class="flecha-submenu"></span>
           </label>
           <div class="contenido-submenu">
-            <a href="<%= request.getContextPath() %>/MantenimientoServletSuper" class="subopcion">Programación</a>
-            <a href="<%= request.getContextPath() %>/MantenimientoServletSuper" class="subopcion">Historial de programados</a>
+            <a href="<%= request.getContextPath() %>/MantenimientoServletSuper?accion=listar" class="subopcion">Programación</a>
+            <a href="<%= request.getContextPath() %>/MantenimientoServletSuper?accion=historial" class="subopcion">Historial de mantenimientos</a>
           </div>
         </div>
 
         <a href="<%= request.getContextPath() %>/ReporteServletSuper" class="activo">Reportes</a>
-        <a href="<%= request.getContextPath() %>/supervisor/historicos.jsp">Históricos</a>
+        <a href="<%= request.getContextPath() %>/HistoricoServletSuper">Históricos</a>
       </nav>
     </div>
 

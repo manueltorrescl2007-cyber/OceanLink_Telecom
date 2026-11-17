@@ -1,6 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="beans.maintenance.Mantenimiento" %>
 <%@ page import="java.util.*" %>
+<%@ page import="java.net.URLEncoder" %>
+<%@ page import="java.nio.charset.StandardCharsets" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 
 <%!
@@ -24,14 +26,42 @@
     (Map<Integer, String>)
       request.getAttribute("segmentos");
 
-  // Esta vista debe recibir los datos del Servlet.
   if (mantenimientos == null || segmentos == null) {
     response.sendRedirect(
       request.getContextPath()
-        + "/MantenimientoServlet?accion=listar"
+        + "/MantenimientoServletSuper?accion=listar"
     );
     return;
   }
+
+  Integer segmentoSeleccionado =
+    (Integer) request.getAttribute("segmentoSeleccionado");
+
+  String prioridadSeleccionada =
+    (String) request.getAttribute("prioridadSeleccionada");
+
+  int paginaActual = request.getAttribute("paginaActual") != null
+    ? (Integer) request.getAttribute("paginaActual") : 1;
+  int totalPaginas = request.getAttribute("totalPaginas") != null
+    ? (Integer) request.getAttribute("totalPaginas") : 1;
+  int totalRegistros = request.getAttribute("totalRegistros") != null
+    ? (Integer) request.getAttribute("totalRegistros") : mantenimientos.size();
+  int registroInicio = request.getAttribute("registroInicio") != null
+    ? (Integer) request.getAttribute("registroInicio") : (mantenimientos.isEmpty() ? 0 : 1);
+  int registroFin = request.getAttribute("registroFin") != null
+    ? (Integer) request.getAttribute("registroFin") : mantenimientos.size();
+
+  StringBuilder basePaginacion = new StringBuilder(
+    request.getContextPath() + "/MantenimientoServletSuper?accion=listar"
+  );
+  if (segmentoSeleccionado != null) {
+    basePaginacion.append("&idSegmento=").append(segmentoSeleccionado);
+  }
+  if (prioridadSeleccionada != null && !prioridadSeleccionada.isBlank()) {
+    basePaginacion.append("&prioridad=")
+      .append(URLEncoder.encode(prioridadSeleccionada, StandardCharsets.UTF_8));
+  }
+  String urlBase = basePaginacion.toString();
 
   DateTimeFormatter formatoFecha =
     DateTimeFormatter.ofPattern(
@@ -39,24 +69,23 @@
       Locale.forLanguageTag("es-PE")
     );
 
-  // Mantener al menos 10 filas.
-  int totalFilas = Math.max(10, mantenimientos.size());
-
-  String resultado = request.getParameter("resultado");
+  String[] prioridades = {"Leve", "Media", "Alta", "Crítica"};
 %>
 <!doctype html>
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>OceanLink | Dashboard</title>
+  <title>OceanLink | Programación de mantenimientos</title>
 
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/styles_MC">
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/barras.css">
+  <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/barras.css">
+  <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/styles_MC.css">
+  <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/supervisor/mantenimientos.css">
 </head>
 
 <body>
@@ -72,23 +101,22 @@
 <header class="barra-superior">
 
   <div class="zona-logo">
-
     <label
-            for="controlMenu"
-            class="boton-menu"
-            title="Ocultar o mostrar menú">☰</label>
+      for="controlMenu"
+      class="boton-menu"
+      title="Ocultar o mostrar menú">☰</label>
 
     <a href="${pageContext.request.contextPath}/DashboardServletSuper"
        class="logo">
-        OceanLink
+      OceanLink
     </a>
   </div>
 
   <div class="usuario">
     <div class="foto-usuario">SU</div>
     <div>
-        <p class="nombre-usuario">Username</p>
-        <p class="rol-usuario">Supervisor</p>
+      <p class="nombre-usuario">Username</p>
+      <p class="rol-usuario">Supervisor</p>
     </div>
   </div>
 </header>
@@ -107,24 +135,21 @@
 
         <!-- Dashboard -->
         <a href="${pageContext.request.contextPath}/DashboardServletSuper">
-            Dashboard general
+          Dashboard general
         </a>
 
         <!-- Incidencias -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
           <input
             type="checkbox"
             id="control-incidencias"
             class="control-submenu"
           >
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
           <label for="control-incidencias"
                  class="titulo-grupo">
             <span>Incidencias</span>
             <span class="flecha-submenu"></span>
           </label>
-          <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
             <a href="${pageContext.request.contextPath}/IncidenciaServletSuper"
                class="subopcion">
@@ -140,22 +165,19 @@
 
         <!-- Estado de la red -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
           <input
             type="checkbox"
             id="controlEstadoRed"
             class="control-submenu">
 
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
           <label for="controlEstadoRed"
                  class="titulo-grupo">
             <span class="texto-grupo">
-                Estado de la red
+              Estado de la red
             </span>
             <span class="flecha-submenu"></span>
           </label>
 
-          <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
             <a href="${pageContext.request.contextPath}/TarjetasServletSuper"
                class="subopcion">
@@ -187,12 +209,11 @@
           <label for="control-servicios-clientes"
                  class="titulo-grupo">
             <span class="texto-grupo">
-                Servicios y clientes
+              Servicios y clientes
             </span>
             <span class="flecha-submenu"></span>
           </label>
           <div class="contenido-submenu">
-
             <a href="${pageContext.request.contextPath}/ClienteServletSuper"
                class="subopcion">
               Clientes
@@ -202,9 +223,8 @@
                class="subopcion">
               Servicios
             </a>
-            <a
-              href="${pageContext.request.contextPath}/SolicitudesServletSuper"
-              class="subopcion">
+            <a href="${pageContext.request.contextPath}/SolicitudesServletSuper"
+               class="subopcion">
               Solicitudes
             </a>
           </div>
@@ -212,59 +232,53 @@
 
         <!-- Mantenimientos -->
         <div class="grupo-menu">
-
           <input
             type="checkbox"
             id="control-mantenimientos"
             class="control-submenu"
+            checked
           >
 
-          <label
-            for="control-mantenimientos"
-            class="titulo-grupo">
-
+          <label for="control-mantenimientos"
+                 class="titulo-grupo">
             <span class="texto-grupo">
-                Mantenimientos
+              Mantenimientos
             </span>
-
             <span class="flecha-submenu"></span>
-
           </label>
 
           <div class="contenido-submenu">
-
-            <a
-              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
-              class="subopcion">
+            <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=listar"
+               class="subopcion activo">
               Programación
             </a>
 
-            <a
-              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
-              class="subopcion">
-              Historial de programados
+            <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=historial"
+               class="subopcion">
+              Historial de mantenimientos
             </a>
           </div>
         </div>
 
         <!-- Reportes -->
         <a href="${pageContext.request.contextPath}/ReporteServletSuper">
-            Reportes
+          Reportes
         </a>
         <!-- Históricos -->
-        <a href="${pageContext.request.contextPath}/supervisor/historicos.jsp">
-            Históricos
+        <a href="${pageContext.request.contextPath}/HistoricoServletSuper">
+          Históricos
         </a>
       </nav>
     </div>
+
     <!-- parte baja -->
     <div class="configuracion">
       <nav aria-label="Opciones del usuario">
-          <a href="#">Perfil</a>
-          <a href="${pageContext.request.contextPath}/login.jsp"
-             class="cerrar-sesion">
-              Cerrar sesión
-          </a>
+        <a href="#">Perfil</a>
+        <a href="${pageContext.request.contextPath}/login.jsp"
+           class="cerrar-sesion">
+          Cerrar sesión
+        </a>
       </nav>
     </div>
   </aside>
@@ -272,49 +286,82 @@
   <!-- Contenido principal -->
   <main class="contenido-principal">
 
+    <section class="encabezado-panel">
+      <div>
+        <h2>Supervisor</h2>
+        <h1>Programación de mantenimientos</h1>
+      </div>
+    </section>
+
     <div class="content-container">
 
       <div class="card">
-        <h2 class="card-title">Supervisor</h2>
-        <h1 class="card-title">Utilización de la red</h1>
 
-        <!-- MENSAJES DE RESULTADO -->
+        <h2 class="card-title">
+          Fechas y duración de mantenimientos
+        </h2>
 
-        <% if ("actualizado".equals(resultado)) { %>
+        <!-- BARRA DE FILTROS (SEGMENTO Y PRIORIDAD) -->
+        <form action="${pageContext.request.contextPath}/MantenimientoServletSuper"
+              method="GET"
+              class="filters-bar">
 
-        <p style="color: green; font-weight: bold;">
-          El mantenimiento se actualizó correctamente.
-        </p>
+          <input type="hidden" name="accion" value="listar">
 
-        <% } else if ("creado".equals(resultado)) { %>
-
-        <p style="color: green; font-weight: bold;">
-          El mantenimiento se registró correctamente.
-        </p>
-
-        <% } else if ("cancelado".equals(resultado)) { %>
-
-        <p style="color: green; font-weight: bold;">
-          El mantenimiento se canceló correctamente.
-        </p>
-
-        <% } %>
-
-
-        <!-- BARRA SUPERIOR -->
-
-        <div class="table-toolbar">
-
-          <div class="table-toolbar-left">
-            <span>&#9638;</span>
-            Vista de Tabla
+          <div class="form-field">
+            <label for="filtroSegmento">Segmento</label>
+            <select id="filtroSegmento" name="idSegmento">
+              <option value="">Todos los segmentos</option>
+              <%
+                for (Map.Entry<Integer, String> entry : segmentos.entrySet()) {
+                  boolean seleccionado = segmentoSeleccionado != null
+                    && segmentoSeleccionado.equals(entry.getKey());
+              %>
+              <option value="<%= entry.getKey() %>" <%= seleccionado ? "selected" : "" %>>
+                <%= escaparHtml(entry.getValue()) %>
+              </option>
+              <%
+                }
+              %>
+            </select>
           </div>
 
+          <div class="form-field">
+            <label for="filtroPrioridad">Prioridad</label>
+            <select id="filtroPrioridad" name="prioridad">
+              <option value="">Todas las prioridades</option>
+              <%
+                for (String p : prioridades) {
+                  boolean seleccionado = p.equals(prioridadSeleccionada);
+              %>
+              <option value="<%= p %>" <%= seleccionado ? "selected" : "" %>>
+                <%= p %>
+              </option>
+              <%
+                }
+              %>
+            </select>
+          </div>
+
+          <div class="filters-actions">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=listar"
+               class="btn btn-secondary">
+              Limpiar
+            </a>
+          </div>
+
+        </form>
+
+        <!-- BARRA SUPERIOR -->
+        <div class="table-toolbar">
+          <div class="table-toolbar-left">
+            <span>▦</span>
+            Vista de Tabla
+          </div>
         </div>
 
-
         <!-- TABLA DE MANTENIMIENTOS -->
-
         <div class="data-table-wrapper">
 
           <table class="data-table">
@@ -329,78 +376,69 @@
               <th>Prioridad</th>
               <th>Estado</th>
               <th>Notas / Descripción</th>
-              <th>Acciones</th>
             </tr>
             </thead>
 
             <tbody>
 
             <%
-              for (int i = 0; i < totalFilas; i++) {
+              if (mantenimientos.isEmpty()) {
+            %>
+            <tr>
+              <td colspan="8" class="table-empty-cell">
+                No se encontraron mantenimientos activos con los filtros seleccionados.
+              </td>
+            </tr>
+            <%
+            } else {
+              for (int i = 0; i < mantenimientos.size(); i++) {
 
-                if (i < mantenimientos.size()) {
+                Mantenimiento m =
+                  mantenimientos.get(i);
 
-                  Mantenimiento m =
-                    mantenimientos.get(i);
+                String prioridad = m.getPrioridad();
+                String badgeClass = "badge-leve";
 
-                  // PRIORIDAD
-                  String prioridad = m.getPrioridad();
+                if ("Media".equals(prioridad)) {
+                  badgeClass = "badge-media";
+                } else if ("Alta".equals(prioridad)) {
+                  badgeClass = "badge-alta";
+                } else if ("Crítica".equals(prioridad)) {
+                  badgeClass = "badge-critica";
+                }
 
-                  String badgeClass = "badge-leve";
+                String codigoSegmento =
+                  segmentos.getOrDefault(
+                    m.getIdSegmento(),
+                    "Segmento #" + m.getIdSegmento()
+                  );
 
-                  if ("Media".equals(prioridad)) {
-                    badgeClass = "badge-media";
+                String fechaInicio =
+                  m.getFechaInicio() == null
+                    ? "—"
+                    : m.getFechaInicio()
+                    .format(formatoFecha);
 
-                  } else if ("Alta".equals(prioridad)) {
-                    badgeClass = "badge-alta";
+                String fechaFin =
+                  m.getFechaFin() == null
+                    ? "—"
+                    : m.getFechaFin()
+                    .format(formatoFecha);
 
-                  } else if ("Crítica".equals(prioridad)) {
-                    badgeClass = "badge-critica";
-                  }
+                String estado = m.getEstado();
 
-                  // SEGMENTO
-                  String codigoSegmento =
-                    segmentos.getOrDefault(
-                      m.getIdSegmento(),
-                      "Segmento #" + m.getIdSegmento()
-                    );
+                String estadoVisible =
+                  "En ejecucion".equals(estado)
+                    ? "En ejecución"
+                    : estado;
 
-                  // FECHAS
-                  String fechaInicio =
-                    m.getFechaInicio() == null
-                      ? "—"
-                      : m.getFechaInicio()
-                      .format(formatoFecha);
+                String badgeEstado = "badge-programado";
 
-                  String fechaFin =
-                    m.getFechaFin() == null
-                      ? "—"
-                      : m.getFechaFin()
-                      .format(formatoFecha);
-
-                  // ESTADO CALCULADO POR EL DAO
-                  String estado = m.getEstado();
-
-                  String estadoVisible =
-                    "En ejecucion".equals(estado)
-                      ? "En ejecución"
-                      : estado;
-
-                  String badgeEstado = "badge-programado";
-
-                  if ("En ejecucion".equals(estado)) {
-                    badgeEstado = "badge-en-progreso";
-
-                  } else if ("Finalizado".equals(estado)) {
-                    badgeEstado = "badge-finalizado";
-                  }
-
-                  boolean puedeEditar =
-                    "Programado".equals(estado);
-
-                  boolean puedeCancelar =
-                    "Programado".equals(estado)
-                      || "En ejecucion".equals(estado);
+                if ("En ejecucion".equals(estado)) {
+                  badgeEstado = "badge-en-progreso";
+                } else if ("Finalizado".equals(estado)) {
+                  badgeEstado = "badge-finalizado";
+                }
             %>
 
             <tr>
@@ -410,10 +448,8 @@
                 <a
                   href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=estado&idMantenimiento=<%= m.getIdMantenimiento() %>"
                   title="Ver estado del mantenimiento"
-                  style="font-weight: bold; text-decoration: underline;">
-
+                  class="table-id-link">
                   <%= m.getIdMantenimiento() %>
-
                 </a>
               </td>
 
@@ -439,100 +475,23 @@
 
               <!-- PRIORIDAD -->
               <td>
-                                <span class="badge <%= badgeClass %>">
-                                    <%= escaparHtml(prioridad) %>
-                                </span>
+                <span class="badge <%= badgeClass %>">
+                  <%= escaparHtml(prioridad) %>
+                </span>
               </td>
 
               <!-- ESTADO -->
               <td>
-                                <span class="badge <%= badgeEstado %>">
-                                    <%= escaparHtml(estadoVisible) %>
-                                </span>
+                <span class="badge <%= badgeEstado %>">
+                  <%= escaparHtml(estadoVisible) %>
+                </span>
               </td>
 
               <!-- DESCRIPCIÓN -->
               <td>
-                <%= escaparHtml(
-                  m.getDescripcionGeneral()
-                ) %>
+                <%= escaparHtml(m.getDescripcionGeneral()) %>
               </td>
 
-              <!-- ACCIONES -->
-              <td>
-                <div style="display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 6px;">
-
-                  <% if (puedeEditar) { %>
-
-                  <a
-                    href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=editar&idMantenimiento=<%= m.getIdMantenimiento() %>"
-                    class="btn btn-primary"
-                    style="padding: 8px 20px;
-                   font-size: 14px;
-                   min-width: 90px;
-                   text-align: center;
-                   box-sizing: border-box;">
-
-                    Editar
-
-                  </a>
-
-                  <% } %>
-
-                  <% if (puedeCancelar) { %>
-
-                  <form
-                    action="${pageContext.request.contextPath}/MantenimientoServletSuper"
-                    method="POST"
-                    style="margin: 0;"
-                    onsubmit="return confirm('¿Estás seguro de que deseas cancelar el mantenimiento #<%= m.getIdMantenimiento() %>? Esta acción no se puede deshacer.');">
-
-                    <input
-                      type="hidden"
-                      name="accion"
-                      value="cancelar">
-
-                    <input
-                      type="hidden"
-                      name="idMantenimiento"
-                      value="<%= m.getIdMantenimiento() %>">
-
-                    <button
-                      type="submit"
-                      class="btn btn-primary"
-                      style="padding: 8px 20px;
-                       font-size: 14px;
-                       min-width: 90px;
-                       text-align: center;
-                       box-sizing: border-box;
-                       background-color: #b42318;
-                       border-color: #b42318;">
-
-                      Cancelar
-
-                    </button>
-
-                  </form>
-
-                  <% } %>
-
-                </div>
-              </td>
-
-              <!-- FILAS VACÍAS DEL DISEÑO ORIGINAL -->
-            <tr class="row-empty">
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
             </tr>
 
             <%
@@ -546,6 +505,45 @@
 
         </div>
 
+        <!-- BARRA DE PAGINACIÓN -->
+        <% if (totalRegistros > 0) { %>
+        <div class="pagination-bar">
+          <span class="pagination-info">
+            Mostrando <%= registroInicio %>–<%= registroFin %> de <%= totalRegistros %> registros (Página <%= paginaActual %> de <%= totalPaginas %>)
+          </span>
+
+          <% if (totalPaginas > 1) { %>
+          <div class="pagination-links">
+            <% if (paginaActual > 1) { %>
+            <a href="<%= urlBase %>&pagina=<%= paginaActual - 1 %>"
+               class="btn btn-secondary">
+              Anterior
+            </a>
+            <% } %>
+
+            <%
+              for (int p = 1; p <= totalPaginas; p++) {
+                boolean esActual = (p == paginaActual);
+            %>
+            <a href="<%= urlBase %>&pagina=<%= p %>"
+               class="btn <%= esActual ? "btn-primary" : "btn-secondary" %>">
+              <%= p %>
+            </a>
+            <%
+              }
+            %>
+
+            <% if (paginaActual < totalPaginas) { %>
+            <a href="<%= urlBase %>&pagina=<%= paginaActual + 1 %>"
+               class="btn btn-secondary">
+              Siguiente
+            </a>
+            <% } %>
+          </div>
+          <% } %>
+        </div>
+        <% } %>
+
       </div>
 
     </div>
@@ -553,5 +551,6 @@
   </main>
 
 </div>
+
 </body>
 </html>

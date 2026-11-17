@@ -73,7 +73,7 @@
         <h2 class="card-title">Programar un nuevo mantenimiento</h2>
 
         <% if (error != null && !error.isBlank()) { %>
-        <div style="background-color: #FCE8E6; color: #B42318; border: 1px solid #F5C2C0; padding: 12px 16px; border-radius: 6px; margin-bottom: 18px; font-size: 13.5px; font-weight: 600;">
+        <div class="alert-error">
           <%= escaparHtml(error) %>
         </div>
         <% } %>

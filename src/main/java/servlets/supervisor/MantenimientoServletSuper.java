@@ -1,20 +1,21 @@
 package servlets.supervisor;
 
-import beans.Usuario;
+import beans.maintenance.ActividadMantenimiento;
 import beans.maintenance.Mantenimiento;
+
+import daos.manteinance.ActividadMantenimientoDao;
 import daos.manteinance.MantenimientoDao;
 import daos.manteinance.SegmentoDao;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @WebServlet(name = "MantenimientoServletSuper", value = "/MantenimientoServletSuper")
@@ -24,9 +25,13 @@ public class MantenimientoServletSuper extends HttpServlet {
     new MantenimientoDao();
 
   private final SegmentoDao segmentoDao =
-    new SegmentoDao(); // CREACIÓN DEL OBJETO SEGMENTO
+    new SegmentoDao();
 
-  // Rutas de las vistas que ya existen o crearemos después.
+  private final ActividadMantenimientoDao actividadMantenimientoDao =
+    new ActividadMantenimientoDao();
+
+  private static final int TAMANO_PAGINA = 10;
+
   private static final String VISTA_LISTADO =
     "/supervisor/programacion.jsp";
 
@@ -34,9 +39,7 @@ public class MantenimientoServletSuper extends HttpServlet {
     "/supervisor/historial_programados.jsp";
 
   private static final String VISTA_ESTADO =
-    "/supervisor/programacion.jsp";
-
-  // GET para consultar información y mostrar vistas
+    "/supervisor/estado_mantenimiento.jsp";
 
   @Override
   protected void doGet(
@@ -45,12 +48,9 @@ public class MantenimientoServletSuper extends HttpServlet {
   ) throws ServletException, IOException {
 
     request.setCharacterEncoding("UTF-8");
-    System.out.println("Hora Java: " + LocalDateTime.now());
-    System.out.println("Zona horaria Java: " + java.time.ZoneId.systemDefault());
 
     String accion = request.getParameter("accion");
 
-    // Si no se indica una acción, mostramos el listado normal.
     if (accion == null || accion.isBlank()) {
       accion = "listar";
     }
@@ -58,54 +58,71 @@ public class MantenimientoServletSuper extends HttpServlet {
     try {
       switch (accion) {
 
-        case "listar":
-
-          // Actualizamos los estados según las fechas de MySQL.
+        case "listar": {
           mantenimientoDao.actualizarEstadosAutomaticamente();
 
-          request.setAttribute(
-            "mantenimientos",
-            mantenimientoDao.listarMantenimientos()
-          );
+          Integer idSegmentoFiltro = parsearIdOpcional(request.getParameter("idSegmento"));
+          String prioridadFiltro = limpiarTextoOpcional(request.getParameter("prioridad"));
 
-          request.setAttribute(
-            "segmentos",
-            segmentoDao.listarSegmentos()
-          );
+          Set<String> prioridadesValidas = Set.of("Leve", "Media", "Alta", "Crítica");
+          if (prioridadFiltro != null && !prioridadesValidas.contains(prioridadFiltro)) {
+            prioridadFiltro = null;
+          }
+
+          ArrayList<Mantenimiento> listaCompleta =
+            mantenimientoDao.listarMantenimientosFiltrados(idSegmentoFiltro, prioridadFiltro);
+
+          ArrayList<Mantenimiento> paginaLista =
+            aplicarPaginacion(request, listaCompleta);
+
+          request.setAttribute("mantenimientos", paginaLista);
+          request.setAttribute("segmentos", segmentoDao.listarSegmentos());
+          request.setAttribute("segmentoSeleccionado", idSegmentoFiltro);
+          request.setAttribute("prioridadSeleccionada", prioridadFiltro);
 
           request.getRequestDispatcher(VISTA_LISTADO)
             .forward(request, response);
 
           break;
+        }
 
-
-        case "historial":
-
-          // Actualizamos los estados según las fechas de MySQL.
+        case "historial": {
           mantenimientoDao.actualizarEstadosAutomaticamente();
 
-          // Recuperamos únicamente los mantenimientos finalizados y cancelados.
-          request.setAttribute(
-            "historialMantenimientos",
-            mantenimientoDao.listarHistorial()
-          );
+          Integer idSegmentoFiltro = parsearIdOpcional(request.getParameter("idSegmento"));
+          String estadoFiltro = limpiarTextoOpcional(request.getParameter("estado"));
 
-          // Recuperamos los códigos de los segmentos.
-          request.setAttribute(
-            "segmentos",
-            segmentoDao.listarSegmentos()
-          );
+          Set<String> estadosHistorialValidos = Set.of("Finalizado", "Cancelado");
+          if (estadoFiltro != null && !estadosHistorialValidos.contains(estadoFiltro)) {
+            estadoFiltro = null;
+          }
+
+          ArrayList<Mantenimiento> listaCompleta =
+            mantenimientoDao.listarHistorialFiltrado(idSegmentoFiltro, estadoFiltro);
+
+          ArrayList<Mantenimiento> paginaLista =
+            aplicarPaginacion(request, listaCompleta);
+
+          request.setAttribute("historialMantenimientos", paginaLista);
+          request.setAttribute("segmentos", segmentoDao.listarSegmentos());
+          request.setAttribute("segmentoSeleccionado", idSegmentoFiltro);
+          request.setAttribute("estadoSeleccionado", estadoFiltro);
 
           request.getRequestDispatcher(VISTA_HISTORIAL)
             .forward(request, response);
 
           break;
+        }
 
         case "estado":
-
           mostrarEstado(request, response);
-
           break;
+
+        default:
+          response.sendError(
+            HttpServletResponse.SC_BAD_REQUEST,
+            "La acción solicitada no es válida."
+          );
       }
 
     } catch (IllegalArgumentException e) {
@@ -126,28 +143,52 @@ public class MantenimientoServletSuper extends HttpServlet {
     }
   }
 
-// Mostrar el estado de un mantenimiento específico
+  private ArrayList<Mantenimiento> aplicarPaginacion(
+    HttpServletRequest request,
+    ArrayList<Mantenimiento> listaCompleta
+  ) {
+    int totalRegistros = listaCompleta.size();
+    int totalPaginas = Math.max(1, (int) Math.ceil((double) totalRegistros / TAMANO_PAGINA));
 
+    Integer paginaParam = parsearIdOpcional(request.getParameter("pagina"));
+    int paginaActual = (paginaParam == null) ? 1 : paginaParam;
+
+    if (paginaActual > totalPaginas) {
+      paginaActual = totalPaginas;
+    }
+
+    int indiceInicio = (paginaActual - 1) * TAMANO_PAGINA;
+    int indiceFin = Math.min(indiceInicio + TAMANO_PAGINA, totalRegistros);
+
+    ArrayList<Mantenimiento> sublista = new ArrayList<>();
+    if (totalRegistros > 0 && indiceInicio < totalRegistros) {
+      sublista.addAll(listaCompleta.subList(indiceInicio, indiceFin));
+    }
+
+    request.setAttribute("paginaActual", paginaActual);
+    request.setAttribute("totalPaginas", totalPaginas);
+    request.setAttribute("totalRegistros", totalRegistros);
+    request.setAttribute("registroInicio", totalRegistros == 0 ? 0 : indiceInicio + 1);
+    request.setAttribute("registroFin", indiceFin);
+
+    return sublista;
+  }
 
   private void mostrarEstado(
     HttpServletRequest request,
     HttpServletResponse response
   ) throws ServletException, IOException {
 
-    // Obtener el ID enviado desde la URL.
     int id = obtenerIdPositivo(
       request.getParameter("idMantenimiento"),
       "El ID del mantenimiento no es válido."
     );
 
-    // Actualizar los estados automáticamente.
     mantenimientoDao.actualizarEstadosAutomaticamente();
 
-    // Buscar el mantenimiento correspondiente en MySQL.
     Mantenimiento mantenimiento =
       mantenimientoDao.obtenerMantenimiento(id);
 
-    // Verificar que el mantenimiento exista.
     if (mantenimiento == null) {
       response.sendError(
         HttpServletResponse.SC_NOT_FOUND,
@@ -156,34 +197,37 @@ public class MantenimientoServletSuper extends HttpServlet {
       return;
     }
 
-    // Enviar el objeto a estado.jsp.
-    request.setAttribute(
-      "mantenimiento",
-      mantenimiento
-    );
+    List<ActividadMantenimiento> actividades =
+      actividadMantenimientoDao.listaPorMantenimiento(id);
 
-    // Mostrar la vista.
+    request.setAttribute("mantenimiento", mantenimiento);
+    request.setAttribute("actividades", actividades);
+    request.setAttribute("segmentos", segmentoDao.listarSegmentos());
+
     request.getRequestDispatcher(VISTA_ESTADO)
       .forward(request, response);
   }
 
   // Funciones auxiliares
 
-  private String obtenerParametro(
-    HttpServletRequest request,
-    String nombre
-  ) {
-    String valor = request.getParameter(nombre);
-
+  private Integer parsearIdOpcional(String valor) {
     if (valor == null || valor.isBlank()) {
-      throw new IllegalArgumentException(
-        "Falta completar el campo: " + nombre
-      );
+      return null;
     }
-
-    return valor.trim();
+    try {
+      int id = Integer.parseInt(valor.trim());
+      return id > 0 ? id : null;
+    } catch (NumberFormatException e) {
+      return null;
+    }
   }
 
+  private String limpiarTextoOpcional(String valor) {
+    if (valor == null || valor.isBlank()) {
+      return null;
+    }
+    return valor.trim();
+  }
 
   private int obtenerIdPositivo(
     String valor,
@@ -201,53 +245,5 @@ public class MantenimientoServletSuper extends HttpServlet {
     } catch (NumberFormatException | NullPointerException e) {
       throw new IllegalArgumentException(mensajeError);
     }
-  }
-
-
-  private Integer obtenerIdUsuarioSesion(
-    HttpServletRequest request
-  ) {
-    HttpSession sesion = request.getSession(false);
-
-    if (sesion == null) {
-      return null;
-    }
-
-    // Contemplamos dos nombres habituales para guardar
-    // el Bean del usuario autenticado en la sesión.
-    Object usuarioSesion = sesion.getAttribute("usuarioLogueado");
-
-    if (!(usuarioSesion instanceof Usuario)) {
-      usuarioSesion = sesion.getAttribute("usuario");
-    }
-
-    if (usuarioSesion instanceof Usuario usuario
-      && usuario.getIdUsuario() > 0) {
-      return usuario.getIdUsuario();
-    }
-
-    // Alternativa por si el login guarda solamente el ID.
-    Object idSesion = sesion.getAttribute("idUsuario");
-
-    if (idSesion instanceof Number numero
-      && numero.intValue() > 0) {
-      return numero.intValue();
-    }
-
-    return null;
-  }
-
-
-  private void redirigirListado(
-    HttpServletRequest request,
-    HttpServletResponse response,
-    String resultado
-  ) throws IOException {
-
-    response.sendRedirect(
-      request.getContextPath()
-        + "/MantenimientoServletSuper?accion=listar&resultado="
-        + resultado
-    );
   }
 }

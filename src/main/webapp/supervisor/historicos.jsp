@@ -1,80 +1,57 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.*" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.net.URLEncoder" %>
+<%@ page import="java.nio.charset.StandardCharsets" %>
+<%@ page import="beans.supervisor.HistoricoGeneral" %>
+
 <%
-    /*
-        Lista consolidada de registros de prueba tomados de historial_incidencias.jsp
-        y historial_programados.jsp, ordenados del más reciente al más antiguo.
-    */
-    List<Map<String, String>> historicoConsolidado = new ArrayList<Map<String, String>>();
+  List<HistoricoGeneral> listaHistorico = (List<HistoricoGeneral>) request.getAttribute("listaHistorico");
+  if (listaHistorico == null) listaHistorico = new ArrayList<>();
 
-    // 1. Mantenimiento REV-0405 (2 sep 2026)
-    Map<String, String> m1 = new HashMap<String, String>();
-    m1.put("id", "REV-0405");
-    m1.put("tipoRegistro", "Mantenimiento");
-    m1.put("segmento", "LIM-VLP-01");
-    m1.put("detalleTipo", "Preventivo");
-    m1.put("fecha", "02 sep 2026");
-    m1.put("estadoSeveridad", "Finalizado");
-    m1.put("claseBadge", "badge-finalizado");
-    historicoConsolidado.add(m1);
+  List<String> listaSegmentos = (List<String>) request.getAttribute("listaSegmentos");
+  if (listaSegmentos == null) listaSegmentos = new ArrayList<>();
 
-    // 2. Incidencia INC-009 (18 ago 2026)
-    Map<String, String> i1 = new HashMap<String, String>();
-    i1.put("id", "INC-009");
-    i1.put("tipoRegistro", "Incidencia");
-    i1.put("segmento", "LIM-VLP-01");
-    i1.put("detalleTipo", "Incidencia de red");
-    i1.put("fecha", "18 ago 2026");
-    i1.put("estadoSeveridad", "Media");
-    i1.put("claseBadge", "severidad-media");
-    historicoConsolidado.add(i1);
+  String desdeSeleccionado = (String) request.getAttribute("desdeSeleccionado");
+  if (desdeSeleccionado == null) desdeSeleccionado = "";
 
-    // 3. Incidencia INC-008 (13 jul 2026)
-    Map<String, String> i2 = new HashMap<String, String>();
-    i2.put("id", "INC-008");
-    i2.put("tipoRegistro", "Incidencia");
-    i2.put("segmento", "LIM-VLP-02");
-    i2.put("detalleTipo", "Incidencia de red");
-    i2.put("fecha", "13 jul 2026");
-    i2.put("estadoSeveridad", "Crítica");
-    i2.put("claseBadge", "severidad-critica");
-    historicoConsolidado.add(i2);
+  String hastaSeleccionado = (String) request.getAttribute("hastaSeleccionado");
+  if (hastaSeleccionado == null) hastaSeleccionado = "";
 
-    // 4. Incidencia INC-007 (25 ago 2025)
-    Map<String, String> i3 = new HashMap<String, String>();
-    i3.put("id", "INC-007");
-    i3.put("tipoRegistro", "Incidencia");
-    i3.put("segmento", "LIM-GYE-01");
-    i3.put("detalleTipo", "Incidencia de red");
-    i3.put("fecha", "25 ago 2025");
-    i3.put("estadoSeveridad", "Media");
-    i3.put("claseBadge", "severidad-media");
-    historicoConsolidado.add(i3);
+  String origenSeleccionado = (String) request.getAttribute("origenSeleccionado");
+  if (origenSeleccionado == null) origenSeleccionado = "";
 
-    // 5. Incidencia INC-006 (5 jul 2025)
-    Map<String, String> i4 = new HashMap<String, String>();
-    i4.put("id", "INC-006");
-    i4.put("tipoRegistro", "Incidencia");
-    i4.put("segmento", "LIM-GYE-04");
-    i4.put("detalleTipo", "Incidencia de red");
-    i4.put("fecha", "05 jul 2025");
-    i4.put("estadoSeveridad", "Alta");
-    i4.put("claseBadge", "severidad-alta");
-    historicoConsolidado.add(i4);
+  String segmentoSeleccionado = (String) request.getAttribute("segmentoSeleccionado");
+  if (segmentoSeleccionado == null) segmentoSeleccionado = "";
+
+  Integer paginaActualObj = (Integer) request.getAttribute("paginaActual");
+  int paginaActual = (paginaActualObj != null) ? paginaActualObj : 1;
+
+  Integer totalPaginasObj = (Integer) request.getAttribute("totalPaginas");
+  int totalPaginas = (totalPaginasObj != null) ? totalPaginasObj : 1;
+
+  Integer totalRegistrosObj = (Integer) request.getAttribute("totalRegistros");
+  int totalRegistros = (totalRegistrosObj != null) ? totalRegistrosObj : 0;
+
+  String queryFiltros = "&desde=" + URLEncoder.encode(desdeSeleccionado, StandardCharsets.UTF_8)
+    + "&hasta=" + URLEncoder.encode(hastaSeleccionado, StandardCharsets.UTF_8)
+    + "&origen=" + URLEncoder.encode(origenSeleccionado, StandardCharsets.UTF_8)
+    + "&segmento=" + URLEncoder.encode(segmentoSeleccionado, StandardCharsets.UTF_8);
 %>
+
 <!doctype html>
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>OceanLink | Históricos</title>
+  <title>OceanLink | Históricos</title>
 
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/barras.css">
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/supervisor/historicos.css">
+  <link rel="stylesheet"
+        href="<%= request.getContextPath() %>/css/barras.css">
+  <link rel="stylesheet"
+        href="<%= request.getContextPath() %>/css/supervisor/historicos.css?v=2">
 </head>
 
 <body>
@@ -91,21 +68,21 @@
 
   <div class="zona-logo">
     <label
-            for="controlMenu"
-            class="boton-menu"
-            title="Ocultar o mostrar menú">☰</label>
+      for="controlMenu"
+      class="boton-menu"
+      title="Ocultar o mostrar menú">☰</label>
 
-    <a href="${pageContext.request.contextPath}/DashboardServletSuper"
+    <a href="<%= request.getContextPath() %>/DashboardServletSuper"
        class="logo">
-        OceanLink
+      OceanLink
     </a>
   </div>
 
   <div class="usuario">
     <div class="foto-usuario">SU</div>
     <div>
-        <p class="nombre-usuario">Username</p>
-        <p class="rol-usuario">Supervisor</p>
+      <p class="nombre-usuario">Username</p>
+      <p class="rol-usuario">Supervisor</p>
     </div>
   </div>
 </header>
@@ -123,32 +100,29 @@
            aria-label="Menú principal">
 
         <!-- Dashboard -->
-        <a href="${pageContext.request.contextPath}/DashboardServletSuper">
-            Dashboard general
+        <a href="<%= request.getContextPath() %>/DashboardServletSuper">
+          Dashboard general
         </a>
 
         <!-- Incidencias -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
           <input
             type="checkbox"
             id="control-incidencias"
             class="control-submenu"
           >
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
           <label for="control-incidencias"
                  class="titulo-grupo">
             <span>Incidencias</span>
             <span class="flecha-submenu"></span>
           </label>
-          <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper"
+            <a href="<%= request.getContextPath() %>/IncidenciaServletSuper"
                class="subopcion">
               Visualizar
             </a>
 
-            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper?action=historial"
+            <a href="<%= request.getContextPath() %>/IncidenciaServletSuper?action=historial"
                class="subopcion">
               Historial de incidencias
             </a>
@@ -157,13 +131,11 @@
 
         <!-- Estado de la red -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
           <input
             type="checkbox"
             id="controlEstadoRed"
             class="control-submenu">
 
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
           <label for="controlEstadoRed"
                  class="titulo-grupo">
             <span class="texto-grupo">
@@ -172,21 +144,20 @@
             <span class="flecha-submenu"></span>
           </label>
 
-          <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/TarjetasServletSuper"
-               class="subopcion activo">
+            <a href="<%= request.getContextPath() %>/TarjetasServletSuper"
+               class="subopcion">
               Capacidad
             </a>
-            <a href="${pageContext.request.contextPath}/RutaServletSuper"
+            <a href="<%= request.getContextPath() %>/RutaServletSuper"
                class="subopcion">
               Rutas
             </a>
-            <a href="${pageContext.request.contextPath}/SegmentoServletSuper"
+            <a href="<%= request.getContextPath() %>/SegmentoServletSuper"
                class="subopcion">
               Segmentos
             </a>
-            <a href="${pageContext.request.contextPath}/LandingStationServletSuper"
+            <a href="<%= request.getContextPath() %>/LandingStationServletSuper"
                class="subopcion">
               Landing stations
             </a>
@@ -210,18 +181,17 @@
           </label>
           <div class="contenido-submenu">
 
-            <a href="${pageContext.request.contextPath}/ClienteServletSuper"
+            <a href="<%= request.getContextPath() %>/ClienteServletSuper"
                class="subopcion">
               Clientes
             </a>
 
-            <a href="${pageContext.request.contextPath}/ServicioServletSuper"
+            <a href="<%= request.getContextPath() %>/ServicioServletSuper"
                class="subopcion">
               Servicios
             </a>
-            <a
-              href="${pageContext.request.contextPath}/SolicitudesServletSuper"
-              class="subopcion">
+            <a href="<%= request.getContextPath() %>/SolicitudesServletSuper"
+               class="subopcion">
               Solicitudes
             </a>
           </div>
@@ -250,29 +220,27 @@
 
           <div class="contenido-submenu">
 
-            <a
-              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
-              class="subopcion">
+            <a href="<%= request.getContextPath() %>/MantenimientoServletSuper?accion=listar"
+               class="subopcion">
               Programación
             </a>
 
-            <a
-              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
-              class="subopcion">
+            <a href="<%= request.getContextPath() %>/MantenimientoServletSuper?accion=historial"
+               class="subopcion">
               Historial de programados
             </a>
           </div>
         </div>
 
         <!-- Reportes -->
-        <a href="${pageContext.request.contextPath}/ReporteServletSuper">
-            Reportes
+        <a href="<%= request.getContextPath() %>/ReporteServletSuper">
+          Reportes
         </a>
 
         <!-- Históricos -->
-        <a href="${pageContext.request.contextPath}/supervisor/historicos.jsp"
+        <a href="<%= request.getContextPath() %>/HistoricoServletSuper"
            class="activo">
-            Históricos
+          Históricos
         </a>
       </nav>
     </div>
@@ -280,11 +248,11 @@
     <!-- Parte baja -->
     <div class="configuracion">
       <nav aria-label="Opciones del usuario">
-          <a href="#">Perfil</a>
-          <a href="${pageContext.request.contextPath}/login.jsp"
-             class="cerrar-sesion">
-              Cerrar sesión
-          </a>
+        <a href="#">Perfil</a>
+        <a href="<%= request.getContextPath() %>/login.jsp"
+           class="cerrar-sesion">
+          Cerrar sesión
+        </a>
       </nav>
     </div>
   </aside>
@@ -299,71 +267,126 @@
     <section class="card">
       <h2 class="card-title">Filtrar</h2>
 
-      <div class="filtros">
-          <input type="date">
-          <input type="date">
-          <select>
-            <option value="">Origen / Registro</option>
-            <option value="Incidencia">Incidencia</option>
-            <option value="Mantenimiento">Mantenimiento</option>
-          </select>
-          <select>
-            <option value="">Segmento</option>
-            <option value="LIM-VLP-01">LIM-VLP-01</option>
-            <option value="LIM-VLP-02">LIM-VLP-02</option>
-            <option value="LIM-GYE-01">LIM-GYE-01</option>
-            <option value="LIM-GYE-04">LIM-GYE-04</option>
-          </select>
-      </div>
+      <form method="get" action="<%= request.getContextPath() %>/HistoricoServletSuper" class="filtros">
+        <input type="date" name="desde" title="Fecha desde" value="<%= desdeSeleccionado %>">
+        <input type="date" name="hasta" title="Fecha hasta" value="<%= hastaSeleccionado %>">
+
+        <select name="origen">
+          <option value="" <%= "".equals(origenSeleccionado) ? "selected" : "" %>>Origen / Registro</option>
+          <option value="Incidencia" <%= "Incidencia".equals(origenSeleccionado) ? "selected" : "" %>>Incidencia</option>
+          <option value="Mantenimiento" <%= "Mantenimiento".equals(origenSeleccionado) ? "selected" : "" %>>Mantenimiento</option>
+        </select>
+
+        <select name="segmento">
+          <option value="" <%= "".equals(segmentoSeleccionado) ? "selected" : "" %>>Segmento</option>
+          <%
+            for (int i = 0; i < listaSegmentos.size(); i++) {
+              String seg = listaSegmentos.get(i);
+          %>
+          <option value="<%= seg %>" <%= seg.equals(segmentoSeleccionado) ? "selected" : "" %>><%= seg %></option>
+          <%
+            }
+          %>
+        </select>
+
+        <button type="submit" class="boton-filtrar">Filtrar</button>
+        <a href="<%= request.getContextPath() %>/HistoricoServletSuper" class="boton-limpiar">Limpiar</a>
+      </form>
 
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
-            <tr>
-              <th>ID</th>
-              <th>Registro</th>
-              <th>Segmento</th>
-              <th>Tipo</th>
-              <th>Fecha de cierre</th>
-              <th>Estado / Severidad</th>
-            </tr>
+          <tr>
+            <th>ID</th>
+            <th>Registro</th>
+            <th>Segmento</th>
+            <th>Tipo</th>
+            <th>Fecha de cierre</th>
+            <th>Estado / Severidad</th>
+          </tr>
           </thead>
           <tbody>
-            <%
-              for (Map<String, String> reg : historicoConsolidado) {
-                  String id = reg.get("id");
-                  String tipoReg = reg.get("tipoRegistro");
-                  String estadoSeveridad = reg.get("estadoSeveridad");
-                  String claseBadge = reg.get("claseBadge");
-            %>
-            <tr>
-              <td>
-                <% if ("Incidencia".equals(tipoReg)) { %>
-                  <a href="incidencias-detalle.jsp?id=<%= id %>"><%= id %></a>
-                <% } else { %>
-                  <strong><%= id %></strong>
-                <% } %>
-              </td>
-              <td><span class="badge badge-registro"><%= tipoReg %></span></td>
-              <td><span class="badge badge-segmento"><%= reg.get("segmento") %></span></td>
-              <td><%= reg.get("detalleTipo") %></td>
-              <td><%= reg.get("fecha") %></td>
-              <td>
-                <% if ("Mantenimiento".equals(tipoReg)) { %>
-                  <span class="badge <%= claseBadge %>"><%= estadoSeveridad %></span>
-                <% } else { %>
-                  <span class="<%= claseBadge %>"><%= estadoSeveridad %></span>
-                <% } %>
-              </td>
-            </tr>
-            <%
+          <%
+            if (listaHistorico.isEmpty()) {
+          %>
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--color-texto-claro); padding: 20px;">
+              No se encontraron registros históricos para los filtros seleccionados.
+            </td>
+          </tr>
+          <%
+          } else {
+            for (int i = 0; i < listaHistorico.size(); i++) {
+              HistoricoGeneral reg = listaHistorico.get(i);
+              String tipoReg = reg.getTipoRegistro();
+              String claseBadge = reg.getClaseBadge();
+          %>
+          <tr>
+            <td>
+              <% if ("Incidencia".equals(tipoReg)) { %>
+              <a href="<%= request.getContextPath() %>/IncidenciaServletSuper?action=detalle&id=<%= reg.getIdNumerico() %>">
+                <%= reg.getCodigoMostrar() %>
+              </a>
+              <% } else { %>
+              <a href="<%= request.getContextPath() %>/MantenimientoServletSuper?accion=estado&idMantenimiento=<%= reg.getIdNumerico() %>">
+                <%= reg.getCodigoMostrar() %>
+              </a>
+              <% } %>
+            </td>
+            <td><span class="badge badge-registro"><%= tipoReg %></span></td>
+            <td><span class="badge badge-segmento"><%= reg.getSegmento() %></span></td>
+            <td><%= reg.getDetalleTipo() %></td>
+            <td><%= reg.getFechaFormateada() %></td>
+            <td>
+              <% if ("Mantenimiento".equals(tipoReg)) { %>
+              <span class="badge <%= claseBadge %>"><%= reg.getEstadoSeveridad() %></span>
+              <% } else { %>
+              <span class="<%= claseBadge %>"><%= reg.getEstadoSeveridad() %></span>
+              <% } %>
+            </td>
+          </tr>
+          <%
               }
-            %>
+            }
+          %>
           </tbody>
         </table>
       </div>
 
-      <p class="ayuda">Haz clic en el ID de la incidencia para ver su detalle.</p>
+      <!-- Paginación -->
+      <div class="paginacion">
+        <span>Mostrando página <strong><%= paginaActual %></strong> de <strong><%= totalPaginas %></strong> (<%= totalRegistros %> registros en total)</span>
+
+        <div class="paginacion-controles">
+          <% if (paginaActual > 1) { %>
+          <a href="<%= request.getContextPath() %>/HistoricoServletSuper?pagina=<%= paginaActual - 1 %><%= queryFiltros %>">Anterior</a>
+          <% } else { %>
+          <span class="deshabilitado">Anterior</span>
+          <% } %>
+
+          <%
+            for (int p = 1; p <= totalPaginas; p++) {
+              if (p == paginaActual) {
+          %>
+          <span class="pagina-activa"><%= p %></span>
+          <%
+          } else {
+          %>
+          <a href="<%= request.getContextPath() %>/HistoricoServletSuper?pagina=<%= p %><%= queryFiltros %>"><%= p %></a>
+          <%
+              }
+            }
+          %>
+
+          <% if (paginaActual < totalPaginas) { %>
+          <a href="<%= request.getContextPath() %>/HistoricoServletSuper?pagina=<%= paginaActual + 1 %><%= queryFiltros %>">Siguiente</a>
+          <% } else { %>
+          <span class="deshabilitado">Siguiente</span>
+          <% } %>
+        </div>
+      </div>
+
+      <p class="ayuda">Haz clic en el ID del registro para ver su detalle.</p>
     </section>
   </main>
 

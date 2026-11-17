@@ -1,0 +1,28 @@
+/* ==========================================================================
+   ESTILOS ADICIONALES PARA VISTAS DE SUPERVISOR (MANTENIMIENTOS)
+   ========================================================================== */
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-header-row .card-title {
+  margin: 0;
+}
+
+.card-header-row .btn {
+  text-decoration: none;
+}
+
+.estado-cancelado-wrapper {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.bitacora-empty {
+  margin: 0;
+  color: var(--color-texto-claro);
+}

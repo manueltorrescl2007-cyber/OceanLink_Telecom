@@ -121,19 +121,19 @@
 
         <% if ("actualizado".equals(resultado)) { %>
 
-        <p style="color: green; font-weight: bold;">
+        <p class="alert-success-text">
           El mantenimiento se actualizó correctamente.
         </p>
 
         <% } else if ("creado".equals(resultado)) { %>
 
-        <p style="color: green; font-weight: bold;">
+        <p class="alert-success-text">
           El mantenimiento se registró correctamente.
         </p>
 
         <% } else if ("cancelado".equals(resultado)) { %>
 
-        <p style="color: green; font-weight: bold;">
+        <p class="alert-success-text">
           El mantenimiento se canceló correctamente.
         </p>
 
@@ -142,8 +142,7 @@
         <!-- BARRA DE FILTROS (SEGMENTO Y PRIORIDAD) -->
         <form action="${pageContext.request.contextPath}/MantenimientoServlet"
               method="GET"
-              class="filters-bar"
-              style="align-items: flex-end; flex-wrap: wrap;">
+              class="filters-bar">
 
           <input type="hidden" name="accion" value="listar">
 
@@ -182,11 +181,10 @@
             </select>
           </div>
 
-          <div style="display: flex; gap: 10px;">
+          <div class="filters-actions">
             <button type="submit" class="btn btn-primary">Filtrar</button>
             <a href="${pageContext.request.contextPath}/MantenimientoServlet?accion=listar"
-               class="btn btn-secondary"
-               style="text-decoration: none; display: inline-flex; align-items: center;">
+               class="btn btn-secondary">
               Limpiar
             </a>
           </div>
@@ -231,7 +229,7 @@
               if (mantenimientos.isEmpty()) {
             %>
             <tr>
-              <td colspan="9" style="text-align: center; padding: 20px; color: var(--color-texto-claro);">
+              <td colspan="9" class="table-empty-cell">
                 No se encontraron mantenimientos activos con los filtros seleccionados.
               </td>
             </tr>
@@ -301,7 +299,7 @@
                 <a
                   href="${pageContext.request.contextPath}/MantenimientoServlet?accion=estado&idMantenimiento=<%= m.getIdMantenimiento() %>"
                   title="Ver estado del mantenimiento"
-                  style="font-weight: bold; text-decoration: underline;">
+                  class="table-id-link">
                   <%= m.getIdMantenimiento() %>
                 </a>
               </td>
@@ -347,21 +345,13 @@
 
               <!-- ACCIONES -->
               <td>
-                <div style="display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 6px;">
+                <div class="table-actions-col">
 
                   <% if (puedeEditar) { %>
 
                   <a
                     href="${pageContext.request.contextPath}/MantenimientoServlet?accion=editar&idMantenimiento=<%= m.getIdMantenimiento() %>"
-                    class="btn btn-primary"
-                    style="padding: 8px 20px;
-                   font-size: 14px;
-                   min-width: 90px;
-                   text-align: center;
-                   box-sizing: border-box;">
+                    class="btn btn-primary btn-table-action">
                     Editar
                   </a>
 
@@ -372,7 +362,6 @@
                   <form
                     action="${pageContext.request.contextPath}/MantenimientoServlet"
                     method="POST"
-                    style="margin: 0;"
                     onsubmit="return confirm('¿Estás seguro de que deseas cancelar el mantenimiento #<%= m.getIdMantenimiento() %>? Esta acción no se puede deshacer.');">
 
                     <input type="hidden" name="accion" value="cancelar">
@@ -380,14 +369,7 @@
 
                     <button
                       type="submit"
-                      class="btn btn-primary"
-                      style="padding: 8px 20px;
-                       font-size: 14px;
-                       min-width: 90px;
-                       text-align: center;
-                       box-sizing: border-box;
-                       background-color: #b42318;
-                       border-color: #b42318;">
+                      class="btn btn-primary btn-table-action btn-danger">
                       Cancelar
                     </button>
 
@@ -413,17 +395,16 @@
 
         <!-- BARRA DE PAGINACIÓN -->
         <% if (totalRegistros > 0) { %>
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 16px;">
-          <span style="font-size: 13px; color: var(--color-texto-claro);">
+        <div class="pagination-bar">
+          <span class="pagination-info">
             Mostrando <%= registroInicio %>–<%= registroFin %> de <%= totalRegistros %> registros (Página <%= paginaActual %> de <%= totalPaginas %>)
           </span>
 
           <% if (totalPaginas > 1) { %>
-          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+          <div class="pagination-links">
             <% if (paginaActual > 1) { %>
             <a href="<%= urlBase %>&pagina=<%= paginaActual - 1 %>"
-               class="btn btn-secondary"
-               style="padding: 6px 12px; font-size: 13px; text-decoration: none;">
+               class="btn btn-secondary">
               Anterior
             </a>
             <% } %>
@@ -433,8 +414,7 @@
                 boolean esActual = (p == paginaActual);
             %>
             <a href="<%= urlBase %>&pagina=<%= p %>"
-               class="btn <%= esActual ? "btn-primary" : "btn-secondary" %>"
-               style="padding: 6px 12px; font-size: 13px; text-decoration: none;">
+               class="btn <%= esActual ? "btn-primary" : "btn-secondary" %>">
               <%= p %>
             </a>
             <%
@@ -443,8 +423,7 @@
 
             <% if (paginaActual < totalPaginas) { %>
             <a href="<%= urlBase %>&pagina=<%= paginaActual + 1 %>"
-               class="btn btn-secondary"
-               style="padding: 6px 12px; font-size: 13px; text-decoration: none;">
+               class="btn btn-secondary">
               Siguiente
             </a>
             <% } %>

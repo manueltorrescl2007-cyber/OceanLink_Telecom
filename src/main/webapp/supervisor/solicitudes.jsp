@@ -172,6 +172,7 @@
             type="checkbox"
             id="control-servicios-clientes"
             class="control-submenu"
+            checked
           >
 
           <label for="control-servicios-clientes"
@@ -223,16 +224,14 @@
 
           <div class="contenido-submenu">
 
-            <a
-              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
-              class="subopcion">
+            <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=listar"
+               class="subopcion">
               Programación
             </a>
 
-            <a
-              href="${pageContext.request.contextPath}/MantenimientoServletSuper"
-              class="subopcion">
-              Historial de programados
+            <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=historial"
+               class="subopcion">
+              Historial de mantenimientos
             </a>
           </div>
         </div>
@@ -242,7 +241,7 @@
             Reportes
         </a>
         <!-- Históricos -->
-        <a href="${pageContext.request.contextPath}/supervisor/historicos.jsp">
+        <a href="${pageContext.request.contextPath}/HistoricoServletSuper">
             Históricos
         </a>
       </nav>

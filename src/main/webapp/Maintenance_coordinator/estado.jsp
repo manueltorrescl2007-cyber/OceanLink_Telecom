@@ -1,4 +1,3 @@
-
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="beans.maintenance.Mantenimiento" %>
 <%@ page import="java.util.Arrays" %>
@@ -16,11 +15,9 @@
 
   if (actividades == null) {
     actividades = new ArrayList<>();
-
   }
 
   DateTimeFormatter formatoFechaHora = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
 
   // Si no recibimos el objeto, no podemos mostrar el seguimiento.
   if (mantenimiento == null) {
@@ -58,13 +55,10 @@
 %>
 
 <%!
-  private String escaparHtml(String texto) {
-    if (texto == null) {
-      return "";
-    }
+  private String escaparHtml(String valor) {
+    if (valor == null) return "";
 
-    return texto
-      .replace("&", "&amp;")
+    return valor.replace("&", "&amp;")
       .replace("<", "&lt;")
       .replace(">", "&gt;")
       .replace("\"", "&quot;")
@@ -142,15 +136,9 @@
           <p>
             <strong>Estado actual:</strong>
 
-            <span
-              class="badge <%= claseEstado %>"
-              style="<%= "Cancelado".equals(estadoActual)
-            ? "display:inline-block; background-color:#FCE8E6; color:#B42318; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;"
-            : "" %>">
-
-        <%= nombreEstado %>
-
-    </span>
+            <span class="badge <%= claseEstado %>">
+              <%= nombreEstado %>
+            </span>
           </p>
 
           <p>
@@ -209,10 +197,10 @@
             <div class="stepper-circle"></div>
 
             <span class="stepper-label">
-                                    <%= pasos.get(i).equals("En ejecucion")
-                                      ? "En ejecución"
-                                      : pasos.get(i) %>
-                                </span>
+              <%= pasos.get(i).equals("En ejecucion")
+                ? "En ejecución"
+                : pasos.get(i) %>
+            </span>
 
           </div>
 
@@ -231,34 +219,34 @@
 
           <% } else { %>
 
-            <% for (ActividadMantenimiento actividad: actividades) { %>
-              <div class = "actividad-bitacora">
+          <% for (ActividadMantenimiento actividad: actividades) { %>
+          <div class="actividad-bitacora">
 
-                <p>
-                  <strong>
-                    <%= escaparHtml(actividad.getNombreUsuario())%>
-                  </strong>
+            <p>
+              <strong>
+                <%= escaparHtml(actividad.getNombreUsuario())%>
+              </strong>
 
-                  <span>
+              <span>
                     <%=
-                      actividad.getFechaHora() != null ?
+                    actividad.getFechaHora() != null ?
                       actividad.getFechaHora().format(formatoFechaHora) : ""
                     %>
                   </span>
 
-                </p>
+            </p>
 
-                <p>
-                  <%= escaparHtml(actividad.getDescripcionBitacora())%>
-                </p>
+            <p>
+              <%= escaparHtml(actividad.getDescripcionBitacora())%>
+            </p>
 
-                <small>
-                  <%= escaparHtml(actividad.getTipoActividad())%>
-                </small>
+            <small>
+              <%= escaparHtml(actividad.getTipoActividad())%>
+            </small>
 
-              </div>
+          </div>
 
-            <% } %>
+          <% } %>
 
           <% } %>
 
@@ -270,19 +258,19 @@
             Agregar commentario
           </h3>
 
-          <form action = "<%=request.getContextPath()%>/MantenimientoServlet"
+          <form action="<%=request.getContextPath()%>/MantenimientoServlet"
                 method="POST">
-            <input type = hidden name ="accion" value ="comentar">
+            <input type="hidden" name="accion" value="comentar">
 
-            <input type = "hidden" name = "idMantenimiento" value ="<%=mantenimiento.getIdMantenimiento()%>">
+            <input type="hidden" name="idMantenimiento" value="<%=mantenimiento.getIdMantenimiento()%>">
 
             <textarea
-                name = "comentario"
-                rows="4"
-                placeholder="Escriba un comentario/reporte sobre este mantenimiento..."
-                required></textarea>
+              name="comentario"
+              rows="4"
+              placeholder="Escriba un comentario/reporte sobre este mantenimiento..."
+              required></textarea>
 
-            <button type ="submit">
+            <button type="submit">
               Registrar
             </button>
           </form>

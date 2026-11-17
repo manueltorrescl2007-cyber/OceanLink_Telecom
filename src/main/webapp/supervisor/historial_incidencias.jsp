@@ -85,6 +85,7 @@
             type="checkbox"
             id="control-incidencias"
             class="control-submenu"
+            checked
           >
            <!-- Al hacer clic, marca o desmarca el checkbox -->
           <label for="control-incidencias"
@@ -202,15 +203,15 @@
           <div class="contenido-submenu">
 
             <a
-                    href="${pageContext.request.contextPath}/programacion.jsp"
+                    href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=listar"
                     class="subopcion">
                 Programación
             </a>
 
             <a
-                    href="${pageContext.request.contextPath}/historial_programados.jsp"
+                    href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=historial"
                     class="subopcion">
-                Historial de programados
+                Historial de mantenimientos
             </a>
           </div>
         </div>
@@ -219,7 +220,7 @@
             Reportes
         </a>
         <!-- Históricos -->
-        <a href="${pageContext.request.contextPath}/supervisor/historicos.jsp">
+        <a href="${pageContext.request.contextPath}/HistoricoServletSuper">
             Históricos
         </a>
       </nav>

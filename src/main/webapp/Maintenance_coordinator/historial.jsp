@@ -118,8 +118,7 @@
         <!-- BARRA DE FILTROS (SEGMENTO Y ESTADO) -->
         <form action="${pageContext.request.contextPath}/MantenimientoServlet"
               method="GET"
-              class="filters-bar"
-              style="align-items: flex-end; flex-wrap: wrap;">
+              class="filters-bar">
 
           <input type="hidden" name="accion" value="historial">
 
@@ -158,11 +157,10 @@
             </select>
           </div>
 
-          <div style="display: flex; gap: 10px;">
+          <div class="filters-actions">
             <button type="submit" class="btn btn-primary">Filtrar</button>
             <a href="${pageContext.request.contextPath}/MantenimientoServlet?accion=historial"
-               class="btn btn-secondary"
-               style="text-decoration: none; display: inline-flex; align-items: center;">
+               class="btn btn-secondary">
               Limpiar
             </a>
           </div>
@@ -200,7 +198,7 @@
               if (historial.isEmpty()) {
             %>
             <tr>
-              <td colspan="5" style="text-align: center; padding: 20px; color: var(--color-texto-claro);">
+              <td colspan="5" class="table-empty-cell">
                 No se encontraron registros en el historial con los filtros seleccionados.
               </td>
             </tr>
@@ -258,11 +256,7 @@
 
               <!-- ESTADO -->
               <td>
-                <span
-                  class="badge <%= badgeClass %>"
-                  style="<%= "Cancelado".equals(estado)
-                        ? "display:inline-block; background-color:#FCE8E6; color:#B42318; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;"
-                        : "" %>">
+                <span class="badge <%= badgeClass %>">
                   <%= escaparHtml(estado) %>
                 </span>
               </td>
@@ -282,17 +276,16 @@
 
         <!-- BARRA DE PAGINACIÓN -->
         <% if (totalRegistros > 0) { %>
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 16px;">
-          <span style="font-size: 13px; color: var(--color-texto-claro);">
+        <div class="pagination-bar">
+          <span class="pagination-info">
             Mostrando <%= registroInicio %>–<%= registroFin %> de <%= totalRegistros %> registros (Página <%= paginaActual %> de <%= totalPaginas %>)
           </span>
 
           <% if (totalPaginas > 1) { %>
-          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+          <div class="pagination-links">
             <% if (paginaActual > 1) { %>
             <a href="<%= urlBase %>&pagina=<%= paginaActual - 1 %>"
-               class="btn btn-secondary"
-               style="padding: 6px 12px; font-size: 13px; text-decoration: none;">
+               class="btn btn-secondary">
               Anterior
             </a>
             <% } %>
@@ -302,8 +295,7 @@
                 boolean esActual = (p == paginaActual);
             %>
             <a href="<%= urlBase %>&pagina=<%= p %>"
-               class="btn <%= esActual ? "btn-primary" : "btn-secondary" %>"
-               style="padding: 6px 12px; font-size: 13px; text-decoration: none;">
+               class="btn <%= esActual ? "btn-primary" : "btn-secondary" %>">
               <%= p %>
             </a>
             <%
@@ -312,8 +304,7 @@
 
             <% if (paginaActual < totalPaginas) { %>
             <a href="<%= urlBase %>&pagina=<%= paginaActual + 1 %>"
-               class="btn btn-secondary"
-               style="padding: 6px 12px; font-size: 13px; text-decoration: none;">
+               class="btn btn-secondary">
               Siguiente
             </a>
             <% } %>
