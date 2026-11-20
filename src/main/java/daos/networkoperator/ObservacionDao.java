@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class ObservacionDao extends BaseDao {
 
-    public void crearObservacion(Observacion observacion) {
+    public boolean crearObservacion(Observacion observacion) {
         String sql = "INSERT INTO observaciones_incidencias (id_incidencia, id_usuario, mensaje) "
                    + "VALUES (?, ?, ?)";
 
@@ -22,10 +22,11 @@ public class ObservacionDao extends BaseDao {
             pstmt.setInt(1, observacion.getIncidencia().getIdIncidencia());
             pstmt.setInt(2, observacion.getUsuario().getIdUsuario());
             pstmt.setString(3, observacion.getMensaje());
-            pstmt.executeUpdate();
+            return pstmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 

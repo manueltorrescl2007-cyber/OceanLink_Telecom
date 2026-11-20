@@ -1,8 +1,11 @@
 package servlets.networkoperator;
 
+import beans.networkoperator.Incidencia;
 import beans.networkoperator.Segmento;
 import beans.networkoperator.UtilizacionDiaria;
+import daos.networkoperator.IncidenciaDao;
 import daos.networkoperator.SegmentoDao;
+import daos.networkoperator.ServicioDao;
 import daos.networkoperator.UtilizacionDao;
 
 import jakarta.servlet.RequestDispatcher;
@@ -97,8 +100,42 @@ public class EstadoRedServlet extends HttpServlet {
                 view.forward(request, response);
                 break;
 
+            case "detalle": {
+                int idSegmento = parseId(request.getParameter("id"));
+                Segmento segmento = segmentoDao.obtenerSegmento(idSegmento);
+
+                if (segmento == null) {
+                    response.sendRedirect(request.getContextPath() + "/EstadoRedServlet?error=noexiste");
+                    break;
+                }
+
+                ArrayList<Integer> ids = new ArrayList<>();
+                ids.add(idSegmento);
+
+                ArrayList<Incidencia> incidencias = new IncidenciaDao().listarIncidencias(false, null, idSegmento);
+                for (Incidencia inc : incidencias) {
+                    inc.setSegmentos(segmentoDao.listarSegmentosDeIncidencia(inc.getIdIncidencia()));
+                }
+
+                request.setAttribute("segmento", segmento);
+                request.setAttribute("listaIncidencias", incidencias);
+                request.setAttribute("listaServicios", new ServicioDao().listarServiciosPorSegmentos(ids));
+
+                view = request.getRequestDispatcher("/network_operator/segmento-detalle.jsp");
+                view.forward(request, response);
+                break;
+            }
+
             default:
                 response.sendRedirect(request.getContextPath() + "/EstadoRedServlet");
+        }
+    }
+
+    private int parseId(String valor) {
+        try {
+            return Integer.parseInt(valor);
+        } catch (NumberFormatException e) {
+            return -1;
         }
     }
 

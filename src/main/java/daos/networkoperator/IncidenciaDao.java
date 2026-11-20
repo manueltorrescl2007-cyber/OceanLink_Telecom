@@ -121,73 +121,115 @@ public class IncidenciaDao extends BaseDao {
         }
     }
 
-    public void actualizarSeveridad(int idIncidencia, String severidad) {
-        String sql = "UPDATE incidencias SET severidad = ? "
-                   + "WHERE id_incidencia = ? AND estado <> 'Cerrada'";
+    public boolean cambiarSeveridad(int idIncidencia, String severidadNueva, int idUsuario) {
+        String sqlActual = "SELECT severidad FROM incidencias "
+                         + "WHERE id_incidencia = ? AND estado <> 'Cerrada' FOR UPDATE";
+        String sqlUpdate = "UPDATE incidencias SET severidad = ? WHERE id_incidencia = ?";
 
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                String severidadActual = null;
+                try (PreparedStatement pstmt = conn.prepareStatement(sqlActual)) {
+                    pstmt.setInt(1, idIncidencia);
+                    try (ResultSet rs = pstmt.executeQuery()) {
+                        if (rs.next()) {
+                            severidadActual = rs.getString("severidad");
+                        }
+                    }
+                }
 
-            pstmt.setString(1, severidad);
-            pstmt.setInt(2, idIncidencia);
+                if (severidadActual == null || severidadActual.equals(severidadNueva)) {
+                    conn.rollback();
+                    return false;
+                }
+
+                try (PreparedStatement pstmt = conn.prepareStatement(sqlUpdate)) {
+                    pstmt.setString(1, severidadNueva);
+                    pstmt.setInt(2, idIncidencia);
+                    pstmt.executeUpdate();
+                }
+
+                registrarCambio(conn, idIncidencia, idUsuario, "Cambio de severidad: "
+                        + textoSeveridad(severidadActual) + " → " + textoSeveridad(severidadNueva));
+
+                conn.commit();
+                return true;
+
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean cambiarEstado(int idIncidencia, String estadoActual, String estadoNuevo, int idUsuario) {
+        String sql = "UPDATE incidencias SET estado = ?";
+        if ("Servicio restaurado".equals(estadoNuevo)) {
+            sql += ", fecha_restauracion = NOW()";
+        } else if ("Cerrada".equals(estadoNuevo)) {
+            sql += ", fecha_cierre = NOW()";
+        }
+        sql += " WHERE id_incidencia = ? AND estado = ?";
+
+        try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                int filas;
+                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    pstmt.setString(1, estadoNuevo);
+                    pstmt.setInt(2, idIncidencia);
+                    pstmt.setString(3, estadoActual);
+                    filas = pstmt.executeUpdate();
+                }
+
+                if (filas == 0) {
+                    conn.rollback();
+                    return false;
+                }
+
+                registrarCambio(conn, idIncidencia, idUsuario, "Cambio de estado: "
+                        + textoEstado(estadoActual) + " → " + textoEstado(estadoNuevo));
+
+                conn.commit();
+                return true;
+
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private void registrarCambio(Connection conn, int idIncidencia, int idUsuario, String mensaje) throws SQLException {
+        String sql = "INSERT INTO observaciones_incidencias (id_incidencia, id_usuario, mensaje) "
+                   + "VALUES (?, ?, ?)";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, idIncidencia);
+            pstmt.setInt(2, idUsuario);
+            pstmt.setString(3, mensaje);
             pstmt.executeUpdate();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
-    public boolean actualizarEstado(int idIncidencia, String estadoActual, String estadoNuevo) {
-        String sql = "UPDATE incidencias SET estado = ? "
-                   + "WHERE id_incidencia = ? AND estado = ?";
-        int filas = 0;
-
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, estadoNuevo);
-            pstmt.setInt(2, idIncidencia);
-            pstmt.setString(3, estadoActual);
-            filas = pstmt.executeUpdate();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
+    private String textoEstado(String estado) {
+        switch (estado) {
+            case "En analisis":           return "En análisis";
+            case "Reparacion programada": return "Reparación programada";
+            case "En reparacion":         return "En reparación";
+            default:                      return estado;
         }
-        return filas > 0;
     }
 
-    public boolean registrarRestauracion(int idIncidencia) {
-        String sql = "UPDATE incidencias SET estado = 'Servicio restaurado', fecha_restauracion = NOW() "
-                   + "WHERE id_incidencia = ? AND estado = 'En reparacion'";
-        int filas = 0;
-
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idIncidencia);
-            filas = pstmt.executeUpdate();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return filas > 0;
-    }
-
-    public boolean cerrarIncidencia(int idIncidencia) {
-        String sql = "UPDATE incidencias SET estado = 'Cerrada', fecha_cierre = NOW() "
-                   + "WHERE id_incidencia = ? AND estado = 'Servicio restaurado'";
-        int filas = 0;
-
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idIncidencia);
-            filas = pstmt.executeUpdate();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return filas > 0;
+    private String textoSeveridad(String severidad) {
+        return "Critica".equals(severidad) ? "Crítica" : severidad;
     }
 
     private String obtenerSiguienteCodigo() {

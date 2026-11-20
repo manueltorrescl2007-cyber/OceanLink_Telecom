@@ -94,6 +94,10 @@
             </div>
         </section>
 
+        <% if ("noexiste".equals(request.getParameter("error"))) { %>
+            <p class="mensaje mensaje-error">El segmento solicitado no existe.</p>
+        <% } %>
+
         <section class="card segments-section">
             <h2 class="card-title">Segmentos</h2>
 
@@ -128,7 +132,7 @@
                     <tbody>
                     <% if (listaSegmentos.isEmpty()) { %>
                         <tr>
-                            <td colspan="8" class="vacio">No hay segmentos con ese estado.</td>
+                            <td colspan="8" class="vacio"><%= filtroEstado.isEmpty() ? "No hay segmentos registrados." : "No hay segmentos con ese estado." %></td>
                         </tr>
                     <% } else {
                            for (Segmento s : listaSegmentos) {
@@ -136,7 +140,7 @@
                                String claseEstado = "badge-" + s.getEstado().toLowerCase().replace(" ", "-");
                     %>
                         <tr>
-                            <td><strong><%= s.getCodigo() %></strong></td>
+                            <td><a href="<%= servlet %>?action=detalle&id=<%= s.getIdSegmento() %>"><strong><%= s.getCodigo() %></strong></a></td>
                             <td><%= s.getLandingInicial().getNombre() %> &rarr; <%= s.getLandingFinal().getNombre() %></td>
                             <td><%= s.getCapacidadTotal() %></td>
                             <td><%= s.getCapacidadOcupada() %></td>

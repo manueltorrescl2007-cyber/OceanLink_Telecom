@@ -88,8 +88,20 @@
         <% if ("creada".equals(ok)) { %>
             <p class="mensaje mensaje-ok">Incidencia <strong><%= inc.getCodigo() %></strong> registrada correctamente.</p>
         <% } %>
+        <% if ("estado".equals(ok)) { %>
+            <p class="mensaje mensaje-ok">Estado actualizado a <strong><%= inc.getEstadoTexto() %></strong>. El cambio quedó registrado en la bitácora.</p>
+        <% } %>
+        <% if ("severidad".equals(ok)) { %>
+            <p class="mensaje mensaje-ok">Severidad actualizada a <strong><%= inc.getSeveridadTexto() %></strong>. El cambio quedó registrado en la bitácora.</p>
+        <% } %>
+        <% if ("observacion".equals(ok)) { %>
+            <p class="mensaje mensaje-ok">Observación agregada correctamente.</p>
+        <% } %>
         <% if ("estado".equals(error)) { %>
             <p class="mensaje mensaje-error">No se pudo cambiar el estado: la incidencia ya no estaba en el paso esperado. No se pueden saltar pasos.</p>
+        <% } %>
+        <% if ("observacion".equals(error)) { %>
+            <p class="mensaje mensaje-error">No se pudo agregar la observación. Escribe un mensaje y verifica que la incidencia no esté cerrada.</p>
         <% } %>
 
         <section class="card">
@@ -174,7 +186,7 @@
 
                 <div class="columna">
 
-                    <h4>Bitácora</h4>
+                    <h4>Bitácora e historial de cambios</h4>
                     <% if (listaObservaciones.isEmpty()) { %>
                         <p class="ayuda">Aún no hay observaciones.</p>
                     <% } else {

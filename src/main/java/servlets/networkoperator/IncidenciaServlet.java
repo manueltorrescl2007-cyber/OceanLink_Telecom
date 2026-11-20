@@ -177,28 +177,32 @@ public class IncidenciaServlet extends HttpServlet {
             case "severidad": {
                 int id = parseId(request.getParameter("idIncidencia"));
                 String severidad = validarSeveridad(request.getParameter("severidad"));
-                if (severidad != null) {
-                    incidenciaDao.actualizarSeveridad(id, severidad);
+
+                int idUsuario = obtenerIdUsuarioSesion(request);
+                if (idUsuario == -1) {
+                    response.sendRedirect(request.getContextPath() + "/LoginServlet");
+                    break;
                 }
-                response.sendRedirect(servlet + "?action=detalle&id=" + id);
+
+                boolean cambiado = severidad != null && incidenciaDao.cambiarSeveridad(id, severidad, idUsuario);
+                response.sendRedirect(servlet + "?action=detalle&id=" + id + (cambiado ? "&ok=severidad" : ""));
                 break;
             }
 
             case "avanzar": {
                 int id = parseId(request.getParameter("idIncidencia"));
                 String estadoActual = request.getParameter("estadoActual");
-                boolean cambiado;
 
-                if ("En reparacion".equals(estadoActual)) {
-                    cambiado = incidenciaDao.registrarRestauracion(id);
-                } else if ("Servicio restaurado".equals(estadoActual)) {
-                    cambiado = incidenciaDao.cerrarIncidencia(id);
-                } else {
-                    String nuevo = siguienteEstado(estadoActual);
-                    cambiado = nuevo != null && incidenciaDao.actualizarEstado(id, estadoActual, nuevo);
+                int idUsuario = obtenerIdUsuarioSesion(request);
+                if (idUsuario == -1) {
+                    response.sendRedirect(request.getContextPath() + "/LoginServlet");
+                    break;
                 }
 
-                response.sendRedirect(servlet + "?action=detalle&id=" + id + (cambiado ? "" : "&error=estado"));
+                String nuevo = siguienteEstado(estadoActual);
+                boolean cambiado = nuevo != null && incidenciaDao.cambiarEstado(id, estadoActual, nuevo, idUsuario);
+
+                response.sendRedirect(servlet + "?action=detalle&id=" + id + (cambiado ? "&ok=estado" : "&error=estado"));
                 break;
             }
 
@@ -213,6 +217,7 @@ public class IncidenciaServlet extends HttpServlet {
                     break;
                 }
 
+                boolean guardada = false;
                 if (incidencia != null && !"Cerrada".equals(incidencia.getEstado())
                         && mensaje != null && !mensaje.trim().isEmpty()) {
 
@@ -223,9 +228,9 @@ public class IncidenciaServlet extends HttpServlet {
                     observacion.setIncidencia(incidencia);
                     observacion.setUsuario(usuario);
                     observacion.setMensaje(mensaje.trim());
-                    new ObservacionDao().crearObservacion(observacion);
+                    guardada = new ObservacionDao().crearObservacion(observacion);
                 }
-                response.sendRedirect(servlet + "?action=detalle&id=" + id);
+                response.sendRedirect(servlet + "?action=detalle&id=" + id + (guardada ? "&ok=observacion" : "&error=observacion"));
                 break;
             }
 

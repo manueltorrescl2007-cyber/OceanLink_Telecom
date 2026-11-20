@@ -47,6 +47,33 @@ public class SegmentoDao extends BaseDao {
         return lista;
     }
 
+    public Segmento obtenerSegmento(int idSegmento) {
+        Segmento segmento = null;
+        String sql = "SELECT s.id_segmento, s.codigo, "
+                   + "       l1.id_landing AS id_inicial, l1.nombre AS punto_inicial, "
+                   + "       l2.id_landing AS id_final,   l2.nombre AS punto_final, "
+                   + "       s.capacidad_total, s.capacidad_ocupada, s.capacidad_reservada, s.estado "
+                   + "FROM segmentos s "
+                   + "JOIN landingstation l1 ON s.id_landing_inicial = l1.id_landing "
+                   + "JOIN landingstation l2 ON s.id_landing_final   = l2.id_landing "
+                   + "WHERE s.id_segmento = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idSegmento);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    segmento = fetchSegmento(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return segmento;
+    }
+
     public ArrayList<Segmento> listarSegmentosDeIncidencia(int idIncidencia) {
         ArrayList<Segmento> lista = new ArrayList<>();
 
