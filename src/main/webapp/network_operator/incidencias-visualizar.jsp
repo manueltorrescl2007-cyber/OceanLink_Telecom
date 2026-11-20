@@ -24,7 +24,7 @@
     <title>OceanLink - Visualizar Incidencias</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=5">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=6">
 </head>
 <body>
 
@@ -38,9 +38,12 @@
 
     <main class="contenido-principal">
 
-        <section class="encabezado-panel">
-            <h2>Incidencias</h2>
-            <h1>Incidencias activas</h1>
+        <section class="encabezado-panel encabezado-con-accion">
+            <div>
+                <h2>Incidencias</h2>
+                <h1>Incidencias activas</h1>
+            </div>
+            <a class="btn-primary" href="<%= servlet %>?action=formCrear">+ Registrar incidencia</a>
         </section>
 
         <section class="card">

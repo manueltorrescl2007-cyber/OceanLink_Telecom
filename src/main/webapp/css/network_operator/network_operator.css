@@ -676,3 +676,33 @@ a.btn-primary {
   border: 0;
   opacity: 0;
 }
+.encabezado-con-accion {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.form-cerrar-sesion {
+  margin: 0;
+}
+
+.configuracion button.cerrar-sesion {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+
+  color: white;
+  font-family: inherit;
+  font-size: 12px;
+  text-align: left;
+
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.configuracion button.cerrar-sesion:hover {
+  background-color: var(--color-critica);
+}

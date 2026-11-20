@@ -57,7 +57,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OceanLink - <%= inc != null ? inc.getCodigo() : "Incidencia no encontrada" %></title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=5">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=6">
 </head>
 <body>
 

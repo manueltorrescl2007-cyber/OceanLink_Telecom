@@ -37,7 +37,7 @@
     <title>OceanLink - Registrar Incidencia</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=5">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=6">
 </head>
 <body>
 
@@ -46,7 +46,7 @@
 <div class="contenedor">
 
     <jsp:include page="sidebar.jsp">
-        <jsp:param name="activePage" value="registrar" />
+        <jsp:param name="activePage" value="visualizar" />
     </jsp:include>
 
     <main class="contenido-principal">

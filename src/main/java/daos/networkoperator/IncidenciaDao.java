@@ -190,24 +190,6 @@ public class IncidenciaDao extends BaseDao {
         return filas > 0;
     }
 
-    public int obtenerIdNetworkOperator() {
-        int idUsuario = -1;
-        String sql = "SELECT id_usuario FROM usuarios "
-                   + "WHERE id_rol = 4 AND estado = 'activo' ORDER BY id_usuario LIMIT 1";
-
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-
-            if (rs.next()) {
-                idUsuario = rs.getInt("id_usuario");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return idUsuario;
-    }
-
     private String obtenerSiguienteCodigo() {
         int siguiente = 1;
         String sql = "SELECT COALESCE(MAX(id_incidencia), 0) + 1 AS siguiente FROM incidencias";

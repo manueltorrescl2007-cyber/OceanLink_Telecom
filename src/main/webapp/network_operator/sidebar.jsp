@@ -32,10 +32,6 @@
         </label>
 
         <div class="contenido-submenu">
-          <a href="<%= ctx %>/IncidenciaServlet?action=formCrear"
-             class="subopcion <%= "registrar".equals(activePage) ? "activo" : "" %>">
-            Registrar
-          </a>
           <a href="<%= ctx %>/IncidenciaServlet?action=lista"
              class="subopcion <%= "visualizar".equals(activePage) ? "activo" : "" %>">
             Visualizar
@@ -54,9 +50,9 @@
   <div class="configuracion">
     <nav>
       <a href="#">Perfil</a>
-      <a href="${pageContext.request.contextPath}/login.jsp" class="cerrar-sesion">
-        Cerrar sesión
-      </a>
+      <form method="post" action="<%= ctx %>/LogoutServlet" class="form-cerrar-sesion">
+        <button type="submit" class="cerrar-sesion">Cerrar sesión</button>
+      </form>
     </nav>
   </div>
 

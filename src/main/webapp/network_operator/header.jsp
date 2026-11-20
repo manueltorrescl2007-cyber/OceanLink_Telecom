@@ -1,6 +1,18 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
     request.setCharacterEncoding("UTF-8");
+
+    String nombreUsuario = (String) session.getAttribute("nombreUsuario");
+    if (nombreUsuario == null || nombreUsuario.trim().isEmpty()) {
+        nombreUsuario = "Usuario";
+    }
+
+    String iniciales = "";
+    for (String parte : nombreUsuario.trim().split("\\s+")) {
+        if (iniciales.length() < 2) {
+            iniciales += Character.toUpperCase(parte.charAt(0));
+        }
+    }
 %>
 
 <input
@@ -32,12 +44,12 @@
   <div class="usuario">
 
     <div class="foto-usuario">
-      NO
+      <%= iniciales %>
     </div>
 
     <div>
       <p class="nombre-usuario">
-        Username
+        <%= nombreUsuario %>
       </p>
 
       <p class="rol-usuario">

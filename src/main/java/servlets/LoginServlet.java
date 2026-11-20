@@ -175,7 +175,7 @@ public class LoginServlet extends HttpServlet {
 
       case 3 -> "/capacity_planner/capacity_planner.jsp"; // capacity
 
-      case 4 -> "/network_operator/estado_red.jsp"; //Network
+      case 4 -> "/EstadoRedServlet"; //Network
 
       case 5 -> "/MantenimientoServlet?accion=listar"; // maintenance
 

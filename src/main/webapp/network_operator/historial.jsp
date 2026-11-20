@@ -19,7 +19,7 @@
     <title>OceanLink - Historial de Incidencias</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=5">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=6">
 </head>
 <body>
 

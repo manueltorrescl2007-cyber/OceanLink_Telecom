@@ -8,6 +8,7 @@ import daos.networkoperator.IncidenciaDao;
 import daos.networkoperator.ObservacionDao;
 import daos.networkoperator.SegmentoDao;
 import daos.networkoperator.ServicioDao;
+import services.NotificacionIncidenciaService;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -15,6 +16,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -142,8 +144,14 @@ public class IncidenciaServlet extends HttpServlet {
                     break;
                 }
 
+                int idUsuario = obtenerIdUsuarioSesion(request);
+                if (idUsuario == -1) {
+                    response.sendRedirect(request.getContextPath() + "/LoginServlet");
+                    break;
+                }
+
                 Usuario usuario = new Usuario();
-                usuario.setIdUsuario(incidenciaDao.obtenerIdNetworkOperator());
+                usuario.setIdUsuario(idUsuario);
 
                 Incidencia incidencia = new Incidencia();
                 incidencia.setTitulo(titulo.trim());
@@ -161,6 +169,7 @@ public class IncidenciaServlet extends HttpServlet {
                 for (int idSegmento : idsElegidos) {
                     incidenciaDao.asociarSegmento(idNuevo, idSegmento);
                 }
+                new NotificacionIncidenciaService().notificarRegistro(idNuevo, idUsuario);
                 response.sendRedirect(servlet + "?action=detalle&id=" + idNuevo + "&ok=creada");
                 break;
             }
@@ -198,11 +207,17 @@ public class IncidenciaServlet extends HttpServlet {
                 String mensaje = request.getParameter("mensaje");
                 Incidencia incidencia = incidenciaDao.obtenerIncidencia(id);
 
+                int idUsuario = obtenerIdUsuarioSesion(request);
+                if (idUsuario == -1) {
+                    response.sendRedirect(request.getContextPath() + "/LoginServlet");
+                    break;
+                }
+
                 if (incidencia != null && !"Cerrada".equals(incidencia.getEstado())
                         && mensaje != null && !mensaje.trim().isEmpty()) {
 
                     Usuario usuario = new Usuario();
-                    usuario.setIdUsuario(incidenciaDao.obtenerIdNetworkOperator());
+                    usuario.setIdUsuario(idUsuario);
 
                     Observacion observacion = new Observacion();
                     observacion.setIncidencia(incidencia);
@@ -244,6 +259,15 @@ public class IncidenciaServlet extends HttpServlet {
 
         RequestDispatcher view = request.getRequestDispatcher("/network_operator/registrar_incidencia.jsp");
         view.forward(request, response);
+    }
+
+    private int obtenerIdUsuarioSesion(HttpServletRequest request) {
+        HttpSession sesion = request.getSession(false);
+        if (sesion == null) {
+            return -1;
+        }
+        Object idUsuario = sesion.getAttribute("idUsuario");
+        return idUsuario instanceof Integer ? (Integer) idUsuario : -1;
     }
 
     private String siguienteEstado(String actual) {
