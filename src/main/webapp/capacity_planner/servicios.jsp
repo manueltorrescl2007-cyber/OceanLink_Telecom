@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.Objects" %>
 <%@ page import="beans.capacityplanner.Servicio" %>
 <%@ page import="beans.capacityplanner.Solicitud" %>
 <%@ page import="beans.capacityplanner.Ruta" %>
@@ -19,6 +20,25 @@
         }
         return null;
     }
+    private boolean compatible(Ruta ruta, Solicitud solicitud) {
+        if (!"activa".equals(ruta.getEstado())
+                || !Objects.equals(ruta.getNombreOrigen(), solicitud.getNombreOrigen())
+                || !Objects.equals(ruta.getNombreDestino(), solicitud.getNombreDestino())
+                || ruta.getCapacidadDisponible() < solicitud.getCapacidadSolicitada()
+                || ruta.getSegmentos() == null || ruta.getSegmentos().isEmpty()) {
+            return false;
+        }
+        int estacion = ruta.getIdLandingOrigen();
+        for (Segmento segmento : ruta.getSegmentos()) {
+            if (segmento.getIdLandingInicial() != estacion
+                    || "Fuera de servicio".equals(segmento.getEstado())) {
+                return false;
+            }
+            estacion = segmento.getIdLandingFinal();
+        }
+        return estacion == ruta.getIdLandingDestino();
+    }
+
 %>
 <%
     String servlet = request.getContextPath() + "/ServicioServlet";
@@ -67,25 +87,36 @@
     boolean nuevo = "nuevo".equals(request.getParameter("ventana"))
             || Boolean.TRUE.equals(request.getAttribute("mostrarFormulario"));
 
-    int rutasActivas = 0;
-    for (Ruta ruta : rutas) {
-        if ("activa".equals(ruta.getEstado())) {
-            rutasActivas++;
+    String solicitudElegida = formulario != null
+            ? String.valueOf(idSolicitudActual) : request.getParameter("solicitud");
+    Solicitud solicitudActual = null;
+    ArrayList<Ruta> rutasCompatibles = new ArrayList<>();
+    if (nuevo && solicitudElegida != null) {
+        for (Solicitud solicitud : solicitudes) {
+            if (String.valueOf(solicitud.getIdSolicitud()).equals(solicitudElegida)) {
+                solicitudActual = solicitud;
+                break;
+            }
+        }
+        if (solicitudActual != null) {
+            for (Ruta ruta : rutas) {
+                if (compatible(ruta, solicitudActual)) rutasCompatibles.add(ruta);
+            }
         }
     }
-
-    boolean puedeCrear = !solicitudes.isEmpty() && rutasActivas > 0;
 %>
 <!doctype html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servicios | OceanLink</title>
+    <title><%= nuevo ? "Nuevo servicio" : "Servicios" %> | OceanLink</title>
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/capacity_planner/servicios.css">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/capacity_planner/servicio_form.css">
 </head>
 <body>
 
@@ -157,6 +188,85 @@
     </aside>
 
     <main class="contenido-principal pagina-servicios">
+        <% if (nuevo) { %>
+<div class="servicio-contenido">
+    <section class="encabezado-pagina">
+        <div class="encabezado-panel">
+            <h2>Capacity Planner</h2>
+            <h1>Nuevo servicio</h1>
+        </div>
+        <a class="boton secundario" href="<%= servlet %>">Volver a servicios</a>
+    </section>
+
+    <section class="servicio-tarjeta" aria-labelledby="titulo-solicitud">
+        <h2 id="titulo-solicitud">Solicitud aprobada</h2>
+        <% if (!error.isEmpty()) { %>
+            <p class="mensaje-error" role="alert"><%= texto(error) %></p>
+        <% } %>
+
+        <% if (solicitudActual == null) { %>
+            <% if (solicitudes.isEmpty()) { %>
+                <p class="servicio-ayuda">No hay solicitudes aprobadas disponibles para asignar.</p>
+            <% } else { %>
+                <% if (solicitudElegida != null) { %>
+                    <p class="mensaje-error" role="alert">La solicitud seleccionada ya no está disponible.</p>
+                <% } %>
+                <form method="get" action="<%= servlet %>" class="servicio-opciones">
+                    <input type="hidden" name="ventana" value="nuevo">
+                    <% for (Solicitud solicitud : solicitudes) { %>
+                        <button type="submit" name="solicitud" value="<%= solicitud.getIdSolicitud() %>"
+                                class="servicio-opcion">
+                            <span>
+                                <strong>SOL-<%= solicitud.getIdSolicitud() %> · <%= texto(solicitud.getNombreCliente()) %></strong>
+                                <small><%= texto(solicitud.getNombreOrigen()) %> → <%= texto(solicitud.getNombreDestino()) %></small>
+                            </span>
+                            <span class="servicio-capacidad"><%= solicitud.getCapacidadSolicitada() %> Gbps</span>
+                        </button>
+                    <% } %>
+                </form>
+            <% } %>
+        <% } else { %>
+            <dl class="servicio-datos">
+                <div><dt>Solicitud</dt><dd>SOL-<%= solicitudActual.getIdSolicitud() %></dd></div>
+                <div><dt>Cliente</dt><dd><%= texto(solicitudActual.getNombreCliente()) %></dd></div>
+                <div><dt>Origen</dt><dd><%= texto(solicitudActual.getNombreOrigen()) %></dd></div>
+                <div><dt>Destino</dt><dd><%= texto(solicitudActual.getNombreDestino()) %></dd></div>
+                <div><dt>Capacidad solicitada</dt><dd><%= solicitudActual.getCapacidadSolicitada() %> Gbps</dd></div>
+            </dl>
+            <a class="boton secundario" href="<%= servlet %>?ventana=nuevo">Cambiar solicitud</a>
+        <% } %>
+    </section>
+
+    <% if (solicitudActual != null) { %>
+        <section class="servicio-tarjeta" aria-labelledby="titulo-rutas">
+            <h2 id="titulo-rutas">Rutas compatibles</h2>
+            <% if (rutasCompatibles.isEmpty()) { %>
+                <p class="servicio-ayuda">No hay rutas activas con ese recorrido y capacidad suficiente.</p>
+            <% } else { %>
+                <form method="post" action="<%= servlet %>">
+                    <input type="hidden" name="accion" value="guardar">
+                    <input type="hidden" name="id_solicitud" value="<%= solicitudActual.getIdSolicitud() %>">
+                    <div class="servicio-opciones" role="group" aria-labelledby="titulo-rutas">
+                        <% for (Ruta ruta : rutasCompatibles) { %>
+                            <label class="servicio-opcion">
+                                <input type="radio" name="id_ruta" value="<%= ruta.getIdRuta() %>" required
+                                       <%= ruta.getIdRuta() == idRutaActual ? "checked" : "" %>>
+                                <strong><%= texto(ruta.getNombre()) %></strong>
+                                <span class="servicio-capacidad"><%= ruta.getCapacidadDisponible() %> Gbps disponibles</span>
+                            </label>
+                        <% } %>
+                    </div>
+                    <p class="servicio-ayuda">Al guardar, el servicio queda Pendiente y reserva la capacidad solicitada.</p>
+                    <div class="acciones">
+                        <a class="boton secundario" href="<%= servlet %>">Cancelar</a>
+                        <button class="boton primario" type="submit">Guardar servicio</button>
+                    </div>
+                </form>
+            <% } %>
+        </section>
+    <% } %>
+</div>
+        <% } else { %>
         <section class="encabezado-pagina">
             <div class="encabezado-panel">
                 <h2>Capacity Planner</h2>
@@ -215,7 +325,7 @@
                 </select>
                 <button class="boton secundario" type="submit">Filtrar</button>
             </form>
-            <span><%= servicios.size() %> servicios</span>
+            <span><%= servicios.size() %> <%= servicios.size() == 1 ? "servicio" : "servicios" %></span>
         </section>
 
         <section class="contenedor-tabla">
@@ -385,32 +495,32 @@
                 <% } %>
 
                 <% if ("Activo".equals(seleccionado.getEstado())) { %>
-                    <form method="post" action="<%= servlet %>"
-                          onsubmit="return confirm('¿Deseas suspender este servicio?');">
-                        <input type="hidden" name="accion" value="suspender">
-                        <input type="hidden" name="id_servicio"
-                               value="<%= seleccionado.getIdServicio() %>">
-
-                        <button class="boton secundario" type="submit">
-                            Suspender servicio
-                        </button>
-                    </form>
+                    <details class="servicio-confirmacion">
+                        <summary class="boton secundario">Suspender servicio</summary>
+                        <form method="post" action="<%= servlet %>">
+                            <input type="hidden" name="accion" value="suspender">
+                            <input type="hidden" name="id_servicio"
+                                   value="<%= seleccionado.getIdServicio() %>">
+                            <p>¿Deseas suspender este servicio?</p>
+                            <button class="boton secundario" type="submit">Confirmar</button>
+                        </form>
+                    </details>
                 <% } %>
 
                 <% if ("Pendiente".equals(seleccionado.getEstado())
                         || "Activo".equals(seleccionado.getEstado())
                         || "Suspendido".equals(seleccionado.getEstado())) { %>
 
-                    <form method="post" action="<%= servlet %>"
-                          onsubmit="return confirm('¿Deseas cancelar este servicio y liberar su capacidad?');">
-                        <input type="hidden" name="accion" value="cancelar">
-                        <input type="hidden" name="id_servicio"
-                               value="<%= seleccionado.getIdServicio() %>">
-
-                        <button class="boton peligro" type="submit">
-                            Cancelar servicio
-                        </button>
-                    </form>
+                    <details class="servicio-confirmacion">
+                        <summary class="boton peligro">Cancelar servicio</summary>
+                        <form method="post" action="<%= servlet %>">
+                            <input type="hidden" name="accion" value="cancelar">
+                            <input type="hidden" name="id_servicio"
+                                   value="<%= seleccionado.getIdServicio() %>">
+                            <p>¿Deseas cancelar este servicio y liberar su capacidad?</p>
+                            <button class="boton peligro" type="submit">Confirmar</button>
+                        </form>
+                    </details>
                 <% } %>
 
                 <% if ("Suspendido".equals(seleccionado.getEstado())) { %>
@@ -428,92 +538,9 @@
             </div>
         </section>
         <% } %>
+        <% } %>
     </main>
 </div>
-
-<% if (nuevo) { %>
-<div class="modal">
-    <section class="contenido-modal" role="dialog"
-             aria-modal="true" aria-labelledby="titulo-modal">
-
-        <div class="encabezado-detalle">
-            <h2 id="titulo-modal">Nuevo servicio</h2>
-            <a href="<%= servlet %>" aria-label="Cerrar formulario">&times;</a>
-        </div>
-
-        <form method="post" action="<%= servlet %>">
-            <input type="hidden" name="accion" value="guardar">
-
-            <% if (!error.isEmpty()) { %>
-                <p class="mensaje-error" role="alert"><%= texto(error) %></p>
-            <% } %>
-
-            <% if (!puedeCrear) { %>
-                <p class="mensaje-error">
-                    Necesitas una solicitud aprobada y una ruta activa
-                    para crear un servicio.
-                </p>
-            <% } %>
-
-            <div class="grupo-formulario">
-                <label for="solicitud">Solicitud aprobada</label>
-                <select id="solicitud" name="id_solicitud" required>
-                    <option value="">Seleccione una solicitud</option>
-                    <% for (Solicitud solicitud : solicitudes) { %>
-                        <option value="<%= solicitud.getIdSolicitud() %>"
-                                <%= solicitud.getIdSolicitud() == idSolicitudActual
-                                        ? "selected" : "" %>>
-                            SOL-<%= solicitud.getIdSolicitud() %>
-                            · <%= texto(solicitud.getNombreCliente()) %>
-                            · <%= texto(solicitud.getNombreOrigen()) %>
-                            → <%= texto(solicitud.getNombreDestino()) %>
-                            · <%= solicitud.getCapacidadSolicitada() %> Gbps
-                        </option>
-                    <% } %>
-                </select>
-            </div>
-
-            <div class="grupo-formulario">
-                <label for="ruta">Ruta activa</label>
-                <select id="ruta" name="id_ruta" required>
-                    <option value="">Seleccione una ruta</option>
-                    <% for (Ruta ruta : rutas) {
-                        if ("activa".equals(ruta.getEstado())) { %>
-                            <option value="<%= ruta.getIdRuta() %>"
-                                    <%= ruta.getIdRuta() == idRutaActual
-                                            ? "selected" : "" %>>
-                                <%= texto(ruta.getNombre()) %>
-                                · <%= texto(ruta.getNombreOrigen()) %>
-                                → <%= texto(ruta.getNombreDestino()) %>
-                                · <%= ruta.getCapacidadDisponible() %> Gbps disponibles
-                            </option>
-                    <%  }
-                    } %>
-                </select>
-            </div>
-
-            <p class="ayuda">
-                Se asignará la capacidad indicada en la solicitud.
-                Elige una ruta con el mismo origen y destino y con
-                capacidad suficiente.
-            </p>
-            <p class="ayuda">
-                El servicio se creará como Pendiente y reservará
-                capacidad en cada segmento. Después podrás activarlo.
-            </p>
-
-            <div class="acciones">
-                <a class="boton secundario" href="<%= servlet %>">Volver</a>
-                <button class="boton primario" type="submit"
-                        <%= puedeCrear ? "" : "disabled" %>>
-                    Guardar servicio
-                </button>
-            </div>
-        </form>
-    </section>
-</div>
-<% } %>
-
 </body>
 </html>
 

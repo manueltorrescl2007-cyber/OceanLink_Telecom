@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.ArrayList" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
 <%@ page import="beans.capacityplanner.Solicitud" %>
 <%!
     private String texto(String valor) {
@@ -7,6 +8,13 @@
         return valor.replace("&", "&amp;").replace("<", "&lt;")
                 .replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;");
     }
+    private static final DateTimeFormatter FORMATO_FECHA =
+            DateTimeFormatter.ofPattern("dd/MM/uuuu HH:mm");
+
+    private String mostrarEstado(String estado) {
+        return "En evaluacion".equals(estado) ? "En evaluación" : texto(estado);
+    }
+
     private String color(String estado) {
         if ("Rechazada".equals(estado)) return "rechazada";
         if ("Aprobada".equals(estado) || "Provisionada".equals(estado)
@@ -24,6 +32,10 @@
     Solicitud seleccionada = (Solicitud) request.getAttribute("solicitudSeleccionada");
     String filtro = (String) request.getAttribute("filtroEstado");
     if (filtro == null) filtro = "";
+    String filtroUrl = java.net.URLEncoder.encode(filtro, "UTF-8");
+    int paginaActual = (Integer) request.getAttribute("paginaActual");
+    int totalPaginas = (Integer) request.getAttribute("totalPaginas");
+    String urlPagina = servlet + "?estado=" + filtroUrl + "&amp;pagina=";
     String[] estados = {"Registrada", "En evaluacion", "Aprobada", "Provisionada",
             "Activa", "Rechazada", "Pendiente por capacidad"};
 
@@ -41,6 +53,32 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/solicitudes.css?v=2">
     <!-- Las barras comunes se cargan al final. -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
+    <style>
+        .paginacion-solicitudes {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .paginacion-solicitudes .paginacion-controles {
+            display: flex;
+            gap: 8px;
+            margin-inline-start: auto;
+        }
+
+        .paginacion-solicitudes .boton.paginacion-boton {
+            background: #fff;
+            border: 1px solid var(--color-borde, #d9e1e8);
+        }
+
+        .paginacion-solicitudes .paginacion-indicador {
+            color: var(--color-texto-claro, #64748b);
+            font-size: .875rem;
+        }
+    </style>
 </head>
 <body>
 <!-- 5. BARRAS COMUNES: misma estructura que Clientes. -->
@@ -112,12 +150,12 @@
                 <select id="filtroEstado" name="estado">
                     <option value="">Todos</option>
                     <% for (String estado : estados) { %>
-                    <option value="<%= estado %>" <%= estado.equals(filtro) ? "selected" : "" %>><%= estado %></option>
+                    <option value="<%= estado %>" <%= estado.equals(filtro) ? "selected" : "" %>><%= mostrarEstado(estado) %></option>
                     <% } %>
                 </select>
                 <button class="boton secundario" type="submit">Filtrar</button>
             </form>
-            <span class="cantidad-solicitudes"><%= solicitudes.size() %> solicitudes</span>
+            <span class="cantidad-solicitudes">${totalSolicitudes} solicitudes</span>
         </section>
         <!-- 7. TABLA: el ID abre el detalle sin JavaScript. -->
         <section class="tabla-contenedor">
@@ -126,18 +164,31 @@
                 <tbody>
                 <% for (Solicitud s : solicitudes) { %>
                 <tr class="fila-solicitud <%= seleccionada != null && seleccionada.getIdSolicitud() == s.getIdSolicitud() ? "fila-seleccionada" : "" %>">
-                    <td><a class="id-solicitud" href="<%= servlet %>?id=<%= s.getIdSolicitud() %>&amp;estado=<%= java.net.URLEncoder.encode(filtro, "UTF-8") %>">SOL-<%= s.getIdSolicitud() %></a></td>
+                    <td><a class="id-solicitud" href="<%= urlPagina %><%= paginaActual %>&amp;id=<%= s.getIdSolicitud() %>">SOL-<%= s.getIdSolicitud() %></a></td>
                     <td><%= texto(s.getNombreCliente()) %></td>
                     <td><%= texto(s.getNombreOrigen()) %></td>
                     <td><%= texto(s.getNombreDestino()) %></td>
                     <td><%= s.getCapacidadSolicitada() %> Gbps</td>
-                    <td><span class="etiqueta-estado <%= color(s.getEstado()) %>"><%= s.getEstado() %></span></td>
+                    <td><span class="etiqueta-estado <%= color(s.getEstado()) %>"><%= mostrarEstado(s.getEstado()) %></span></td>
                 </tr>
                 <% } %>
                 <% if (solicitudes.isEmpty()) { %><tr><td colspan="6" class="sin-resultados">No hay solicitudes con este estado.</td></tr><% } %>
                 </tbody>
             </table>
         </section>
+        <% if (totalPaginas > 1) { %>
+        <nav class="paginacion-solicitudes" aria-label="Paginación de solicitudes">
+            <span class="paginacion-indicador" aria-current="page">Página <%= paginaActual %> de <%= totalPaginas %></span>
+            <div class="paginacion-controles">
+                <% if (paginaActual > 1) { %>
+                    <a class="boton secundario paginacion-boton" href="<%= urlPagina %><%= paginaActual - 1 %>">Anterior</a>
+                <% } %>
+                <% if (paginaActual < totalPaginas) { %>
+                    <a class="boton secundario paginacion-boton" href="<%= urlPagina %><%= paginaActual + 1 %>">Siguiente</a>
+                <% } %>
+            </div>
+        </nav>
+        <% } %>
         <!-- 8. DETALLE: datos, estado y edición de la solicitud seleccionada. -->
         <% if (seleccionada != null) {
             Solicitud s = seleccionada;
@@ -149,19 +200,19 @@
         <section class="panel-detalle">
             <div class="encabezado-detalle">
                 <div><span>Detalle de solicitud</span><h2>SOL-<%= s.getIdSolicitud() %></h2></div>
-                <a href="<%= servlet %>" class="cerrar-detalle" aria-label="Cerrar detalle">&times;</a>
+                <a href="<%= urlPagina %><%= paginaActual %>" class="cerrar-detalle" aria-label="Cerrar detalle">&times;</a>
             </div>
             <div class="cuadricula-detalle">
                 <div><span>Cliente</span><strong><%= texto(s.getNombreCliente()) %></strong></div>
-                <div><span>Fecha de registro</span><strong><%= s.getFechaRegistro() %></strong></div>
-                <div><span>Registrada por</span><strong>Usuario ID <%= s.getIdUsuario() %></strong></div>
+                <div><span>Fecha de registro</span><strong><%= s.getFechaRegistro() == null ? "" : s.getFechaRegistro().toLocalDateTime().format(FORMATO_FECHA) %></strong></div>
+                <div><span>Registrada por</span><strong><%= s.getNombreUsuario() == null ? "Usuario ID " + s.getIdUsuario() : texto(s.getNombreUsuario()) %></strong></div>
                 <div><span>Origen</span><strong><%= texto(s.getNombreOrigen()) %></strong></div>
                 <div><span>Destino</span><strong><%= texto(s.getNombreDestino()) %></strong></div>
                 <div><span>Capacidad solicitada</span><strong><%= s.getCapacidadSolicitada() %> Gbps</strong></div>
             </div>
             <div class="justificacion-detalle"><span>Justificación</span><p><%= texto(s.getJustificacion()) %></p></div>
             <!-- Estado actual: siempre visible, aunque lo gestione Servicios. -->
-            <p class="cambio-estado">Estado actual: <strong><%= s.getEstado() %></strong></p>
+            <p class="cambio-estado">Estado actual: <strong><%= mostrarEstado(s.getEstado()) %></strong></p>
             <% if (editable) { %>
             <form method="post" action="<%= servlet %>"
                   class="formulario-filtro cambio-estado"

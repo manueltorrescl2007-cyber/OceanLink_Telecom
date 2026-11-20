@@ -2,7 +2,6 @@ package servlets.capacityplanner;
 
 import beans.capacityplanner.LandingStation;
 import daos.capacityplanner.LandingStationDao;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -11,159 +10,175 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 @WebServlet(name = "LandingStationServlet", value = "/LandingStationServlet")
 public class LandingStationServlet extends HttpServlet {
 
   @Override
-  protected void doGet(HttpServletRequest request,
-                       HttpServletResponse response)
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+    if ("nueva".equals(request.getParameter("accion"))
+      || "nuevo".equals(request.getParameter("ventana"))) {
+      mostrarFormularioNuevo(request, response);
+      return;
+    }
 
     try {
       mostrarEstaciones(request, response);
     } catch (SQLException e) {
-      throw new ServletException(
-        "No se pudieron cargar las estaciones.", e);
+      throw new ServletException("No se pudieron cargar las estaciones.", e);
     }
   }
 
   @Override
-  protected void doPost(HttpServletRequest request,
-                        HttpServletResponse response)
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-
     request.setCharacterEncoding("UTF-8");
 
-    String accion = request.getParameter("accion");
-
-    if (!"guardar".equals(accion)) {
-      response.sendError(
-        HttpServletResponse.SC_BAD_REQUEST,
-        "Acción no válida.");
+    if (!"guardar".equals(request.getParameter("accion"))) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Acción no válida.");
       return;
     }
 
     String idTexto = texto(request.getParameter("id"));
     boolean esNuevo = idTexto.isEmpty();
-
     LandingStation estacion = new LandingStation();
 
     if (!esNuevo) {
-      try {
-        estacion.setIdLanding(Integer.parseInt(idTexto));
-      } catch (NumberFormatException e) {
-        response.sendError(
-          HttpServletResponse.SC_BAD_REQUEST,
-          "El ID no es válido.");
+      int id = parseId(idTexto);
+      if (id <= 0) {
+        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "El ID no es válido.");
         return;
       }
-
-      if (estacion.getIdLanding() <= 0) {
-        response.sendError(
-          HttpServletResponse.SC_BAD_REQUEST,
-          "El ID no es válido.");
-        return;
-      }
+      estacion.setIdLanding(id);
     }
 
     estacion.setNombre(texto(request.getParameter("nombre")));
     estacion.setPais(texto(request.getParameter("pais")));
     estacion.setCiudad(texto(request.getParameter("ciudad")));
     estacion.setEstado(texto(request.getParameter("estadoEstacion")));
-
-    // Conservar los datos del formulario si ocurre un error.
     request.setAttribute("estacionFormulario", estacion);
 
     String error = validarEstacion(estacion);
-
     if (error != null) {
-      mostrarError(request, response, error);
+      mostrarError(request, response, esNuevo, error);
       return;
     }
 
     LandingStationDao dao = new LandingStationDao();
-
     try {
-      boolean guardado;
-
-      if (esNuevo) {
-        guardado = dao.crearEstacion(estacion);
-      } else {
-        guardado = dao.actualizarEstacion(estacion);
-      }
+      boolean guardado = esNuevo
+        ? dao.crearEstacion(estacion)
+        : dao.actualizarEstacion(estacion);
 
       if (!guardado) {
-        mostrarError(request, response,
+        mostrarError(request, response, esNuevo,
           "No se pudo guardar. La estación podría no existir.");
         return;
       }
 
-      response.sendRedirect(
-        request.getContextPath()
-          + "/LandingStationServlet?guardado=1");
-
+      String destino = request.getContextPath() + "/LandingStationServlet?guardado=1";
+      if (!esNuevo) {
+        destino += "&estado=" + filtroEstado(request)
+          + "&pagina=" + Math.max(1, parseId(request.getParameter("pagina")));
+      }
+      response.sendRedirect(destino);
     } catch (SQLException e) {
       getServletContext().log("Error al guardar la estación", e);
-
       String mensaje = e.getErrorCode() == 1062
         ? "Ya existe una estación con ese nombre."
         : "No se pudo guardar la estación.";
-
-      mostrarError(request, response, mensaje);
+      mostrarError(request, response, esNuevo, mensaje);
     }
   }
 
-  private void mostrarEstaciones(HttpServletRequest request,
-                                 HttpServletResponse response)
+  private void mostrarEstaciones(HttpServletRequest request, HttpServletResponse response)
     throws SQLException, ServletException, IOException {
-
     LandingStationDao dao = new LandingStationDao();
+    String filtro = filtroEstado(request);
+    int idDetalle = parseId(request.getParameter("detalle"));
+    int idEditar = parseId(request.getParameter("editar"));
+    boolean cargarEdicion = request.getAttribute("estacionFormulario") == null;
+    ArrayList<LandingStation> filtradas = new ArrayList<>();
 
-    request.setAttribute("listaEstaciones", dao.listarEstaciones());
+    for (LandingStation estacion : dao.listarEstaciones()) {
+      if (filtro.isEmpty() || filtro.equals(estacion.getEstado())) {
+        filtradas.add(estacion);
+      }
+      if (estacion.getIdLanding() == idDetalle) {
+        request.setAttribute("estacionDetalle", estacion);
+      }
+      if (cargarEdicion && estacion.getIdLanding() == idEditar) {
+        request.setAttribute("estacionFormulario", estacion);
+      }
+    }
 
-    request.getRequestDispatcher(
-      "/capacity_planner/landing_stations.jsp"
-    ).forward(request, response);
+    final int porPagina = 10;
+    int total = filtradas.size();
+    int totalPaginas = Math.max(1, (total + porPagina - 1) / porPagina);
+    int pagina = Math.max(1, Math.min(parseId(request.getParameter("pagina")), totalPaginas));
+    int desde = (pagina - 1) * porPagina;
+    int hasta = Math.min(desde + porPagina, total);
+
+    request.setAttribute("listaEstaciones", new ArrayList<>(filtradas.subList(desde, hasta)));
+    request.setAttribute("totalEstaciones", total);
+    request.setAttribute("totalPaginas", totalPaginas);
+    request.setAttribute("paginaActual", pagina);
+    request.setAttribute("filtroEstado", filtro);
+    request.getRequestDispatcher("/capacity_planner/landing_stations.jsp")
+      .forward(request, response);
   }
 
-  private void mostrarError(HttpServletRequest request,
-                            HttpServletResponse response,
-                            String mensaje)
+  private void mostrarFormularioNuevo(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+    request.setAttribute("filtroEstado", filtroEstado(request));
+    request.setAttribute("paginaActual", Math.max(1, parseId(request.getParameter("pagina"))));
+    request.getRequestDispatcher("/capacity_planner/landing_station_form.jsp")
+      .forward(request, response);
+  }
 
+  private void mostrarError(HttpServletRequest request, HttpServletResponse response,
+                            boolean esNuevo, String mensaje)
+    throws ServletException, IOException {
     request.setAttribute("error", mensaje);
-
+    if (esNuevo) {
+      mostrarFormularioNuevo(request, response);
+      return;
+    }
     try {
       mostrarEstaciones(request, response);
     } catch (SQLException e) {
-      throw new ServletException(
-        "No se pudieron cargar las estaciones.", e);
+      throw new ServletException("No se pudieron cargar las estaciones.", e);
+    }
+  }
+
+  private String filtroEstado(HttpServletRequest request) {
+    String estado = request.getParameter("estado");
+    return "Activa".equals(estado) || "Inactiva".equals(estado) ? estado : "";
+  }
+
+  private int parseId(String valor) {
+    try {
+      return Integer.parseInt(valor);
+    } catch (NumberFormatException e) {
+      return -1;
     }
   }
 
   private String validarEstacion(LandingStation estacion) {
-
-    if (estacion.getNombre().isEmpty()
-      || estacion.getNombre().length() > 100) {
+    if (estacion.getNombre().isEmpty() || estacion.getNombre().length() > 100) {
       return "Escribe un nombre de hasta 100 caracteres.";
     }
-
-    if (estacion.getPais().isEmpty()
-      || estacion.getPais().length() > 45) {
+    if (estacion.getPais().isEmpty() || estacion.getPais().length() > 45) {
       return "Escribe un país de hasta 45 caracteres.";
     }
-
-    if (estacion.getCiudad().isEmpty()
-      || estacion.getCiudad().length() > 45) {
+    if (estacion.getCiudad().isEmpty() || estacion.getCiudad().length() > 45) {
       return "Escribe una ciudad de hasta 45 caracteres.";
     }
-
-    if (!"Activa".equals(estacion.getEstado())
-      && !"Inactiva".equals(estacion.getEstado())) {
+    if (!"Activa".equals(estacion.getEstado()) && !"Inactiva".equals(estacion.getEstado())) {
       return "Selecciona un estado válido.";
     }
-
     return null;
   }
 

@@ -22,41 +22,20 @@
 
     String[] estados = {"Activa", "Inactiva"};
 
-    String filtro = request.getParameter("estado");
-    String editar = request.getParameter("editar");
-    String detalle = request.getParameter("detalle");
-
-    if (filtro == null) filtro = "";
+    String filtro = (String) request.getAttribute("filtroEstado");
+    int pagina = (Integer) request.getAttribute("paginaActual");
+    int totalPaginas = (Integer) request.getAttribute("totalPaginas");
+    int cantidad = (Integer) request.getAttribute("totalEstaciones");
+    String urlPagina = servlet + "?estado=" + filtro + "&amp;pagina=";
+    String urlLista = urlPagina + pagina;
 
     String error = (String) request.getAttribute("error");
     if (error == null) error = "";
 
-    boolean mostrarFormulario =
-            "nuevo".equals(request.getParameter("ventana"))
-                    || editar != null;
-
     String[] formulario = {"", "", "", "", "Activa"};
-
-
-    for (LandingStation estacion : estaciones) {
-        if (String.valueOf(estacion.getIdLanding()).equals(editar)) {
-            formulario = new String[]{
-                    String.valueOf(estacion.getIdLanding()),
-                    estacion.getNombre(),
-                    estacion.getPais(),
-                    estacion.getCiudad(),
-                    estacion.getEstado()
-            };
-        }
-    }
-
-
-    LandingStation datos =
-            (LandingStation) request.getAttribute("estacionFormulario");
+    LandingStation datos = (LandingStation) request.getAttribute("estacionFormulario");
 
     if (datos != null) {
-        mostrarFormulario = true;
-
         formulario = new String[]{
                 datos.getIdLanding() > 0
                         ? String.valueOf(datos.getIdLanding()) : "",
@@ -67,13 +46,6 @@
         };
     }
 
-    int cantidad = 0;
-
-    for (LandingStation estacion : estaciones) {
-        if (filtro.isEmpty() || estacion.getEstado().equals(filtro)) {
-            cantidad++;
-        }
-    }
 %>
 <!doctype html>
 <html lang="es">
@@ -84,6 +56,32 @@
     <!-- Estilos de la página primero; barras comunes después. -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/landing_stations.css?v=1">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
+    <style>
+        .vista-landings .paginacion-estaciones {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .paginacion-estaciones .paginacion-controles {
+            display: flex;
+            gap: 8px;
+            margin-inline-start: auto;
+        }
+
+        .paginacion-estaciones .boton.paginacion-boton {
+            background: #fff;
+            border: 1px solid var(--color-borde, #d9e1e8);
+        }
+
+        .paginacion-estaciones .paginacion-indicador {
+            color: var(--color-texto-claro, #64748b);
+            font-size: .875rem;
+        }
+    </style>
 </head>
 <body class="vista-landings">
 <input type="checkbox" id="controlMenu" class="control-menu" >
@@ -147,7 +145,7 @@
                 <h2>Capacity Planner</h2>
                 <h1>Landing stations</h1>
             </div>
-            <a href="<%= servlet %>?ventana=nuevo" class="boton primario">
+            <a href="<%= servlet %>?accion=nueva&amp;estado=<%= filtro %>&amp;pagina=<%= pagina %>" class="boton primario">
                 + Nueva estación
             </a>
         </section>
@@ -173,17 +171,12 @@
             <table>
                 <thead><tr><th>ID</th><th>Nombre</th><th>País</th><th>Ciudad</th><th>Estado</th></tr></thead>
                 <tbody>
-                    <% for (LandingStation estacion : estaciones) {
-                        if (!filtro.isEmpty()
-                                && !estacion.getEstado().equals(filtro)) {
-                            continue;
-                        }
-                    %>
+                    <% for (LandingStation estacion : estaciones) { %>
                         <tr>
                             <td><%= estacion.getIdLanding() %></td>
 
                             <td>
-                                <a href="<%= servlet %>?detalle=<%= estacion.getIdLanding() %>#detalle"
+                                <a href="<%= urlLista %>&amp;detalle=<%= estacion.getIdLanding() %>#detalle"
                                    class="enlace-estacion">
                                     <%= texto(estacion.getNombre()) %>
                                 </a>
@@ -211,16 +204,26 @@
         </section>
 
 
-        <<!-- 6. DETALLE de la estación seleccionada. -->
-         <% for (LandingStation estacion : estaciones) {
-             if (!String.valueOf(estacion.getIdLanding()).equals(detalle)) {
-                 continue;
-             }
-         %>
+        <% if (totalPaginas > 1) { %>
+        <nav class="paginacion-estaciones" aria-label="Paginación de estaciones">
+            <span class="paginacion-indicador" aria-current="page">Página <%= pagina %> de <%= totalPaginas %></span>
+            <div class="paginacion-controles">
+                <% if (pagina > 1) { %>
+                    <a class="boton secundario paginacion-boton" href="<%= urlPagina %><%= pagina - 1 %>">Anterior</a>
+                <% } %>
+                <% if (pagina < totalPaginas) { %>
+                    <a class="boton secundario paginacion-boton" href="<%= urlPagina %><%= pagina + 1 %>">Siguiente</a>
+                <% } %>
+            </div>
+        </nav>
+        <% } %>
+
+        <% LandingStation estacion = (LandingStation) request.getAttribute("estacionDetalle");
+           if (estacion != null) { %>
              <section class="panel-detalle" id="detalle">
                  <div class="encabezado-detalle">
                      <h2><%= texto(estacion.getNombre()) %></h2>
-                     <a href="<%= servlet %>" aria-label="Cerrar detalle">×</a>
+                     <a href="<%= urlLista %>" aria-label="Cerrar detalle">×</a>
                  </div>
 
                  <div class="datos-detalle">
@@ -246,7 +249,7 @@
                  </div>
 
                  <div class="acciones">
-                     <a href="<%= servlet %>?editar=<%= estacion.getIdLanding() %>"
+                     <a href="<%= urlLista %>&amp;editar=<%= estacion.getIdLanding() %>"
                         class="boton primario">
                          Editar estación
                      </a>
@@ -257,16 +260,18 @@
 </div>
 
 <!-- 7. FORMULARIO: registro y edición sin JavaScript. -->
-<% if (mostrarFormulario) { %>
+<% if (datos != null) { %>
 <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloFormulario">
     <section class="contenido-modal">
         <div class="encabezado-detalle">
-            <h2 id="tituloFormulario"><%= formulario[0].isEmpty() ? "Nueva estación" : "Editar estación" %></h2>
-            <a href="<%= servlet %>" aria-label="Cerrar formulario">×</a>
+            <h2 id="tituloFormulario">Editar estación</h2>
+            <a href="<%= urlLista %>" aria-label="Cerrar formulario">×</a>
         </div>
-        <% if (!error.isEmpty()) { %><p class="mensaje-error"><%= error %></p><% } %>
+        <% if (!error.isEmpty()) { %><p class="mensaje-error"><%= texto(error) %></p><% } %>
         <form action="<%= servlet %>" method="post">
             <input type="hidden" name="accion" value="guardar">
+            <input type="hidden" name="estado" value="<%= filtro %>">
+            <input type="hidden" name="pagina" value="<%= pagina %>">
             <input type="hidden" name="id" value="<%= texto(formulario[0]) %>">
             <div class="grupo-formulario">
                 <label for="nombre">Nombre</label>
@@ -289,7 +294,7 @@
                 </select>
             </div>
             <div class="acciones">
-                <a href="<%= servlet %>" class="boton secundario">Cancelar</a>
+                <a href="<%= urlLista %>" class="boton secundario">Cancelar</a>
                 <button type="submit" class="boton primario">Guardar</button>
             </div>
         </form>

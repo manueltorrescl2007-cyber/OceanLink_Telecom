@@ -1,0 +1,154 @@
+.paginacion-rutas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0 24px;
+  color: #64748b;
+}
+
+.paginacion-rutas .acciones { margin: 0; }
+
+.ruta-formulario {
+  max-width: 1000px;
+  padding: clamp(20px, 4vw, 32px);
+  background: #fff;
+  border: 1px solid #d9e1e8;
+  border-radius: 12px;
+}
+
+.ruta-campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.ruta-formulario label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.ruta-formulario input:not([type="hidden"]),
+.ruta-formulario select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #d9e1e8;
+  border-radius: 7px;
+  color: #1e293b;
+  font: inherit;
+}
+
+.ruta-formulario input[readonly] { background: #f5f7fa; }
+
+.ruta-formulario input:focus,
+.ruta-formulario select:focus {
+  outline: 2px solid #1c8c9c;
+  outline-offset: 1px;
+}
+
+.ruta-recorrido {
+  min-width: 0;
+  margin: 24px 0;
+  padding: 16px;
+  border: 1px solid #d9e1e8;
+  border-radius: 8px;
+}
+
+.ruta-recorrido legend {
+  padding: 0 8px;
+  color: #0b3d5c;
+  font-weight: bold;
+}
+
+.ruta-recorrido ol { padding-left: 28px; }
+.ruta-recorrido li { padding: 7px 0; }
+.ruta-recorrido p { margin-bottom: 12px; color: #64748b; }
+
+.ruta-controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+}
+
+.ruta-controles > div { flex: 1 1 230px; }
+.ruta-formulario button:disabled { opacity: .55; cursor: default; }
+
+@media (max-width: 650px) {
+  .ruta-campos { grid-template-columns: minmax(0, 1fr); }
+}
+
+.pagina-ruta-form .ruta-contenido {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.pagina-ruta-form .ruta-formulario {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.ruta-selector-campo {
+  position: relative;
+}
+
+.ruta-formulario .ruta-selector-campo input {
+  padding-right: 48px;
+}
+
+.ruta-selector-lista summary {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  color: var(--color-primario, #0b3d5c);
+  cursor: pointer;
+  list-style: none;
+}
+
+.ruta-selector-lista summary::marker {
+  content: "";
+}
+
+.ruta-selector-lista summary::-webkit-details-marker {
+  display: none;
+}
+
+.ruta-opciones {
+  position: absolute;
+  inset: calc(100% + 5px) 0 auto;
+  z-index: 5;
+  max-height: 225px;
+  overflow-y: auto;
+  border: 1px solid #d9e1e8;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(11, 61, 92, .12);
+}
+
+.ruta-selector-lista[open] > summary {
+  z-index: 6;
+}
+
+.ruta-opciones button {
+  display: block;
+  width: 100%;
+  padding: 11px 13px;
+  border: 0;
+  background: #fff;
+  color: #1e293b;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ruta-opciones button:hover,
+.ruta-opciones button:focus-visible,
+.ruta-opciones button.seleccionada {
+  background: #eaf4f6;
+}

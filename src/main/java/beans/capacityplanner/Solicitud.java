@@ -13,6 +13,7 @@ public class Solicitud {
   private String estado;
   private String justificacion;
   private Timestamp fechaRegistro;
+  private String nombreUsuario;
 
   // Nombres obtenidos al consultar las tablas relacionadas
   private String nombreCliente;
@@ -114,4 +115,8 @@ public class Solicitud {
   public void setNombreDestino(String nombreDestino) {
     this.nombreDestino = nombreDestino;
   }
+
+  public String getNombreUsuario(){ return nombreUsuario;}
+
+  public void setNombreUsuario(String nombreUsuario){ this.nombreUsuario = nombreUsuario;}
 }

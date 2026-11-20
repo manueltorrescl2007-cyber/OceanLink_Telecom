@@ -209,4 +209,40 @@ public class SegmentoDao extends BaseDao {
 
     return segmento;
   }
+
+  public boolean eliminarSegmento(int idSegmento) throws SQLException {
+    String desvincularEstaciones = """
+        DELETE FROM segmentos_has_landingstation
+        WHERE id_segmento = ?
+        """;
+
+    String eliminarSegmento = """
+        DELETE FROM segmentos
+        WHERE id_segmento = ?
+          AND capacidad_ocupada = 0
+          AND capacidad_reservada = 0
+        """;
+
+    try (Connection conn = getConnection()) {
+      conn.setAutoCommit(false);
+
+      try (PreparedStatement enlaces = conn.prepareStatement(desvincularEstaciones);
+           PreparedStatement segmento = conn.prepareStatement(eliminarSegmento)) {
+        enlaces.setInt(1, idSegmento);
+        enlaces.executeUpdate();
+
+        segmento.setInt(1, idSegmento);
+        if (segmento.executeUpdate() == 0) {
+          conn.rollback();
+          return false;
+        }
+
+        conn.commit();
+        return true;
+      } catch (SQLException e) {
+        conn.rollback();
+        throw e;
+      }
+    }
+  }
 }

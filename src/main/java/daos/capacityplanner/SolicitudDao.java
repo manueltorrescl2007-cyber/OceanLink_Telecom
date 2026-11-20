@@ -13,13 +13,13 @@ public class SolicitudDao extends BaseDao {
 
   private static final String SELECT_SOLICITUD =
     "SELECT so.*, c.nombre AS nombre_cliente, "
-      + "lo.nombre AS nombre_origen, ld.nombre AS nombre_destino "
+      + "lo.nombre AS nombre_origen, ld.nombre AS nombre_destino, "
+      + "u.nombre AS nombre_usuario "
       + "FROM solicitudes so "
       + "INNER JOIN clientes c ON so.id_cliente = c.id_cliente "
-      + "INNER JOIN landingstation lo "
-      + "ON so.id_landing_origen = lo.id_landing "
-      + "INNER JOIN landingstation ld "
-      + "ON so.id_landing_destino = ld.id_landing ";
+      + "INNER JOIN usuarios u ON so.id_usuario = u.id_usuario "
+      + "INNER JOIN landingstation lo ON so.id_landing_origen = lo.id_landing "
+      + "INNER JOIN landingstation ld ON so.id_landing_destino = ld.id_landing ";
 
   // Listar todas las solicitudes
   public ArrayList<Solicitud> listarSolicitudes() throws SQLException {
@@ -267,6 +267,7 @@ public class SolicitudDao extends BaseDao {
     solicitud.setNombreCliente(rs.getString("nombre_cliente"));
     solicitud.setNombreOrigen(rs.getString("nombre_origen"));
     solicitud.setNombreDestino(rs.getString("nombre_destino"));
+    solicitud.setNombreUsuario(rs.getString("nombre_usuario"));
 
     return solicitud;
   }

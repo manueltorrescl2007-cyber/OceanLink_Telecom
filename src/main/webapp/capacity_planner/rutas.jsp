@@ -1,9 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.List" %>
 <%@ page import="beans.capacityplanner.Ruta" %>
 <%@ page import="beans.capacityplanner.Segmento" %>
 <%@ page import="beans.capacityplanner.LandingStation" %>
 <%!
+    private int paginaValida(String valor) {
+        try { return Integer.parseInt(valor); }
+        catch (NumberFormatException e) { return 1; }
+    }
+
     private String texto(String valor) {
         return valor == null ? "" : valor.replace("&", "&amp;")
                 .replace("<", "&lt;").replace(">", "&gt;")
@@ -13,102 +18,34 @@
 <%
     String servlet = request.getContextPath() + "/RutaServlet";
 
-    ArrayList<Ruta> rutas =
-            (ArrayList<Ruta>) request.getAttribute("listaRutas");
-
-    ArrayList<LandingStation> estaciones =
-            (ArrayList<LandingStation>) request.getAttribute("listaEstaciones");
-
-    ArrayList<Segmento> segmentos =
-            (ArrayList<Segmento>) request.getAttribute("listaSegmentos");
-
-    // Si se abre el JSP directamente, pasar primero por el servlet
-    if (rutas == null || estaciones == null || segmentos == null) {
+    boolean formulario = Boolean.TRUE.equals(request.getAttribute("vistaFormulario"));
+    if (!formulario && request.getAttribute("listaRutas") == null) {
         response.sendRedirect(servlet);
         return;
     }
-
     String error = (String) request.getAttribute("error");
-    if (error == null) {
-        error = "";
-    }
-
+    if (error == null) error = "";
     String filtro = request.getParameter("filtro");
-    if (!"activa".equals(filtro) && !"inactiva".equals(filtro)) {
-        filtro = "Todas";
-    }
-
-    int cantidad = 0;
-    Ruta rutaDetalle = null;
-    Ruta rutaFormulario = null;
-
-    boolean formulario = "nuevo".equals(request.getParameter("ventana"));
-
-    for (Ruta ruta : rutas) {
-        if ("Todas".equals(filtro) || filtro.equals(ruta.getEstado())) {
-            cantidad++;
-        }
-
-        String idRuta = String.valueOf(ruta.getIdRuta());
-
-        if (idRuta.equals(request.getParameter("detalle"))) {
-            rutaDetalle = ruta;
-        }
-
-        if (idRuta.equals(request.getParameter("editar"))) {
-            rutaFormulario = ruta;
-            formulario = true;
-        }
-    }
-
-    // Recuperar los datos enviados si hubo un error al guardar
-    Ruta datosEnviados =
-            (Ruta) request.getAttribute("rutaFormulario");
-
-    if (datosEnviados != null) {
-        rutaFormulario = datosEnviados;
-        formulario = true;
-    }
-
-    boolean esEdicion =
-            rutaFormulario != null && rutaFormulario.getIdRuta() > 0;
-
-    // ID, nombre, origen, destino, estado y códigos de segmentos
-    String[] valor = {"", "", "", "", "activa", ""};
-
-    if (rutaFormulario != null) {
-        valor[0] = esEdicion
-                ? String.valueOf(rutaFormulario.getIdRuta()) : "";
-        valor[1] = rutaFormulario.getNombre();
-        valor[2] = String.valueOf(rutaFormulario.getIdLandingOrigen());
-        valor[3] = String.valueOf(rutaFormulario.getIdLandingDestino());
-        valor[4] = rutaFormulario.getEstado();
-
-        for (Segmento segmento : rutaFormulario.getSegmentos()) {
-            if (!valor[5].isEmpty()) {
-                valor[5] += ", ";
-            }
-            valor[5] += segmento.getCodigo();
-        }
-    }
-
-    String codigosEnviados =
-            (String) request.getAttribute("segmentosFormulario");
-
-    if (codigosEnviados != null) {
-        valor[5] = codigosEnviados;
-    }
+    if (!"activa".equals(filtro) && !"inactiva".equals(filtro)) filtro = "Todas";
+    int pagina = formulario ? Math.max(1, paginaValida(request.getParameter("pagina")))
+                            : (Integer) request.getAttribute("paginaActual");
+    String urlLista = servlet + "?filtro=" + filtro + "&amp;pagina=" + pagina;
+    String titulo = formulario
+        ? (request.getAttribute("rutaFormulario") == null
+            || ((Ruta) request.getAttribute("rutaFormulario")).getIdRuta() == 0 ? "Nueva ruta" : "Editar ruta")
+        : "Rutas";
 %>
 <!doctype html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rutas | OceanLink</title>
+    <title><%= titulo %> | OceanLink</title>
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/capacity_planner/rutas.css?v=4">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/rutas_formulario.css">
 </head>
 <body class="vista-rutas">
 
@@ -182,12 +119,22 @@
         <section class="encabezado-pagina">
             <div class="encabezado-panel">
                 <h2>Capacity Planner</h2>
-                <h1>Rutas</h1>
+                <h1><%= titulo %></h1>
             </div>
-            <a class="boton primario"
-               href="<%= servlet %>?ventana=nuevo">+ Nueva ruta</a>
+            <% if (formulario) { %>
+                <a class="boton secundario" href="<%= urlLista %>">Volver a rutas</a>
+            <% } else { %>
+                <a class="boton primario" href="<%= urlLista %>&amp;ventana=nuevo">+ Nueva ruta</a>
+            <% } %>
         </section>
 
+        <%
+            List<Ruta> rutas = (List<Ruta>) request.getAttribute("listaRutas");
+            Ruta rutaDetalle = (Ruta) request.getAttribute("rutaDetalle");
+            int cantidad = (Integer) request.getAttribute("cantidad");
+            int paginas = (Integer) request.getAttribute("paginas");
+            String urlPagina = servlet + "?filtro=" + filtro + "&amp;pagina=";
+        %>
         <% if ("1".equals(request.getParameter("guardado"))) { %>
             <p class="mensaje-exito">Ruta guardada.</p>
         <% } %>
@@ -236,13 +183,11 @@
                 </tr>
                 </thead>
                 <tbody>
-                <% for (Ruta ruta : rutas) {
-                    if ("Todas".equals(filtro)
-                            || filtro.equals(ruta.getEstado())) { %>
+                <% for (Ruta ruta : rutas) { %>
                     <tr>
                         <td>
                             <a class="enlace-ruta"
-                               href="<%= servlet %>?detalle=<%= ruta.getIdRuta() %>">
+                               href="<%= urlLista %>&amp;detalle=<%= ruta.getIdRuta() %>#detalle-ruta">
                                 RUT-<%= ruta.getIdRuta() %>
                             </a>
                         </td>
@@ -258,8 +203,7 @@
                             </span>
                         </td>
                     </tr>
-                <%  }
-                } %>
+                <% } %>
 
                 <% if (cantidad == 0) { %>
                     <tr>
@@ -270,13 +214,27 @@
             </table>
         </section>
 
+        <% if (paginas > 1) { %>
+            <nav class="paginacion-rutas" aria-label="Paginación de rutas">
+                <span>Página <%= pagina %> de <%= paginas %></span>
+                <div class="acciones">
+                    <% if (pagina > 1) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= pagina - 1 %>">Anterior</a>
+                    <% } %>
+                    <% if (pagina < paginas) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= pagina + 1 %>">Siguiente</a>
+                    <% } %>
+                </div>
+            </nav>
+        <% } %>
+
         <% if (rutaDetalle != null) {
             int orden = 1;
         %>
-        <section class="panel-detalle">
+        <section id="detalle-ruta" class="panel-detalle">
             <div class="encabezado-detalle">
                 <h2><%= texto(rutaDetalle.getNombre()) %></h2>
-                <a href="<%= servlet %>" aria-label="Cerrar detalle">&times;</a>
+                <a href="<%= urlLista %>" aria-label="Cerrar detalle">&times;</a>
             </div>
 
             <p class="resumen-ruta">
@@ -327,7 +285,7 @@
 
             <div class="acciones">
                 <a class="boton secundario"
-                   href="<%= servlet %>?editar=<%= rutaDetalle.getIdRuta() %>">
+                   href="<%= urlLista %>&amp;editar=<%= rutaDetalle.getIdRuta() %>">
                     Editar ruta
                 </a>
                 <button class="boton peligro" type="button"
@@ -341,6 +299,8 @@
                 <p>¿Deseas eliminar <%= texto(rutaDetalle.getNombre()) %>?</p>
 
                 <form method="post" action="<%= servlet %>" class="acciones">
+                    <input type="hidden" name="filtro" value="<%= filtro %>">
+                    <input type="hidden" name="pagina" value="<%= pagina %>">
                     <input type="hidden" name="id_ruta"
                            value="<%= rutaDetalle.getIdRuta() %>">
                     <button class="boton secundario" type="button"
@@ -358,109 +318,6 @@
         <% } %>
     </main>
 </div>
-
-<% if (formulario) { %>
-<div class="modal">
-    <section class="contenido-modal" role="dialog"
-             aria-modal="true" aria-labelledby="titulo-modal">
-
-        <div class="encabezado-detalle">
-            <h2 id="titulo-modal">
-                <%= esEdicion ? "Editar ruta" : "Nueva ruta" %>
-            </h2>
-            <a href="<%= servlet %>" aria-label="Cerrar formulario">&times;</a>
-        </div>
-
-        <% if (!error.isEmpty()) { %>
-            <p class="mensaje-error" role="alert"><%= texto(error) %></p>
-        <% } %>
-
-        <form method="post" action="<%= servlet %>">
-            <input type="hidden" name="accion" value="guardar">
-            <input type="hidden" name="id_ruta" value="<%= texto(valor[0]) %>">
-
-            <div class="grupo-formulario">
-                <label for="nombre">Nombre de la ruta</label>
-                <input id="nombre" name="nombre" maxlength="100"
-                       value="<%= texto(valor[1]) %>"
-                       placeholder="Ejemplo: LAX-LUR-R02" required>
-            </div>
-
-            <div class="cuadricula-formulario">
-                <div class="grupo-formulario">
-                    <label for="origen">Origen</label>
-                    <select id="origen" name="id_landing_origen" required>
-                        <option value="">Seleccione</option>
-                        <% for (LandingStation estacion : estaciones) { %>
-                            <option value="<%= estacion.getIdLanding() %>"
-                                    <%= String.valueOf(estacion.getIdLanding())
-                                            .equals(valor[2]) ? "selected" : "" %>>
-                                <%= texto(estacion.getNombre()) %>
-                            </option>
-                        <% } %>
-                    </select>
-                </div>
-
-                <div class="grupo-formulario">
-                    <label for="destino">Destino</label>
-                    <select id="destino" name="id_landing_destino" required>
-                        <option value="">Seleccione</option>
-                        <% for (LandingStation estacion : estaciones) { %>
-                            <option value="<%= estacion.getIdLanding() %>"
-                                    <%= String.valueOf(estacion.getIdLanding())
-                                            .equals(valor[3]) ? "selected" : "" %>>
-                                <%= texto(estacion.getNombre()) %>
-                            </option>
-                        <% } %>
-                    </select>
-                </div>
-            </div>
-
-            <div class="grupo-formulario">
-                <label for="segmentos">
-                    Segmentos en orden, separados por comas
-                </label>
-                <textarea id="segmentos" name="segmentos" rows="3"
-                          placeholder="Ejemplo: LAX-LUR-01, LUR-VAL-01"
-                          required><%= texto(valor[5]) %></textarea>
-            </div>
-
-            <details class="catalogo">
-                <summary>Ver segmentos disponibles</summary>
-                <% for (Segmento segmento : segmentos) { %>
-                    <p>
-                        <strong><%= texto(segmento.getCodigo()) %></strong>:
-                        <%= texto(segmento.getNombreInicial()) %>
-                        →
-                        <%= texto(segmento.getNombreFinal()) %>
-                    </p>
-                <% } %>
-            </details>
-
-            <div class="grupo-formulario">
-                <label for="estado-ruta">Estado</label>
-                <select id="estado-ruta" name="estado_ruta">
-                    <option value="activa"
-                            <%= "activa".equals(valor[4]) ? "selected" : "" %>>
-                        Activa
-                    </option>
-                    <option value="inactiva"
-                            <%= "inactiva".equals(valor[4]) ? "selected" : "" %>>
-                        Inactiva
-                    </option>
-                </select>
-            </div>
-
-            <div class="acciones">
-                <a class="boton secundario" href="<%= servlet %>">Volver</a>
-                <button class="boton primario" type="submit">
-                    Guardar ruta
-                </button>
-            </div>
-        </form>
-    </section>
-</div>
-<% } %>
 
 </body>
 </html>

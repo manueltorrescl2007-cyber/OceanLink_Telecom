@@ -1,11 +1,11 @@
 package servlets.capacityplanner;
 
+import beans.capacityplanner.LandingStation;
 import beans.capacityplanner.Ruta;
 import beans.capacityplanner.Segmento;
 import daos.capacityplanner.LandingStationDao;
 import daos.capacityplanner.RutaDao;
 import daos.capacityplanner.SegmentoDao;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,270 +15,308 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 @WebServlet(name = "RutaServlet", value = "/RutaServlet")
 public class RutaServlet extends HttpServlet {
+  private static final int POR_PAGINA = 10;
+  private static final Pattern NOMBRE_RUTA =
+    Pattern.compile("([A-Z0-9]{2,12})-([A-Z0-9]{2,12})-R[0-9]+");
+  private static final Pattern CODIGO_SEGMENTO =
+    Pattern.compile("([A-Z0-9]{2,12})-([A-Z0-9]{2,12})-[0-9]+");
 
-  // Mostrar las rutas y los datos necesarios para el formulario
   @Override
-  protected void doGet(HttpServletRequest request,
-                       HttpServletResponse response)
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-
+    RutaDao dao = new RutaDao();
     try {
-      mostrarRutas(request, response);
-    } catch (SQLException e) {
-      throw new ServletException(
-        "No se pudieron cargar las rutas.", e);
-    }
-  }
-
-  // Crear, editar o eliminar una ruta
-  @Override
-  protected void doPost(HttpServletRequest request,
-                        HttpServletResponse response)
-    throws ServletException, IOException {
-
-    request.setCharacterEncoding("UTF-8");
-
-    String accion = texto(request.getParameter("accion"));
-    String servlet = request.getContextPath() + "/RutaServlet";
-    RutaDao rutaDao = new RutaDao();
-
-    try {
-      switch (accion) {
-
-        case "guardar": {
-          String idTexto = texto(
-            request.getParameter("id_ruta"));
-          boolean nuevo = idTexto.isEmpty();
-
-          Ruta ruta = new Ruta();
-          ruta.setIdRuta(nuevo ? 0 : parseId(idTexto));
-          ruta.setNombre(texto(request.getParameter("nombre")));
-          ruta.setIdLandingOrigen(parseId(
-            request.getParameter("id_landing_origen")));
-          ruta.setIdLandingDestino(parseId(
-            request.getParameter("id_landing_destino")));
-          ruta.setEstado(texto(
-            request.getParameter("estado_ruta")));
-
-          String codigos = texto(
-            request.getParameter("segmentos"));
-
-          // Conservar lo escrito si hay un error
-          request.setAttribute("rutaFormulario", ruta);
-          request.setAttribute("segmentosFormulario", codigos);
-
-          if (!nuevo && ruta.getIdRuta() <= 0) {
-            mostrarError(request, response,
-              "El identificador de la ruta no es válido.");
-            return;
-          }
-
-          String error = validarRuta(ruta, codigos);
-
-          if (error != null) {
-            mostrarError(request, response, error);
-            return;
-          }
-
-          boolean guardado;
-
-          if (nuevo) {
-            guardado = rutaDao.crearRuta(ruta);
-          } else {
-            guardado = rutaDao.actualizarRuta(ruta);
-          }
-
-          if (!guardado) {
-            mostrarError(request, response,
-              "No se pudo guardar. La ruta puede no existir "
-                + "o tener servicios asociados.");
-            return;
-          }
-
-          response.sendRedirect(servlet
-            + "?guardado=1&detalle=" + ruta.getIdRuta());
-          break;
+      if (request.getParameter("editar") != null) {
+        Ruta ruta = dao.obtenerRuta(id(request.getParameter("editar")));
+        if (ruta == null) {
+          response.sendError(HttpServletResponse.SC_NOT_FOUND, "La ruta no existe.");
+          return;
         }
-
-        case "eliminar": {
-          int idRuta = parseId(
-            request.getParameter("id_ruta"));
-
-          if (idRuta <= 0) {
-            mostrarError(request, response,
-              "El identificador de la ruta no es válido.");
-            return;
-          }
-
-          boolean eliminado = rutaDao.eliminarRuta(idRuta);
-
-          if (!eliminado) {
-            mostrarError(request, response,
-              "No se pudo eliminar. La ruta puede no existir "
-                + "o tener servicios asociados.");
-            return;
-          }
-
-          response.sendRedirect(servlet + "?eliminado=1");
-          break;
-        }
-
-        default:
-          response.sendError(
-            HttpServletResponse.SC_BAD_REQUEST,
-            "Acción no válida.");
-      }
-
-    } catch (SQLException e) {
-      getServletContext().log(
-        "Error al guardar cambios de una ruta", e);
-
-      String mensaje;
-
-      if (e.getErrorCode() == 1062) {
-        mensaje = "Ya existe una ruta con ese nombre "
-          + "o se ha repetido un segmento.";
-      } else if (e.getErrorCode() == 1451) {
-        mensaje = "No se puede modificar o eliminar la ruta "
-          + "porque tiene registros asociados.";
-      } else if (e.getErrorCode() == 1452) {
-        mensaje = "Una estación o un segmento seleccionado "
-          + "ya no existe.";
+        request.setAttribute("rutaFormulario", ruta);
+        mostrarFormulario(request, response);
+      } else if ("nuevo".equals(request.getParameter("ventana"))) {
+        mostrarFormulario(request, response);
       } else {
-        mensaje = "No se pudo guardar el cambio. "
-          + "Inténtalo nuevamente.";
+        mostrarRutas(request, response, dao);
       }
-
-      mostrarError(request, response, mensaje);
-    }
-  }
-
-  // Cargar la información que utilizará rutas.jsp
-  private void mostrarRutas(HttpServletRequest request,
-                            HttpServletResponse response)
-    throws SQLException, ServletException, IOException {
-
-    RutaDao rutaDao = new RutaDao();
-    LandingStationDao estacionDao = new LandingStationDao();
-    SegmentoDao segmentoDao = new SegmentoDao();
-
-    request.setAttribute("listaRutas",
-      rutaDao.listarRutas());
-
-    request.setAttribute("listaEstaciones",
-      estacionDao.listarEstaciones());
-
-    request.setAttribute("listaSegmentos",
-      segmentoDao.listarSegmentos());
-
-    request.getRequestDispatcher("/capacity_planner/rutas.jsp")
-      .forward(request, response);
-  }
-
-  // Mostrar el error conservando los datos del formulario
-  private void mostrarError(HttpServletRequest request,
-                            HttpServletResponse response,
-                            String mensaje)
-    throws ServletException, IOException {
-
-    request.setAttribute("error", mensaje);
-
-    try {
-      mostrarRutas(request, response);
     } catch (SQLException e) {
-      throw new ServletException(
-        "No se pudieron cargar las rutas.", e);
+      throw new ServletException("No se pudieron cargar las rutas.", e);
     }
   }
 
-  // Validar los datos y construir la lista ordenada de segmentos
-  private String validarRuta(Ruta ruta, String codigos)
-    throws SQLException {
+  @Override
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+    request.setCharacterEncoding("UTF-8");
+    String accion = texto(request.getParameter("accion"));
+    if (accion.isEmpty() && (request.getParameter("elegir_origen") != null
+      || request.getParameter("elegir_destino") != null)) {
+      accion = "actualizar";
+    }
+    RutaDao dao = new RutaDao();
+    try {
+      if (Set.of("guardar", "actualizar", "agregar", "quitar").contains(accion)) {
+        procesarFormulario(request, response, dao, accion);
+      } else if ("eliminar".equals(accion)) {
+        int idRuta = id(request.getParameter("id_ruta"));
+        if (idRuta > 0 && dao.eliminarRuta(idRuta)) {
+          response.sendRedirect(urlLista(request) + "&eliminado=1");
+        } else {
+          request.setAttribute("error", "No se pudo eliminar. La ruta puede no existir o tener servicios asociados.");
+          mostrarRutas(request, response, dao);
+        }
+      } else {
+        request.setAttribute("error", "Actualiza la página y vuelve a intentar la acción.");
+        mostrarRutas(request, response, dao);
+      }
+    } catch (SQLException e) {
+      getServletContext().log("Error al guardar cambios de una ruta", e);
+      String mensaje = switch (e.getErrorCode()) {
+        case 1062 -> "El nombre de la ruta ya está en uso. Intenta guardar nuevamente.";
+        case 1451 -> "La ruta tiene registros asociados.";
+        case 1452 -> "Una estación o un segmento seleccionado ya no existe.";
+        default -> "No se pudo guardar el cambio. Intenta nuevamente.";
+      };
+      request.setAttribute("error", mensaje);
+      try {
+        if (Set.of("guardar", "actualizar", "agregar", "quitar").contains(accion)) {
+          mostrarFormulario(request, response);
+        } else {
+          mostrarRutas(request, response, dao);
+        }
+      } catch (SQLException carga) {
+        throw new ServletException("No se pudieron cargar las rutas.", carga);
+      }
+    }
+  }
 
-    if (ruta.getNombre().isEmpty()
-      || ruta.getNombre().length() > 100) {
-      return "El nombre es obligatorio y admite hasta 100 caracteres.";
+  private void procesarFormulario(HttpServletRequest request, HttpServletResponse response, RutaDao dao, String accion)
+    throws SQLException, ServletException, IOException {
+    String idTexto = texto(request.getParameter("id_ruta"));
+    boolean nueva = idTexto.isEmpty();
+    int idRuta = nueva ? 0 : id(idTexto);
+    Ruta actual = nueva ? null : dao.obtenerRuta(idRuta);
+    if (!nueva && actual == null) {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND, "La ruta no existe.");
+      return;
     }
 
-    if (ruta.getIdLandingOrigen() <= 0
-      || ruta.getIdLandingDestino() <= 0) {
+    Ruta ruta = new Ruta();
+    ruta.setIdRuta(idRuta);
+    ruta.setNombre(actual == null ? "" : actual.getNombre());
+    List<LandingStation> estaciones = new LandingStationDao().listarEstaciones();
+    List<Segmento> segmentos = new SegmentoDao().listarSegmentos();
+    ruta.setIdLandingOrigen(idEstacionFormulario(request, estaciones, "origen"));
+    ruta.setIdLandingDestino(idEstacionFormulario(request, estaciones, "destino"));
+    ruta.setEstado(texto(request.getParameter("estado_ruta")));
+
+    String codigos = texto(request.getParameter("segmentos"));
+    if ("quitar".equals(accion)) {
+      codigos = codigos.contains(",") ? codigos.substring(0, codigos.lastIndexOf(',')) : "";
+    } else if ("agregar".equals(accion)) {
+      String siguiente = texto(request.getParameter("siguiente"));
+      if (!siguiente.isEmpty() && segmentos.stream().anyMatch(s -> s.getCodigo().equals(siguiente))) {
+        codigos = codigos.isEmpty() ? siguiente : codigos + "," + siguiente;
+      }
+    }
+
+    request.setAttribute("rutaFormulario", ruta);
+    request.setAttribute("segmentosFormulario", codigos);
+    int origen = ruta.getIdLandingOrigen();
+    int destino = ruta.getIdLandingDestino();
+    ruta.setNombre(origen > 0 && destino > 0 && origen != destino
+      ? nombreRuta(dao.listarRutas(), segmentos, idRuta, origen, destino) : "");
+
+    if (!"guardar".equals(accion)) {
+      mostrarFormulario(request, response);
+      return;
+    }
+
+    String error = validarRuta(ruta, codigos, estaciones, segmentos);
+    if (error != null) {
+      request.setAttribute("error", error);
+      mostrarFormulario(request, response);
+      return;
+    }
+
+    for (int intento = 0; intento < 3; intento++) {
+      ruta.setNombre(nombreRuta(dao.listarRutas(), segmentos, idRuta,
+        ruta.getIdLandingOrigen(), ruta.getIdLandingDestino()));
+      try {
+        boolean guardada = nueva ? dao.crearRuta(ruta) : dao.actualizarRuta(ruta);
+        if (guardada) {
+          response.sendRedirect(urlLista(request) + "&guardado=1&detalle=" + ruta.getIdRuta() + "#detalle-ruta");
+        } else {
+          request.setAttribute("error", "No se pudo guardar. La ruta puede no existir o tener servicios asociados.");
+          mostrarFormulario(request, response);
+        }
+        return;
+      } catch (SQLException e) {
+        if (e.getErrorCode() != 1062 || intento == 2) {
+          throw e;
+        }
+      }
+    }
+  }
+
+  private int idEstacionFormulario(HttpServletRequest request, List<LandingStation> estaciones,
+                                   String extremo) {
+    String elegido = request.getParameter("elegir_" + extremo);
+    if (elegido == null) {
+      return idEstacion(estaciones, request.getParameter(extremo));
+    }
+
+    int idEstacion = id(elegido);
+    for (LandingStation estacion : estaciones) {
+      if (estacion.getIdLanding() == idEstacion) {
+        request.setAttribute("estacion_" + extremo, estacion.getNombre());
+        return idEstacion;
+      }
+    }
+    return -1;
+  }
+
+  private int idEstacion(List<LandingStation> estaciones, String nombre) {
+    return estaciones.stream()
+      .filter(estacion -> estacion.getNombre().equalsIgnoreCase(texto(nombre)))
+      .mapToInt(LandingStation::getIdLanding)
+      .findFirst().orElse(-1);
+  }
+
+  private String nombreRuta(List<Ruta> rutas, List<Segmento> segmentos, int idRuta, int origen, int destino) {
+    Set<String> nombres = new HashSet<>();
+    for (Ruta ruta : rutas) {
+      if (ruta.getIdRuta() == idRuta) {
+        if (ruta.getIdLandingOrigen() == origen && ruta.getIdLandingDestino() == destino) {
+          return ruta.getNombre();
+        }
+      } else {
+        nombres.add(ruta.getNombre().toUpperCase(Locale.ROOT));
+      }
+    }
+
+    String base = prefijo(rutas, segmentos, origen) + "-" + prefijo(rutas, segmentos, destino) + "-R";
+    int numero = 1;
+    String nombre;
+    do {
+      nombre = base + String.format(Locale.ROOT, "%02d", numero++);
+    } while (nombres.contains(nombre));
+    return nombre;
+  }
+
+  private String prefijo(List<Ruta> rutas, List<Segmento> segmentos, int estacion) {
+    for (Ruta ruta : rutas) {
+      boolean origen = ruta.getIdLandingOrigen() == estacion;
+      if (origen || ruta.getIdLandingDestino() == estacion) {
+        var nombre = NOMBRE_RUTA.matcher(ruta.getNombre().toUpperCase(Locale.ROOT));
+        if (nombre.matches()) return nombre.group(origen ? 1 : 2);
+      }
+    }
+
+    for (Segmento segmento : segmentos) {
+      boolean inicial = segmento.getIdLandingInicial() == estacion;
+      if (inicial || segmento.getIdLandingFinal() == estacion) {
+        var codigo = CODIGO_SEGMENTO.matcher(segmento.getCodigo().toUpperCase(Locale.ROOT));
+        if (codigo.matches()) return codigo.group(inicial ? 1 : 2);
+      }
+    }
+    return "E" + Integer.toString(estacion, 36).toUpperCase(Locale.ROOT);
+  }
+
+  private String validarRuta(Ruta ruta, String codigos, List<LandingStation> estaciones, List<Segmento> disponibles) {
+    int origen = ruta.getIdLandingOrigen();
+    int destino = ruta.getIdLandingDestino();
+    if (!estacionExiste(estaciones, origen) || !estacionExiste(estaciones, destino)) {
       return "Selecciona las estaciones de origen y destino.";
     }
+    if (origen == destino) return "El origen y el destino deben ser diferentes.";
+    if (!Set.of("activa", "inactiva").contains(ruta.getEstado())) return "Selecciona un estado válido.";
+    if (codigos.isEmpty()) return "Añade al menos un segmento al recorrido.";
 
-    if (ruta.getIdLandingOrigen() == ruta.getIdLandingDestino()) {
-      return "El origen y el destino deben ser diferentes.";
-    }
-
-    if (!"activa".equals(ruta.getEstado())
-      && !"inactiva".equals(ruta.getEstado())) {
-      return "Selecciona un estado válido.";
-    }
-
-    if (codigos.isEmpty()) {
-      return "Ingresa al menos un segmento.";
-    }
-
-    SegmentoDao segmentoDao = new SegmentoDao();
-    ArrayList<Segmento> disponibles = segmentoDao.listarSegmentos();
     ArrayList<Segmento> seleccionados = new ArrayList<>();
-    ArrayList<Integer> idsUsados = new ArrayList<>();
-
-    int estacionActual = ruta.getIdLandingOrigen();
-
-    // Los códigos llegan separados por comas
+    Set<Integer> usados = new HashSet<>();
+    int actual = origen;
     for (String codigo : codigos.split(",", -1)) {
-      codigo = codigo.trim();
-
-      if (codigo.isEmpty()) {
-        return "Revisa los códigos: hay un segmento vacío "
-          + "entre comas o al final.";
-      }
-
       Segmento encontrado = null;
-
       for (Segmento segmento : disponibles) {
-        if (segmento.getCodigo().equalsIgnoreCase(codigo)) {
+        if (segmento.getCodigo().equalsIgnoreCase(codigo.trim())) {
           encontrado = segmento;
           break;
         }
       }
-
-      if (encontrado == null) {
-        return "No existe el segmento: " + codigo;
-      }
-
-      if (idsUsados.contains(encontrado.getIdSegmento())) {
-        return "No puedes repetir el segmento: " + codigo;
-      }
-
-      if (encontrado.getIdLandingInicial() != estacionActual) {
-        return "El segmento " + codigo
-          + " no continúa el recorrido. "
-          + "Revisa el origen y el orden de los segmentos.";
-      }
-
+      if (encontrado == null) return "Revisa el segmento seleccionado: " + codigo;
+      if (!usados.add(encontrado.getIdSegmento())) return "No puedes repetir el segmento: " + codigo;
+      if (encontrado.getIdLandingInicial() != actual) return "El segmento " + codigo + " no continúa el recorrido.";
       seleccionados.add(encontrado);
-      idsUsados.add(encontrado.getIdSegmento());
-      estacionActual = encontrado.getIdLandingFinal();
+      actual = encontrado.getIdLandingFinal();
     }
-
-    if (estacionActual != ruta.getIdLandingDestino()) {
-      return "El último segmento no termina "
-        + "en la estación de destino seleccionada.";
-    }
-
+    if (actual != destino) return "El último segmento debe terminar en la estación de destino.";
     ruta.setSegmentos(seleccionados);
     return null;
+  }
+
+  private boolean estacionExiste(List<LandingStation> estaciones, int idEstacion) {
+    return estaciones.stream().anyMatch(estacion -> estacion.getIdLanding() == idEstacion);
+  }
+
+  private void mostrarFormulario(HttpServletRequest request, HttpServletResponse response)
+    throws SQLException, ServletException, IOException {
+    request.setAttribute("vistaFormulario", true);
+    request.setAttribute("listaEstaciones", new LandingStationDao().listarEstaciones());
+    request.setAttribute("listaSegmentos", new SegmentoDao().listarSegmentos());
+    request.getRequestDispatcher("/capacity_planner/ruta_form.jsp").forward(request, response);
+  }
+
+  private void mostrarRutas(HttpServletRequest request, HttpServletResponse response, RutaDao dao)
+    throws SQLException, ServletException, IOException {
+    String filtro = filtro(request);
+    List<Ruta> rutas = dao.listarRutas();
+    List<Ruta> filtradas = rutas.stream().filter(ruta -> "Todas".equals(filtro) || filtro.equals(ruta.getEstado())).toList();
+    int total = filtradas.size();
+    int paginas = Math.max(1, (total + POR_PAGINA - 1) / POR_PAGINA);
+    int pagina = Math.min(paginas, Math.max(1, id(request.getParameter("pagina"))));
+    int inicio = (pagina - 1) * POR_PAGINA;
+    int detalle = id(request.getParameter("detalle"));
+    if (detalle <= 0 && "eliminar".equals(request.getParameter("accion"))) {
+      detalle = id(request.getParameter("id_ruta"));
+    }
+    for (Ruta ruta : rutas) {
+      if (ruta.getIdRuta() == detalle) {
+        request.setAttribute("rutaDetalle", ruta);
+        break;
+      }
+    }
+
+    request.setAttribute("listaRutas", filtradas.subList(inicio, Math.min(total, inicio + POR_PAGINA)));
+    request.setAttribute("cantidad", total);
+    request.setAttribute("paginaActual", pagina);
+    request.setAttribute("paginas", paginas);
+    request.getRequestDispatcher("/capacity_planner/rutas.jsp").forward(request, response);
+  }
+
+  private String urlLista(HttpServletRequest request) {
+    return request.getContextPath() + "/RutaServlet?filtro=" + filtro(request)
+      + "&pagina=" + Math.max(1, id(request.getParameter("pagina")));
+  }
+
+  private String filtro(HttpServletRequest request) {
+    String valor = texto(request.getParameter("filtro"));
+    return Set.of("activa", "inactiva").contains(valor) ? valor : "Todas";
   }
 
   private String texto(String valor) {
     return valor == null ? "" : valor.trim();
   }
 
-  private int parseId(String valor) {
+  private int id(String valor) {
     try {
       return Integer.parseInt(valor);
     } catch (NumberFormatException e) {
@@ -286,3 +324,4 @@ public class RutaServlet extends HttpServlet {
     }
   }
 }
+

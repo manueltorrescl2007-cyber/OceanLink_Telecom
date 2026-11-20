@@ -34,26 +34,36 @@ public class SolicitudesServlet extends HttpServlet {
     try {
       switch (action) {
 
-        case "lista":
+        case "lista": {
           String estado = request.getParameter("estado");
+          var solicitudes = solicitudDao.listarSolicitudes(estado);
+
+          final int porPagina = 10;
+          int total = solicitudes.size();
+          int totalPaginas = Math.max(1, (total + porPagina - 1) / porPagina);
+          int pagina = parseId(request.getParameter("pagina"));
+          pagina = Math.max(1, Math.min(pagina, totalPaginas));
+
+          int desde = (pagina - 1) * porPagina;
+          int hasta = Math.min(desde + porPagina, total);
 
           request.setAttribute("listaSolicitudes",
-            solicitudDao.listarSolicitudes(estado));
-
-          request.setAttribute("filtroEstado",
-            estado == null ? "" : estado);
+            new java.util.ArrayList<>(solicitudes.subList(desde, hasta)));
+          request.setAttribute("paginaActual", pagina);
+          request.setAttribute("totalPaginas", totalPaginas);
+          request.setAttribute("totalSolicitudes", total);
+          request.setAttribute("filtroEstado", estado == null ? "" : estado);
 
           int id = parseId(request.getParameter("id"));
-
           if (id > 0) {
             request.setAttribute("solicitudSeleccionada",
               solicitudDao.obtenerSolicitud(id));
           }
 
-          request.getRequestDispatcher(
-            "/capacity_planner/solicitudes.jsp"
-          ).forward(request, response);
+          request.getRequestDispatcher("/capacity_planner/solicitudes.jsp")
+            .forward(request, response);
           break;
+        }
 
         case "formCrear":
           mostrarFormulario(request, response);
