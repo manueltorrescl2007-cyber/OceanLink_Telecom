@@ -64,7 +64,7 @@
   <title>OceanLink | Reportes</title>
 
   <link rel="stylesheet"
-        href="<%= request.getContextPath() %>/css/supervisor/reportes.css?v=5">
+        href="<%= request.getContextPath() %>/css/supervisor/reportes.css?v=6">
   <link rel="stylesheet"
         href="<%= request.getContextPath() %>/css/barras.css">
 </head>
@@ -165,7 +165,7 @@
 
     <section class="encabezado-panel">
       <h2>Supervisor</h2>
-      <h1>Generar reportes</h1>
+      <h1>Reportes</h1>
     </section>
 
     <section class="cuadricula-reportes">
@@ -269,6 +269,10 @@
                 <input type="radio" name="severidad" value="Media" <%= "Media".equals(severidadSeleccionada) ? "checked" : "" %>>
                 <span>Media</span>
               </label>
+              <label class="opcion">
+                <input type="radio" name="severidad" value="Leve" <%= "Leve".equals(severidadSeleccionada) ? "checked" : "" %>>
+                <span>Leve</span>
+              </label>
             </div>
           </fieldset>
 
@@ -280,7 +284,7 @@
             </select>
           </div>
 
-          <p id="notaConsolidado" style="display:none; font-size: 12px; color: var(--color-texto-claro); margin-bottom: 16px;">
+          <p id="notaConsolidado" class="nota-consolidado">
             Este reporte consolida en tiempo real los indicadores globales de toda la red OceanLink (sin filtros adicionales).
           </p>
 
@@ -298,19 +302,19 @@
           <span class="cantidad-reportes"><%= listaReporte.size() %></span>
         </div>
 
-        <div class="acciones-reporte" style="margin-bottom: 16px;">
+        <div class="acciones-reporte acciones-pdf">
           <a class="boton-accion" href="<%= urlPdfVista %>" target="_blank">Vista previa PDF</a>
           <a class="boton-accion" href="<%= urlPdfDescarga %>">Descargar PDF</a>
         </div>
 
-        <div style="overflow-x: auto; border: 1px solid var(--color-borde); border-radius: 6px;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+        <div class="tabla-reporte-wrapper">
+          <table class="tabla-reporte">
             <thead>
-            <tr style="background-color: var(--color-fondo); color: var(--color-primario); text-align: left;">
+            <tr>
               <%
                 for (int i = 0; i < encabezados.length; i++) {
               %>
-              <th style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= encabezados[i] %></th>
+              <th><%= encabezados[i] %></th>
               <%
                 }
               %>
@@ -321,7 +325,7 @@
               if (listaReporte.isEmpty()) {
             %>
             <tr>
-              <td colspan="6" style="padding: 16px; text-align: center; color: var(--color-texto-claro);">
+              <td colspan="6" class="celda-vacia">
                 No hay registros para los filtros seleccionados.
               </td>
             </tr>
@@ -331,12 +335,12 @@
                 ReporteSupervisor fila = listaReporte.get(i);
             %>
             <tr>
-              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde); font-weight: bold;"><%= fila.getCol1() %></td>
-              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= fila.getCol2() %></td>
-              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= fila.getCol3() %></td>
-              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= fila.getCol4() %></td>
-              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= fila.getCol5() %></td>
-              <td style="padding: 10px; border-bottom: 1px solid var(--color-borde);"><%= fila.getCol6() %></td>
+              <td class="celda-destacada"><%= fila.getCol1() %></td>
+              <td><%= fila.getCol2() %></td>
+              <td><%= fila.getCol3() %></td>
+              <td><%= fila.getCol4() %></td>
+              <td><%= fila.getCol5() %></td>
+              <td><%= fila.getCol6() %></td>
             </tr>
             <%
                 }
