@@ -1,12 +1,19 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.Locale" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
 <%@ page import="beans.networkoperator.Incidencia" %>
-<%@ page import="beans.networkoperator.Segmento" %>
+<%@ page import="beans.maintenance.Mantenimiento" %>
 <%!
-  private String html(String s) {
-    if (s == null) return "";
-    return s.replace("&", "&amp;").replace("<", "&lt;")
-      .replace(">", "&gt;").replace("\"", "&quot;")
+  private String html(String valor) {
+    if (valor == null) return "";
+
+    return valor.replace("&", "&amp;")
+      .replace("<", "&lt;")
+      .replace(">", "&gt;")
+      .replace("\"", "&quot;")
       .replace("'", "&#39;");
   }
 %>
@@ -15,12 +22,23 @@
     response.sendRedirect(request.getContextPath() + "/DashboardServletSuper");
     return;
   }
-  ArrayList<Incidencia> listaIncidencias = (ArrayList<Incidencia>) request.getAttribute("listaIncidencias");
-  ArrayList<Segmento> listaSegmentos = (ArrayList<Segmento>) request.getAttribute("listaSegmentos");
-  String filtroSeveridad = (String) request.getAttribute("filtroSeveridad");
-  int filtroIdSegmento = (Integer) request.getAttribute("filtroIdSegmento");
-%>
 
+  ArrayList<String[]> topSegmentos = (ArrayList<String[]>) request.getAttribute("topSegmentos");
+  if (topSegmentos == null) topSegmentos = new ArrayList<>();
+
+  ArrayList<String[]> topClientes = (ArrayList<String[]>) request.getAttribute("topClientes");
+  if (topClientes == null) topClientes = new ArrayList<>();
+
+  List<Incidencia> incidenciasRecientes = (List<Incidencia>) request.getAttribute("incidenciasRecientes");
+  if (incidenciasRecientes == null) incidenciasRecientes = new ArrayList<>();
+
+  List<Mantenimiento> proximosMantenimientosLista = (List<Mantenimiento>) request.getAttribute("proximosMantenimientosLista");
+  if (proximosMantenimientosLista == null) proximosMantenimientosLista = new ArrayList<>();
+
+  Map<Integer, String> mapaCodigosSegmento = (Map<Integer, String>) request.getAttribute("mapaCodigosSegmento");
+
+  DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.forLanguageTag("es-PE"));
+%>
 
 <!doctype html>
 <html lang="es">
@@ -32,7 +50,7 @@
   <title>OceanLink | Dashboard</title>
 
   <link rel="stylesheet"
-        href="${pageContext.request.contextPath}/css/supervisor/supervisor.css?v=2">
+        href="${pageContext.request.contextPath}/css/supervisor/supervisor.css?v=3">
   <link rel="stylesheet"
         href="${pageContext.request.contextPath}/css/barras.css">
 </head>
@@ -91,19 +109,15 @@
 
         <!-- Incidencias -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
           <input
             type="checkbox"
             id="control-incidencias"
-            class="control-submenu"
-          >
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
+            class="control-submenu">
           <label for="control-incidencias"
                  class="titulo-grupo">
             <span>Incidencias</span>
             <span class="flecha-submenu"></span>
           </label>
-          <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
             <a href="${pageContext.request.contextPath}/IncidenciaServletSuper"
                class="subopcion">
@@ -119,22 +133,19 @@
 
         <!-- Estado de la red -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
           <input
             type="checkbox"
             id="controlEstadoRed"
             class="control-submenu">
 
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
           <label for="controlEstadoRed"
                  class="titulo-grupo">
             <span class="texto-grupo">
-                Estado de la red
+              Estado de la red
             </span>
             <span class="flecha-submenu"></span>
           </label>
 
-          <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
             <a href="${pageContext.request.contextPath}/TarjetasServletSuper"
                class="subopcion">
@@ -160,18 +171,16 @@
           <input
             type="checkbox"
             id="control-servicios-clientes"
-            class="control-submenu"
-          >
+            class="control-submenu">
 
           <label for="control-servicios-clientes"
                  class="titulo-grupo">
             <span class="texto-grupo">
-                Servicios y clientes
+              Servicios y clientes
             </span>
             <span class="flecha-submenu"></span>
           </label>
           <div class="contenido-submenu">
-
             <a href="${pageContext.request.contextPath}/ClienteServletSuper"
                class="subopcion">
               Clientes
@@ -181,9 +190,8 @@
                class="subopcion">
               Servicios
             </a>
-            <a
-              href="${pageContext.request.contextPath}/SolicitudesServletSuper"
-              class="subopcion">
+            <a href="${pageContext.request.contextPath}/SolicitudesServletSuper"
+               class="subopcion">
               Solicitudes
             </a>
           </div>
@@ -191,27 +199,21 @@
 
         <!-- Mantenimientos -->
         <div class="grupo-menu">
-
           <input
             type="checkbox"
             id="control-mantenimientos"
-            class="control-submenu"
-          >
+            class="control-submenu">
 
           <label
             for="control-mantenimientos"
             class="titulo-grupo">
-
             <span class="texto-grupo">
-                Mantenimientos
+              Mantenimientos
             </span>
-
             <span class="flecha-submenu"></span>
-
           </label>
 
           <div class="contenido-submenu">
-
             <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=listar"
                class="subopcion">
               Programación
@@ -219,7 +221,7 @@
 
             <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=historial"
                class="subopcion">
-              Historial de mantenimientos
+              Historial de programados
             </a>
           </div>
         </div>
@@ -234,6 +236,7 @@
         </a>
       </nav>
     </div>
+
     <!-- parte baja -->
     <div class="configuracion">
       <nav aria-label="Opciones del usuario">
@@ -254,7 +257,7 @@
       <h1>Dashboard general</h1>
     </section>
 
-    <!-- Indicadores reales calculados por DashboardServletSuper -->
+    <!-- Fila 1: 5 Tarjetas KPI superiores -->
     <section class="tarjetas">
       <article class="tarjeta">
         <div class="information">
@@ -312,6 +315,7 @@
           <p><%= request.getAttribute("mantenimientosProgramados") == null ? "Consulta no disponible" : "Próximos 7 días" %></p>
         </div>
       </article>
+
       <article class="tarjeta">
         <div class="information">
           <p>Utilización de la red</p>
@@ -325,60 +329,207 @@
       </article>
     </section>
 
-    <!-- Mapa interactivo (con fe) -->
-    <section class="mapa-interactivo">
-      <div>
-        <img src="${pageContext.request.contextPath}/img/mapa_red.svg"
-             alt="Mapa de la red OceanLink: landing stations y segmentos en la costa del Pacífico"
-             style="display:block; max-width:100%; max-height:620px; height:auto; margin:0 auto;">
-      </div>
-    </section>
+    <!-- Fila 2: Cuadrícula central de 3 columnas -->
+    <section class="panel-central-dashboard">
 
-    <section class="encabezado-panel">
-      <h1>Incidencias activas</h1>
-    </section>
-    <section class="card">
+      <!-- Columna izquierda: Top 5 Segmentos por capacidad -->
+      <article class="panel-dashboard">
+        <div class="encabezado-tarjeta-dashboard">
+          <div>
+            <h3>Capacidad por segmento (Top 5)</h3>
+            <p class="subtitulo-tarjeta-dashboard">Porcentaje de utilización en Gbps</p>
+          </div>
+          <a class="enlace-ver-todo" href="${pageContext.request.contextPath}/TarjetasServletSuper">Ver detalle</a>
+        </div>
 
-      <form class="filtros" action="${pageContext.request.contextPath}/DashboardServletSuper" method="get">
-        <select name="severidad" aria-label="Filtrar por severidad">
-          <option value="">Todas las severidades</option>
-          <% for (String sev : new String[]{"Critica", "Alta", "Media", "Leve"}) { %>
-          <option value="<%= sev %>" <%= sev.equals(filtroSeveridad) ? "selected" : "" %>><%= "Critica".equals(sev) ? "Crítica" : sev %></option>
-          <% } %>
-        </select>
-        <select name="idSegmento" aria-label="Filtrar por segmento">
-          <option value="">Todos los segmentos</option>
-          <% for (Segmento segmento : listaSegmentos) { %>
-          <option value="<%= segmento.getIdSegmento() %>" <%= segmento.getIdSegmento() == filtroIdSegmento ? "selected" : "" %>><%= html(segmento.getCodigo()) %></option>
-          <% } %>
-        </select>
-        <button type="submit" class="boton-filtrar-dashboard">Filtrar</button>
-        <a class="limpiar-filtro-dashboard" href="${pageContext.request.contextPath}/DashboardServletSuper">Limpiar</a>
-      </form>
-
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-          <tr><th>ID</th><th>Segmento</th><th>Severidad</th><th>Estado</th></tr>
-          </thead>
-          <tbody>
-          <% if (listaIncidencias.isEmpty()) { %>
-          <tr><td colspan="4" style="text-align:center">No hay incidencias para mostrar.</td></tr>
+        <div class="lista-metricas-barras">
+          <% if (topSegmentos.isEmpty()) { %>
+          <p class="subtitulo-tarjeta-dashboard">No hay segmentos registrados.</p>
           <% } else {
-            for (Incidencia inc : listaIncidencias) { %>
-          <tr>
-            <td><a href="${pageContext.request.contextPath}/IncidenciaServletSuper?action=detalle&amp;id=<%= inc.getIdIncidencia() %>"><%= html(inc.getCodigo()) %></a></td>
-            <td><%= html(inc.getCodigosSegmentos()) %></td>
-            <td class="<%= html(inc.getClaseSeveridad()) %>"><%= html(inc.getSeveridadTexto()) %></td>
-            <td><%= html(inc.getEstadoTexto()) %></td>
-          </tr>
+            for (String[] seg : topSegmentos) { %>
+          <div class="item-metrica-barra">
+            <div class="fila-etiqueta-barra">
+              <span class="codigo-metrica"><%= html(seg[0]) %></span>
+              <span class="valor-metrica"><%= html(seg[1]) %></span>
+            </div>
+            <progress class="barra-progreso <%= html(seg[3]) %>"
+                      value="<%= html(seg[2]) %>"
+                      max="100"></progress>
+            <div class="fila-pie-barra">
+              <span>Utilización: <b><%= html(seg[4]) %>%</b></span>
+            </div>
+          </div>
           <%  }
           } %>
-          </tbody>
-        </table>
+        </div>
+      </article>
+
+      <!-- Columna central: Mapa estático enmarcado -->
+      <article class="panel-dashboard">
+        <div class="encabezado-tarjeta-dashboard">
+          <div>
+            <h3>Topología de red submarina</h3>
+            <p class="subtitulo-tarjeta-dashboard">Red de cable submarino en el Pacífico</p>
+          </div>
+        </div>
+
+        <div class="contenedor-mapa-dashboard">
+          <img class="imagen-mapa-red"
+               src="${pageContext.request.contextPath}/img/mapa_red.svg"
+               alt="Mapa de la red OceanLink: landing stations y segmentos en la costa del Pacífico">
+        </div>
+      </article>
+
+      <!-- Columna derecha: Capacidad por cliente + Resumen de plataforma -->
+      <div class="columna-derecha-dashboard">
+
+        <article class="panel-dashboard panel-dashboard-crecer">
+          <div class="encabezado-tarjeta-dashboard">
+            <div>
+              <h3>Capacidad contratada por cliente</h3>
+              <p class="subtitulo-tarjeta-dashboard">Servicios activos principales</p>
+            </div>
+            <a class="enlace-ver-todo" href="${pageContext.request.contextPath}/ClienteServletSuper">Clientes</a>
+          </div>
+
+          <div class="lista-metricas-barras">
+            <% if (topClientes.isEmpty()) { %>
+            <p class="subtitulo-tarjeta-dashboard">No hay servicios activos contratados.</p>
+            <% } else {
+              for (String[] cli : topClientes) { %>
+            <div class="item-metrica-barra">
+              <div class="fila-etiqueta-barra">
+                <span class="codigo-metrica"><%= html(cli[0]) %></span>
+                <span class="valor-metrica"><%= html(cli[1]) %> Gbps</span>
+              </div>
+              <progress class="barra-progreso progreso-cliente"
+                        value="<%= html(cli[2]) %>"
+                        max="100"></progress>
+            </div>
+            <%  }
+            } %>
+          </div>
+        </article>
+
+        <article class="panel-dashboard">
+          <div class="encabezado-tarjeta-dashboard">
+            <div>
+              <h3>Resumen de plataforma</h3>
+              <p class="subtitulo-tarjeta-dashboard">Infraestructura base registrada</p>
+            </div>
+          </div>
+
+          <ul class="lista-resumen-plataforma">
+            <li>
+              <span>Landing Stations</span>
+              <strong><%= request.getAttribute("totalLandingStations") %> estaciones</strong>
+            </li>
+            <li>
+              <span>Segmentos de red</span>
+              <strong><%= request.getAttribute("segmentosOperativos") %> / <%= request.getAttribute("totalSegmentos") %> operativos</strong>
+            </li>
+            <li>
+              <span>Usuarios activos</span>
+              <strong><%= request.getAttribute("totalUsuariosActivos") %> usuarios</strong>
+            </li>
+          </ul>
+        </article>
+
       </div>
-      <p class="ayuda">Haz clic en el ID para ver el detalle de la incidencia.</p>
     </section>
+
+    <!-- Fila 3: 2 Tablas compactas sin repetir filtros -->
+    <section class="panel-inferior-dashboard">
+
+      <!-- Últimas incidencias activas -->
+      <article class="panel-dashboard">
+        <div class="encabezado-tarjeta-dashboard">
+          <div>
+            <h3>Últimas incidencias activas</h3>
+            <p class="subtitulo-tarjeta-dashboard">Alertas recientes pendientes de cierre</p>
+          </div>
+          <a class="enlace-ver-todo" href="${pageContext.request.contextPath}/IncidenciaServletSuper">Ver todas</a>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Segmento</th>
+              <th>Severidad</th>
+              <th>Estado</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% if (incidenciasRecientes.isEmpty()) { %>
+            <tr>
+              <td colspan="4" class="celda-centrada">No hay incidencias activas en este momento.</td>
+            </tr>
+            <% } else {
+              for (Incidencia inc : incidenciasRecientes) { %>
+            <tr>
+              <td><a href="${pageContext.request.contextPath}/IncidenciaServletSuper?action=detalle&id=<%= inc.getIdIncidencia() %>"><%= html(inc.getCodigo()) %></a></td>
+              <td><%= html(inc.getCodigosSegmentos()) %></td>
+              <td class="<%= html(inc.getClaseSeveridad()) %>"><%= html(inc.getSeveridadTexto()) %></td>
+              <td><%= html(inc.getEstadoTexto()) %></td>
+            </tr>
+            <%  }
+            } %>
+            </tbody>
+          </table>
+        </div>
+        <p class="ayuda">Haz clic en el ID para ver el detalle de la incidencia.</p>
+      </article>
+
+      <!-- Próximos mantenimientos programados -->
+      <article class="panel-dashboard">
+        <div class="encabezado-tarjeta-dashboard">
+          <div>
+            <h3>Próximos mantenimientos</h3>
+            <p class="subtitulo-tarjeta-dashboard">Ventanas planificadas en la red</p>
+          </div>
+          <a class="enlace-ver-todo" href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=listar">Ver programación</a>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Segmento</th>
+              <th>Prioridad</th>
+              <th>Inicio</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% if (proximosMantenimientosLista.isEmpty()) { %>
+            <tr>
+              <td colspan="4" class="celda-centrada">No hay mantenimientos próximos programados.</td>
+            </tr>
+            <% } else {
+              for (Mantenimiento m : proximosMantenimientosLista) {
+                String codSeg = mapaCodigosSegmento != null
+                  ? mapaCodigosSegmento.getOrDefault(m.getIdSegmento(), "Seg #" + m.getIdSegmento())
+                  : "Seg #" + m.getIdSegmento();
+                String fechaIni = m.getFechaInicio() != null ? m.getFechaInicio().format(formatoFecha) : "—";
+            %>
+            <tr>
+              <td><a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=estado&idMantenimiento=<%= m.getIdMantenimiento() %>">MNT-<%= m.getIdMantenimiento() %></a></td>
+              <td><%= html(codSeg) %></td>
+              <td><%= html(m.getPrioridad()) %></td>
+              <td><%= html(fechaIni) %></td>
+            </tr>
+            <%  }
+            } %>
+            </tbody>
+          </table>
+        </div>
+        <p class="ayuda">Haz clic en el ID para consultar el estado y bitácora.</p>
+      </article>
+
+    </section>
+
   </main>
 </div>
 </body>

@@ -26,42 +26,29 @@
   gap: 5px;
 }
 
-
 .navegacion-lateral > a,
 .titulo-grupo {
-
   width: 100%;
   min-height: 36px;
-
   display: flex;
   align-items: center;
-
   padding: 9px 12px;
-
   color: white;
-
   font-size: 15px;
   font-weight: normal;
   line-height: 18px;
-
   background-color: transparent;
-
   border-radius: 6px;
-
   cursor: pointer;
-
   transition: background-color 0.2s ease;
 }
-
 
 .navegacion-lateral > a:hover,
 .navegacion-lateral > a.activo,
 .titulo-grupo:hover {
-
   color: white;
   background-color: var(--color-acento);
 }
-
 
 /* =====================================================
    SUBMENÚ - ESTADO DE LA RED
@@ -71,23 +58,18 @@
   width: 100%;
 }
 
-
 .control-submenu {
   position: absolute;
-
   width: 1px;
   height: 1px;
-
   opacity: 0;
   pointer-events: none;
 }
-
 
 .titulo-grupo {
   justify-content: space-between;
   user-select: none;
 }
-
 
 .texto-grupo {
   display: flex;
@@ -95,75 +77,240 @@
   line-height: 18px;
 }
 
-/* Tarjetas */
+/* =====================================================
+   TARJETAS KPI SUPERIORES
+   ===================================================== */
 
 .tarjetas {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: repeat(5, 1fr);
   align-items: stretch;
-  gap: 10px;
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
 .tarjeta {
-  min-height: min-content;
-  min-width: min-content;
-  padding: 5px;
+  min-width: 0;
+  min-height: 140px;
+  padding: 16px 10px;
   background-color: white;
   border: 1px solid var(--color-borde);
-  border-radius: 7px;
+  border-radius: 8px;
   box-shadow: 0 2px 7px rgba(11, 61, 92, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .information {
-  min-height: 43px;
+  min-height: 38px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  justify-content: center;
+  text-align: center;
   font-size: 14px;
-  place-content: center;
+  color: var(--color-texto);
 }
 
 .information strong {
-  gap: 20px;
   color: var(--color-primario);
-  font-size: 200%;
+  font-size: clamp(18px, 2vw, 28px);
+  overflow-wrap: anywhere;
 }
 
-.mapa-interactivo{
-  gap: 40px;
-  display: flex;
-  align-items: stretch;
-  place-content: center;
-  margin-top: 8px;
-  margin-bottom: 8px;
-}
+/* =====================================================
+   PANEL CENTRAL EN 3 COLUMNAS (CAPACIDAD - MAPA - CLIENTES)
+   ===================================================== */
 
-/* Incidencias activas */
-/* =========================================================
-   FILTROS (selects y fechas arriba de las tablas)
-   ========================================================= */
-.filtros {
-  display: flex;
+.panel-central-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
   gap: 16px;
-  margin-top: 10px;
-  margin-bottom: 15px;
+  align-items: stretch;
+  margin-bottom: 20px;
 }
 
-select,
-input[type="date"],
-input[type="text"] {
-  padding: 8px 12px;
+.columna-derecha-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel-dashboard {
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 7px rgba(11, 61, 92, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-dashboard-crecer {
+  flex: 1;
+}
+
+.encabezado-tarjeta-dashboard {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.encabezado-tarjeta-dashboard h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--color-texto);
+}
+
+.subtitulo-tarjeta-dashboard {
+  margin: 3px 0 0 0;
+  font-size: 12.5px;
+  color: var(--color-texto-claro);
+}
+
+.enlace-ver-todo {
+  font-size: 13px;
+  color: var(--color-acento);
+  white-space: nowrap;
+}
+
+/* Mapa centrado dentro de tarjeta */
+.contenedor-mapa-dashboard {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-fondo);
   border: 1px solid var(--color-borde);
   border-radius: 6px;
-  font-family: inherit;
-  color: var(--color-texto);
-  background-color: white;
+  padding: 8px;
 }
 
-/* =========================================================
-   TABLAS
-   ========================================================= */
+.imagen-mapa-red {
+  display: block;
+  width: 100%;
+  max-width: 380px;
+  max-height: 440px;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* Barras de progreso sin JS */
+.lista-metricas-barras {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.item-metrica-barra {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fila-etiqueta-barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.codigo-metrica {
+  font-weight: 700;
+  color: var(--color-primario);
+}
+
+.valor-metrica {
+  font-size: 12px;
+  color: var(--color-texto-claro);
+  font-weight: 600;
+}
+
+.pista-barra {
+  width: 100%;
+  height: 9px;
+  background-color: #e6ecf2;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.relleno-barra {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.progreso-normal {
+  background-color: var(--color-disponible);
+}
+
+.progreso-alta {
+  background-color: var(--color-alta);
+}
+
+.progreso-critica {
+  background-color: var(--color-critica);
+}
+
+.progreso-cliente {
+  background-color: var(--color-acento);
+}
+
+.fila-pie-barra {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--color-texto-claro);
+}
+
+/* Resumen de plataforma */
+.lista-resumen-plataforma {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lista-resumen-plataforma li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-borde);
+  font-size: 13.5px;
+  color: var(--color-texto-claro);
+}
+
+.lista-resumen-plataforma li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.lista-resumen-plataforma strong {
+  color: var(--color-primario);
+  font-size: 14px;
+}
+
+/* =====================================================
+   FILA INFERIOR: 2 TABLAS COMPACTAS SIN FILTROS DUPLICADOS
+   ===================================================== */
+
+.panel-inferior-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -172,19 +319,25 @@ table {
 
 th, td {
   text-align: left;
-  padding: 14px 16px;
+  padding: 11px 12px;
   border-bottom: 1px solid var(--color-borde);
+  font-size: 13.5px;
 }
 
 th {
   background-color: var(--color-fondo);
   color: var(--color-texto-claro);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 tr:hover {
   background-color: var(--color-fondo);
+}
+
+.celda-centrada {
+  text-align: center;
+  color: var(--color-texto-claro);
 }
 
 a {
@@ -198,33 +351,71 @@ a:hover {
 }
 
 .ayuda {
-  margin-top: 12px;
+  margin-top: 10px;
+  margin-bottom: 0;
   color: var(--color-texto-claro);
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
-/* Colores de severidad, reutilizables en cualquier página */
+/* Colores de severidad */
 .severidad-alta { color: var(--color-alta); font-weight: 600; }
 .severidad-critica { color: var(--color-critica); font-weight: 600; }
 .severidad-media { color: var(--color-media); font-weight: 600; }
+.severidad-leve { color: var(--color-disponible); font-weight: 600; }
 
-/* Diseño adaptable */
+/* =====================================================
+   DISEÑO ADAPTABLE
+   ===================================================== */
+
+@media (max-width: 1200px) {
+  .panel-central-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-inferior-dashboard {
+    grid-template-columns: 1fr;
+  }
+}
 
 @media (max-width: 1000px) {
   .tarjetas {
     grid-template-columns: 1fr 1fr;
   }
+}
 
-  .acciones {
-    grid-column: 1 / -1;
+@media (max-width: 700px) {
+  .tarjetas {
+    grid-template-columns: 1fr;
+  }
+
+  .tarjetas .tarjeta {
+    min-height: 125px;
   }
 }
 
-/* Controles exclusivos de la tabla del Dashboard */
-.boton-filtrar-dashboard { padding: 8px 16px; color: white; background: var(--color-primario); border: 0; border-radius: 6px; cursor: pointer; }
-.limpiar-filtro-dashboard { display: inline-flex; align-items: center; padding: 8px 12px; font-size: 14px; }
-.tarjetas .tarjeta { min-width: 0; min-height: 145px; padding: 16px 10px; }
-.tarjetas .information { text-align: center; }
-.tarjetas .information strong { font-size: clamp(18px, 2vw, 30px); overflow-wrap: anywhere; }
-@media (max-width: 700px) { .tarjetas { grid-template-columns: 1fr; } .tarjetas .tarjeta { min-height: 130px; } .filtros { flex-wrap: wrap; } }
+.barra-progreso {
+  width: 100%;
+  height: 9px;
+  border: none;
+  border-radius: 999px;
+  background-color: #e6ecf2;
+  overflow: hidden;
+  appearance: none;
+}
 
+.barra-progreso::-webkit-progress-bar {
+  background-color: #e6ecf2;
+  border-radius: 999px;
+}
+
+.progreso-normal::-webkit-progress-value { background-color: var(--color-disponible); border-radius: 999px; }
+.progreso-normal::-moz-progress-bar { background-color: var(--color-disponible); border-radius: 999px; }
+
+.progreso-alta::-webkit-progress-value { background-color: var(--color-alta); border-radius: 999px; }
+.progreso-alta::-moz-progress-bar { background-color: var(--color-alta); border-radius: 999px; }
+
+.progreso-critica::-webkit-progress-value { background-color: var(--color-critica); border-radius: 999px; }
+.progreso-critica::-moz-progress-bar { background-color: var(--color-critica); border-radius: 999px; }
+
+.progreso-cliente::-webkit-progress-value { background-color: var(--color-acento); border-radius: 999px; }
+.progreso-cliente::-moz-progress-bar { background-color: var(--color-acento); border-radius: 999px; }
