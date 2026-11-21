@@ -6,6 +6,8 @@
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%@ page import="beans.networkoperator.Incidencia" %>
 <%@ page import="beans.maintenance.Mantenimiento" %>
+<%@ page import="beans.supervisor.MetricaBarra" %>
+<%@ page import="beans.supervisor.ResumenOperativo" %>
 <%!
   private String html(String valor) {
     if (valor == null) return "";
@@ -23,11 +25,14 @@
     return;
   }
 
-  ArrayList<String[]> topSegmentos = (ArrayList<String[]>) request.getAttribute("topSegmentos");
+  List<MetricaBarra> topSegmentos = (List<MetricaBarra>) request.getAttribute("topSegmentos");
   if (topSegmentos == null) topSegmentos = new ArrayList<>();
 
-  ArrayList<String[]> topClientes = (ArrayList<String[]>) request.getAttribute("topClientes");
+  List<MetricaBarra> topClientes = (List<MetricaBarra>) request.getAttribute("topClientes");
   if (topClientes == null) topClientes = new ArrayList<>();
+
+  ResumenOperativo resumenOperativo = (ResumenOperativo) request.getAttribute("resumenOperativo");
+  if (resumenOperativo == null) resumenOperativo = new ResumenOperativo();
 
   List<Incidencia> incidenciasRecientes = (List<Incidencia>) request.getAttribute("incidenciasRecientes");
   if (incidenciasRecientes == null) incidenciasRecientes = new ArrayList<>();
@@ -50,7 +55,7 @@
   <title>OceanLink | Dashboard</title>
 
   <link rel="stylesheet"
-        href="${pageContext.request.contextPath}/css/supervisor/supervisor.css?v=3">
+        href="${pageContext.request.contextPath}/css/supervisor/supervisor.css">
   <link rel="stylesheet"
         href="${pageContext.request.contextPath}/css/barras.css">
 </head>
@@ -346,17 +351,17 @@
           <% if (topSegmentos.isEmpty()) { %>
           <p class="subtitulo-tarjeta-dashboard">No hay segmentos registrados.</p>
           <% } else {
-            for (String[] seg : topSegmentos) { %>
+            for (MetricaBarra seg : topSegmentos) { %>
           <div class="item-metrica-barra">
             <div class="fila-etiqueta-barra">
-              <span class="codigo-metrica"><%= html(seg[0]) %></span>
-              <span class="valor-metrica"><%= html(seg[1]) %></span>
+              <span class="codigo-metrica"><%= html(seg.getTitulo()) %></span>
+              <span class="valor-metrica"><%= html(seg.getDetalle()) %></span>
             </div>
-            <progress class="barra-progreso <%= html(seg[3]) %>"
-                      value="<%= html(seg[2]) %>"
+            <progress class="barra-progreso <%= html(seg.getClaseBarra()) %>"
+                      value="<%= html(seg.getAnchoBarra()) %>"
                       max="100"></progress>
             <div class="fila-pie-barra">
-              <span>Utilización: <b><%= html(seg[4]) %>%</b></span>
+              <span>Utilización: <b><%= html(seg.getPorcentaje()) %>%</b></span>
             </div>
           </div>
           <%  }
@@ -380,7 +385,7 @@
         </div>
       </article>
 
-      <!-- Columna derecha: Capacidad por cliente + Resumen de plataforma -->
+      <!-- Columna derecha: Capacidad por cliente + Resumen operativo -->
       <div class="columna-derecha-dashboard">
 
         <article class="panel-dashboard panel-dashboard-crecer">
@@ -396,14 +401,14 @@
             <% if (topClientes.isEmpty()) { %>
             <p class="subtitulo-tarjeta-dashboard">No hay servicios activos contratados.</p>
             <% } else {
-              for (String[] cli : topClientes) { %>
+              for (MetricaBarra cli : topClientes) { %>
             <div class="item-metrica-barra">
               <div class="fila-etiqueta-barra">
-                <span class="codigo-metrica"><%= html(cli[0]) %></span>
-                <span class="valor-metrica"><%= html(cli[1]) %> Gbps</span>
+                <span class="codigo-metrica"><%= html(cli.getTitulo()) %></span>
+                <span class="valor-metrica"><%= html(cli.getDetalle()) %></span>
               </div>
-              <progress class="barra-progreso progreso-cliente"
-                        value="<%= html(cli[2]) %>"
+              <progress class="barra-progreso <%= html(cli.getClaseBarra()) %>"
+                        value="<%= html(cli.getAnchoBarra()) %>"
                         max="100"></progress>
             </div>
             <%  }
@@ -414,23 +419,27 @@
         <article class="panel-dashboard">
           <div class="encabezado-tarjeta-dashboard">
             <div>
-              <h3>Resumen de plataforma</h3>
-              <p class="subtitulo-tarjeta-dashboard">Infraestructura base registrada</p>
+              <h3>Resumen operativo</h3>
+              <p class="subtitulo-tarjeta-dashboard">Servicios, clientes e infraestructura</p>
             </div>
           </div>
 
           <ul class="lista-resumen-plataforma">
             <li>
+              <span>Clientes activos</span>
+              <strong><%= resumenOperativo.getClientesActivos() %></strong>
+            </li>
+            <li>
+              <span>Servicios activos</span>
+              <strong><%= resumenOperativo.getServiciosActivos() %></strong>
+            </li>
+            <li>
+              <span>Solicitudes pendientes</span>
+              <strong><%= resumenOperativo.getSolicitudesPendientes() %></strong>
+            </li>
+            <li>
               <span>Landing Stations</span>
-              <strong><%= request.getAttribute("totalLandingStations") %> estaciones</strong>
-            </li>
-            <li>
-              <span>Segmentos de red</span>
-              <strong><%= request.getAttribute("segmentosOperativos") %> / <%= request.getAttribute("totalSegmentos") %> operativos</strong>
-            </li>
-            <li>
-              <span>Usuarios activos</span>
-              <strong><%= request.getAttribute("totalUsuariosActivos") %> usuarios</strong>
+              <strong><%= resumenOperativo.getTotalLandingStations() %></strong>
             </li>
           </ul>
         </article>
