@@ -32,6 +32,7 @@
     String error = (String) request.getAttribute("error");
     String servlet = request.getContextPath() + "/ClienteServlet";
 %>
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -44,23 +45,8 @@
 </head>
 <body>
 <!-- Barra superior -->
-<header class="barra-superior">
-    <div class="zona-logo">
-        <label for="controlMenu" class="boton-menu" title="Ocultar o mostrar menú">☰</label>
-        <a href="${pageContext.request.contextPath}/CapacityPlannerServlet" class="logo">OceanLink</a>
-    </div>
-    <div class="usuario">
-        <div class="foto-usuario">
-            CP
-        </div>
-        <div>
-            <p class="nombre-usuario">Username</p>
-            <p class="rol-usuario">Capacity Planner</p>
-        </div>
-    </div>
-</header>
-<!-- Control del menú lateral -->
-<input type="checkbox" id="controlMenu" class="control-menu" >
+<jsp:include page="header.jsp" />
+
 <div class="contenedor">
     <!-- MENÚ LATERAL: Clientes es la opción activa de esta página -->
     <aside class="menu-lateral">

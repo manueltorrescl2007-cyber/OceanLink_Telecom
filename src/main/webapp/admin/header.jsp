@@ -1,15 +1,23 @@
-<%--
-    header.jsp - Barra superior del Administrador
---%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="beans.Usuario" %>
 <%
   String nombreUsuarioSesion = (String) session.getAttribute("nombreUsuario");
-  if (nombreUsuarioSesion == null || nombreUsuarioSesion.isBlank()) {
-    nombreUsuarioSesion = "Username";
+  Object objUsuario = session.getAttribute("usuarioLogueado");
+  if ((nombreUsuarioSesion == null || nombreUsuarioSesion.isBlank()) && objUsuario instanceof Usuario) {
+    nombreUsuarioSesion = ((Usuario) objUsuario).getNombre();
   }
-  String iniciales = nombreUsuarioSesion.length() >= 2
-    ? nombreUsuarioSesion.substring(0, 2).toUpperCase()
-    : "AD";
+  if (nombreUsuarioSesion == null || nombreUsuarioSesion.isBlank()) {
+    nombreUsuarioSesion = "Administrador";
+  }
+
+  String[] partesNombre = nombreUsuarioSesion.trim().split("\\s+");
+  String iniciales = partesNombre.length >= 2
+    ? (partesNombre[0].substring(0, 1) + partesNombre[1].substring(0, 1)).toUpperCase()
+    : (nombreUsuarioSesion.length() >= 2 ? nombreUsuarioSesion.substring(0, 2).toUpperCase() : "AD");
+
+  String nombreSeguro = nombreUsuarioSesion.replace("&", "&")
+    .replace("<", "<")
+    .replace(">", ">");
 %>
 <!-- Control del menú lateral -->
 <input type="checkbox" id="controlMenu" class="control-menu" aria-label="Ocultar menú lateral">
@@ -24,7 +32,7 @@
   <div class="usuario">
     <div class="foto-usuario"><%= iniciales %></div>
     <div>
-      <p class="nombre-usuario"><%= nombreUsuarioSesion %></p>
+      <p class="nombre-usuario"><%= nombreSeguro %></p>
       <p class="rol-usuario">Administrador</p>
     </div>
   </div>

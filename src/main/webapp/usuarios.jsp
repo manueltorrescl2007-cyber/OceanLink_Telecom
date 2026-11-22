@@ -154,6 +154,15 @@
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
+<%
+  String nombreUsuarioSesion = (String) session.getAttribute("nombreUsuario");
+  if (nombreUsuarioSesion == null || nombreUsuarioSesion.isBlank()) {
+    nombreUsuarioSesion = "<%= nombreUsuarioSesion %>";
+  }
+  String iniciales = nombreUsuarioSesion.length() >= 2
+    ? nombreUsuarioSesion.substring(0, 2).toUpperCase()
+    : "AD";
+%>
 <!doctype html>
 <html lang="es">
 
@@ -197,7 +206,7 @@
   <div class="usuario">
     <div class="foto-usuario">SU</div>
     <div>
-        <p class="nombre-usuario">Username</p>
+        <p class="nombre-usuario"><%= nombreUsuarioSesion %></p>
         <p class="rol-usuario">Supervisor</p>
     </div>
   </div>

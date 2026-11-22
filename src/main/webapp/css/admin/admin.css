@@ -1,8 +1,5 @@
-/* =========================================================
-   OCEANLINK — admin.css
-   Estilos del CONTENIDO de las páginas del Administrador.
-   La barra superior, el menú y la estructura vienen de barras.css.
-   ========================================================= */
+/* Estilos del contenido de las páginas del Administrador.
+   La barra superior, el menú y la estructura vienen de barras.css. */
 
 /* Tarjetas */
 .card {
@@ -190,4 +187,33 @@
   margin-left: auto;
   color: var(--color-texto-claro);
   font-size: 13px;
+}
+
+/* Paginación */
+.pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: var(--color-texto-claro);
+}
+
+.pagination-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pagination-links .btn-primary,
+.pagination-links .btn-secundario {
+  padding: 6px 12px;
+  font-size: 13px;
+  text-decoration: none;
 }

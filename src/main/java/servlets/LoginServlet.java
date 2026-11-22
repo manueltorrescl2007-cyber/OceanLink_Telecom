@@ -169,15 +169,15 @@ public class LoginServlet extends HttpServlet {
 
     String destino = switch (idRol) {
 
-      case 1 -> "/UsuarioServlet"; //Admin
+      case 1 -> "/DashboardServletAdmin"; // Administrador
 
-      case 2 -> "/supervisor/supervisor.jsp"; // Supervisor
+      case 2 -> "/DashboardServletSuper"; // Supervisor
 
-      case 3 -> "/capacity_planner/capacity_planner.jsp"; // capacity
+      case 3 -> "/CapacityPlannerServlet"; // Capacity Planner
 
-      case 4 -> "/EstadoRedServlet"; //Network
+      case 4 -> "/EstadoRedServlet"; // Network Operator
 
-      case 5 -> "/MantenimientoServlet?accion=listar"; // maintenance
+      case 5 -> "/MantenimientoServlet?accion=listar"; // Maintenance Management
 
       default -> null;
     };

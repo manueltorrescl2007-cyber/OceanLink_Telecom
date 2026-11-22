@@ -1,6 +1,3 @@
-<%--
-    sidebar.jsp - Barra lateral del Administrador (RF01 - RF06)
---%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
   String activePage = request.getParameter("activePage");
@@ -9,7 +6,7 @@
   }
 
   boolean grupoUsuariosAbierto = "usuarios".equals(activePage) || "nuevo".equals(activePage);
-  boolean grupoInfraAbierto = "landing".equals(activePage) || "segmentos".equals(activePage);
+  boolean grupoInfraAbierto = "landing_stations".equals(activePage) || "segmentos".equals(activePage);
 %>
 <aside class="menu-lateral">
 
@@ -65,12 +62,12 @@
         </label>
 
         <div class="contenido-submenu">
-          <a href="${pageContext.request.contextPath}/LandingStationServletAdmin"
-             class="subopcion <%= "landing".equals(activePage) ? "activo" : "" %>">
+          <a href="${pageContext.request.contextPath}/LandingStationAdminServlet"
+             class="subopcion <%= "landing_stations".equals(activePage) ? "activo" : "" %>">
             Landing stations
           </a>
 
-          <a href="${pageContext.request.contextPath}/SegmentoServletAdmin"
+          <a href="${pageContext.request.contextPath}/SegmentoAdminServlet"
              class="subopcion <%= "segmentos".equals(activePage) ? "activo" : "" %>">
             Segmentos
           </a>

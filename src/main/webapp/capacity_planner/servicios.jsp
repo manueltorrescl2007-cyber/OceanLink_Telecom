@@ -105,6 +105,7 @@
         }
     }
 %>
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -119,25 +120,7 @@
           href="${pageContext.request.contextPath}/css/capacity_planner/servicio_form.css">
 </head>
 <body>
-
-<input type="checkbox" id="controlMenu" class="control-menu">
-
-<header class="barra-superior">
-    <div class="zona-logo">
-        <label for="controlMenu" class="boton-menu"
-               title="Ocultar o mostrar menú">☰</label>
-        <a href="${pageContext.request.contextPath}/CapacityPlannerServlet"
-           class="logo">OceanLink</a>
-    </div>
-
-    <div class="usuario">
-        <div class="foto-usuario">CP</div>
-        <div>
-            <p class="nombre-usuario">Username</p>
-            <p class="rol-usuario">Capacity Planner</p>
-        </div>
-    </div>
-</header>
+<jsp:include page="header.jsp" />
 
 <div class="contenedor">
     <aside class="menu-lateral">

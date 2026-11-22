@@ -50,29 +50,7 @@
           href="${pageContext.request.contextPath}/css/barras.css">
 </head>
 <body>
-
-<input type="checkbox"
-       id="controlMenu"
-       class="control-menu"
-       aria-label="Ocultar menú lateral">
-
-<header class="barra-superior">
-    <div class="zona-logo">
-        <label for="controlMenu"
-               class="boton-menu"
-               title="Ocultar o mostrar menú">☰</label>
-
-        <a href="<%= servlet %>" class="logo">OceanLink</a>
-    </div>
-
-    <div class="usuario">
-        <div class="foto-usuario">CP</div>
-        <div>
-            <p class="nombre-usuario">Username</p>
-            <p class="rol-usuario">Capacity Planner</p>
-        </div>
-    </div>
-</header>
+<jsp:include page="header.jsp" />
 
 <div class="contenedor">
     <aside class="menu-lateral">

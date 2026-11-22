@@ -1,115 +1,68 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<!-- Datos estáticos, falta unir al SQL -->
 <%@ page import="java.util.ArrayList" %>
+<%@ page import="java.net.URLEncoder" %>
+<%@ page import="java.nio.charset.StandardCharsets" %>
+<%@ page import="beans.capacityplanner.LandingStation" %>
 <%!
-    // Protege los textos del formulario al mostrarlos en HTML.
-    public String texto(String valor) {
-        if (valor == null) return "";
-        return valor.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                    .replace("\"", "&quot;").replace("'", "&#39;");
-    }
+  private String texto(String valor) {
+    if (valor == null) return "";
+
+    return valor.replace("&", "&amp;")
+      .replace("<", "&lt;")
+      .replace(">", "&gt;")
+      .replace("\"", "&quot;")
+      .replace("'", "&#39;");
+  }
 %>
 <%
-    request.setCharacterEncoding("UTF-8");
-    // 1. DATOS INICIALES: las 20 estaciones de la tabla landingstation del SQL.
-    // Cada fila contiene: ID, nombre, país, ciudad y estado.
-    String[][] ejemplos = {
-        {"1", "Vancouver Landing", "Canadá", "Vancouver", "Activa"},
-        {"2", "Seattle Landing", "Estados Unidos", "Seattle", "Activa"},
-        {"3", "San Francisco Landing", "Estados Unidos", "San Francisco", "Activa"},
-        {"4", "Los Ángeles Landing", "Estados Unidos", "Los Ángeles", "Activa"},
-        {"5", "San Diego Landing", "Estados Unidos", "San Diego", "Activa"},
-        {"6", "Tijuana Landing", "México", "Tijuana", "Activa"},
-        {"7", "Manzanillo Landing", "México", "Manzanillo", "Activa"},
-        {"8", "Puerto Chiapas Landing", "México", "Puerto Chiapas", "Activa"},
-        {"9", "Puerto Quetzal Landing", "Guatemala", "Puerto Quetzal", "Activa"},
-        {"10", "Acajutla Landing", "El Salvador", "Acajutla", "Activa"},
-        {"11", "Puntarenas Landing", "Costa Rica", "Puntarenas", "Activa"},
-        {"12", "Balboa Landing", "Panamá", "Balboa", "Activa"},
-        {"13", "Buenaventura Landing", "Colombia", "Buenaventura", "Activa"},
-        {"14", "Manta Landing", "Ecuador", "Manta", "Activa"},
-        {"15", "Guayaquil Landing", "Ecuador", "Guayaquil", "Activa"},
-        {"16", "Paita Landing", "Perú", "Paita", "Activa"},
-        {"17", "Lurín Landing", "Perú", "Lurín", "Activa"},
-        {"18", "Arica Landing", "Chile", "Arica", "Activa"},
-        {"19", "Valparaíso Landing", "Chile", "Valparaíso", "Activa"},
-        {"20", "Concepción Landing", "Chile", "Concepción", "Activa"}
-    };
-    String[] estados = {"Activa", "Inactiva"};
+  String servlet = request.getContextPath() + "/LandingStationAdminServlet";
 
-    // 2. MOCKUP INDEPENDIENTE: almacena los cambios en esta sesión.
-    // Cuando conectemos MySQL, el Servlet enviará esta lista a la vista.
-    ArrayList<String[]> estaciones = (ArrayList<String[]>) session.getAttribute("landingStationsMockupIndependiente");
-    if (estaciones == null) {
-        estaciones = new ArrayList<String[]>();
-        for (String[] fila : ejemplos) estaciones.add(fila.clone());
-        session.setAttribute("landingStationsMockupIndependiente", estaciones);
-    }
-    String error = "";
-    String filtro = request.getParameter("estado");
-    String editar = request.getParameter("editar");
-    String detalle = request.getParameter("detalle");
-    if (filtro == null) filtro = "";
-    boolean mostrarFormulario = "nuevo".equals(request.getParameter("ventana")) || editar != null;
-    String[] formulario = {"", "", "", "", "Activa"};
-    for (String[] fila : estaciones) if (fila[0].equals(editar)) formulario = fila.clone();
+  ArrayList<LandingStation> estaciones =
+    (ArrayList<LandingStation>) request.getAttribute("listaEstaciones");
 
-    // 3. GUARDAR O EDITAR: valida los campos y evita nombres duplicados.
-    if ("POST".equals(request.getMethod()) && "guardar".equals(request.getParameter("accion"))) {
-        mostrarFormulario = true;
-        String id = request.getParameter("id");
-        String nombre = request.getParameter("nombre");
-        String pais = request.getParameter("pais");
-        String ciudad = request.getParameter("ciudad");
-        String estado = request.getParameter("estadoEstacion");
-        id = id == null ? "" : id;
-        nombre = nombre == null ? "" : nombre.trim();
-        pais = pais == null ? "" : pais.trim();
-        ciudad = ciudad == null ? "" : ciudad.trim();
-        formulario = new String[] {id, nombre, pais, ciudad, estado};
-        int posicion = -1;
-        int nuevoId = 1;
-        for (int i = 0; i < estaciones.size(); i++) {
-            String[] fila = estaciones.get(i);
-            if (fila[0].equals(id)) posicion = i;
-            nuevoId = Math.max(nuevoId, Integer.parseInt(fila[0]) + 1);
-        }
-        if (!id.isEmpty() && posicion < 0) error = "La estación que quieres editar no existe.";
-        else if (nombre.isEmpty() || nombre.length() > 100) error = "Escribe un nombre de hasta 100 caracteres.";
-        else if (pais.isEmpty() || pais.length() > 45) error = "Escribe un país de hasta 45 caracteres.";
-        else if (ciudad.isEmpty() || ciudad.length() > 45) error = "Escribe una ciudad de hasta 45 caracteres.";
-        else if (!"Activa".equals(estado) && !"Inactiva".equals(estado)) error = "Selecciona un estado válido.";
-        for (String[] fila : estaciones) {
-            if (!fila[0].equals(id) && fila[1].equalsIgnoreCase(nombre)) error = "Ya existe una estación con ese nombre.";
-        }
-        if (error.isEmpty()) {
-            String[] guardado = {posicion >= 0 ? id : String.valueOf(nuevoId), nombre, pais, ciudad, estado};
-            if (posicion >= 0) estaciones.set(posicion, guardado);
-            else estaciones.add(guardado);
-            response.sendRedirect("landing_stations.jsp?guardado=1&detalle=" + guardado[0] + "#detalle");
-            return;
-        }
-    }
-    int cantidad = 0;
-    for (String[] fila : estaciones) if (filtro.isEmpty() || fila[4].equals(filtro)) cantidad++;
+  if (estaciones == null) {
+    response.sendRedirect(servlet);
+    return;
+  }
+
+  String[] estados = {"Activa", "Inactiva"};
+  String filtro = (String) request.getAttribute("filtroEstado");
+  if (filtro == null) filtro = "";
+  boolean hayFiltro = !filtro.isEmpty();
+
+  int paginaActual = request.getAttribute("paginaActual") != null
+    ? (Integer) request.getAttribute("paginaActual") : 1;
+  int totalPaginas = request.getAttribute("totalPaginas") != null
+    ? (Integer) request.getAttribute("totalPaginas") : 1;
+  int totalRegistros = request.getAttribute("totalRegistros") != null
+    ? (Integer) request.getAttribute("totalRegistros") : estaciones.size();
+  int registroInicio = request.getAttribute("registroInicio") != null
+    ? (Integer) request.getAttribute("registroInicio") : (estaciones.isEmpty() ? 0 : 1);
+  int registroFin = request.getAttribute("registroFin") != null
+    ? (Integer) request.getAttribute("registroFin") : estaciones.size();
+
+  String filtroCodificado = URLEncoder.encode(filtro, StandardCharsets.UTF_8);
+  String urlBase = servlet + "?estado=" + filtroCodificado;
+  String urlLista = urlBase + "&pagina=" + paginaActual;
+  String msg = request.getParameter("msg");
 %>
-
-<!-- Contenido JSP -->
-<!doctype html>
+<%
+  String nombreUsuarioSesion = (String) session.getAttribute("nombreUsuario");
+  if (nombreUsuarioSesion == null || nombreUsuarioSesion.isBlank()) {
+    nombreUsuarioSesion = "<%= nombreUsuarioSesion %>";
+  }
+  String iniciales = nombreUsuarioSesion.length() >= 2
+    ? nombreUsuarioSesion.substring(0, 2).toUpperCase()
+    : "AD";
+%>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>OceanLink | Dashboard</title>
-
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/admin/landing_stations.css?v=2">
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/barras.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landing stations | OceanLink</title>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin/landing_stations.css">
 </head>
-
 <body>
 
 <jsp:include page="header.jsp" />
@@ -117,58 +70,181 @@
 <div class="contenedor">
 
   <jsp:include page="sidebar.jsp">
-      <jsp:param name="activePage" value="usuarios" />
+    <jsp:param name="activePage" value="landing_stations" />
   </jsp:include>
 
-  <!-- Contenido principal -->
   <main class="contenido-principal pagina-landings">
     <section class="encabezado-pagina">
       <div class="encabezado-panel">
-          <h2>Administrador</h2>
-          <h1>Landing stations</h1>
+        <h2>Administrador</h2>
+        <h1>Landing stations</h1>
+      </div>
+      <a href="<%= servlet %>?action=formCrear&estado=<%= filtroCodificado %>&pagina=<%= paginaActual %>" class="boton primario">
+        + Nueva estación
+      </a>
+    </section>
+
+    <% if ("guardado".equals(msg)) { %>
+    <p class="mensaje-exito" role="status">Estación guardada correctamente.</p>
+    <% } else if ("estadoOk".equals(msg)) { %>
+    <p class="mensaje-exito" role="status">Estado de la estación actualizado correctamente.</p>
+    <% } else if ("eliminado".equals(msg)) { %>
+    <p class="mensaje-exito" role="status">Estación eliminada correctamente.</p>
+    <% } else if ("asociado".equals(msg)) { %>
+    <p class="mensaje-error" role="alert">No se puede eliminar la estación porque está asociada a uno o más segmentos.</p>
+    <% } else if ("noExiste".equals(msg)) { %>
+    <p class="mensaje-error" role="alert">La estación seleccionada ya no existe.</p>
+    <% } %>
+
+    <div class="barra-herramientas">
+      <form action="<%= servlet %>" method="get" class="formulario-filtro">
+        <label for="filtroEstado">Estado:</label>
+        <select id="filtroEstado" name="estado">
+          <option value="">Todos</option>
+          <% for (String estado : estados) { %>
+          <option value="<%= estado %>" <%= estado.equals(filtro) ? "selected" : "" %>><%= estado %></option>
+          <% } %>
+        </select>
+        <button type="submit" class="boton secundario">Filtrar</button>
+        <% if (hayFiltro) { %>
+        <a href="<%= servlet %>" class="boton secundario">Limpiar</a>
+        <% } %>
+      </form>
+      <span><%= totalRegistros %> estaciones</span>
+    </div>
+
+    <section class="contenedor-tabla">
+      <table>
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>País</th>
+          <th>Ciudad</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% for (LandingStation estacion : estaciones) {
+          boolean activa = "Activa".equals(estacion.getEstado()); %>
+        <tr>
+          <td><%= estacion.getIdLanding() %></td>
+          <td>
+            <a href="<%= urlLista %>&detalle=<%= estacion.getIdLanding() %>#detalle"
+               class="enlace-estacion">
+              <%= texto(estacion.getNombre()) %>
+            </a>
+          </td>
+          <td><%= texto(estacion.getPais()) %></td>
+          <td><%= texto(estacion.getCiudad()) %></td>
+          <td>
+                                <span class="estado <%= activa ? "activa" : "inactiva" %>">
+                                    <%= texto(estacion.getEstado()) %>
+                                </span>
+          </td>
+          <td>
+            <div class="acciones-tabla">
+              <a href="<%= servlet %>?action=editar&id=<%= estacion.getIdLanding() %>&estado=<%= filtroCodificado %>&pagina=<%= paginaActual %>">
+                Editar
+              </a>
+              <% if (activa) { %>
+              <a href="<%= servlet %>?action=desactivar&id=<%= estacion.getIdLanding() %>&estado=<%= filtroCodificado %>&pagina=<%= paginaActual %>"
+                 class="accion-peligro"
+                 onclick="return confirm('¿Seguro que deseas desactivar esta Landing Station?');">
+                Desactivar
+              </a>
+              <% } else { %>
+              <a href="<%= servlet %>?action=activar&id=<%= estacion.getIdLanding() %>&estado=<%= filtroCodificado %>&pagina=<%= paginaActual %>">
+                Activar
+              </a>
+              <% } %>
+              <a href="<%= servlet %>?action=eliminar&id=<%= estacion.getIdLanding() %>&estado=<%= filtroCodificado %>&pagina=<%= paginaActual %>"
+                 class="accion-peligro"
+                 onclick="return confirm('¿Eliminar permanentemente esta Landing Station?');">
+                Eliminar
+              </a>
+            </div>
+          </td>
+        </tr>
+        <% } %>
+
+        <% if (estaciones.isEmpty()) { %>
+        <tr>
+          <td colspan="6" class="celda-vacia">
+            <%= hayFiltro ? "No hay estaciones con este estado." : "No hay Landing Stations registradas." %>
+          </td>
+        </tr>
+        <% } %>
+        </tbody>
+      </table>
+    </section>
+
+    <% if (totalRegistros > 0) { %>
+    <nav class="pagination-bar" aria-label="Paginación de estaciones">
+            <span class="pagination-info">
+                Mostrando <%= registroInicio %>–<%= registroFin %> de <%= totalRegistros %> registros (Página <%= paginaActual %> de <%= totalPaginas %>)
+            </span>
+
+      <% if (totalPaginas > 1) { %>
+      <div class="pagination-links">
+        <% if (paginaActual > 1) { %>
+        <a href="<%= urlBase %>&pagina=<%= paginaActual - 1 %>" class="boton secundario">Anterior</a>
+        <% } %>
+
+        <% for (int p = 1; p <= totalPaginas; p++) {
+          boolean esActual = (p == paginaActual); %>
+        <a href="<%= urlBase %>&pagina=<%= p %>"
+           class="boton <%= esActual ? "primario" : "secundario" %>">
+          <%= p %>
+        </a>
+        <% } %>
+
+        <% if (paginaActual < totalPaginas) { %>
+        <a href="<%= urlBase %>&pagina=<%= paginaActual + 1 %>" class="boton secundario">Siguiente</a>
+        <% } %>
+      </div>
+      <% } %>
+    </nav>
+    <% } %>
+
+    <% LandingStation estacionDetalle = (LandingStation) request.getAttribute("estacionDetalle");
+      if (estacionDetalle != null) { %>
+    <section class="panel-detalle" id="detalle">
+      <div class="encabezado-detalle">
+        <h2><%= texto(estacionDetalle.getNombre()) %></h2>
+        <a href="<%= urlLista %>" aria-label="Cerrar detalle">×</a>
+      </div>
+
+      <div class="datos-detalle">
+        <div>
+          <span>ID de la estación</span>
+          <strong><%= estacionDetalle.getIdLanding() %></strong>
+        </div>
+        <div>
+          <span>País</span>
+          <strong><%= texto(estacionDetalle.getPais()) %></strong>
+        </div>
+        <div>
+          <span>Ciudad</span>
+          <strong><%= texto(estacionDetalle.getCiudad()) %></strong>
+        </div>
+        <div>
+          <span>Estado</span>
+          <strong><%= texto(estacionDetalle.getEstado()) %></strong>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <a href="<%= servlet %>?action=editar&id=<%= estacionDetalle.getIdLanding() %>&estado=<%= filtroCodificado %>&pagina=<%= paginaActual %>"
+           class="boton primario">
+          Editar estación
+        </a>
       </div>
     </section>
-
-    <!-- 5. TABLA: muestra los cinco campos que existen en el SQL. -->
-    <section class="contenedor-tabla">
-        <table>
-            <thead><tr><th>ID</th><th>Nombre</th><th>País</th><th>Ciudad</th><th>Estado</th></tr></thead>
-            <tbody>
-            <% for (String[] fila : estaciones) {
-                if (!filtro.isEmpty() && !fila[4].equals(filtro)) continue;
-            %>
-                <tr>
-                    <td><%= fila[0] %></td>
-                    <td><a href="landing_stations.jsp?detalle=<%= fila[0] %>#detalle" class="enlace-estacion"><%= texto(fila[1]) %></a></td>
-                    <td><%= texto(fila[2]) %></td>
-                    <td><%= texto(fila[3]) %></td>
-                    <td><span class="estado <%= fila[4].equals("Activa") ? "activa" : "inactiva" %>"><%= fila[4] %></span></td>
-                </tr>
-            <% } %>
-            <% if (cantidad == 0) { %><tr><td colspan="5">No hay estaciones con este estado.</td></tr><% } %>
-            </tbody>
-        </table>
-    </section>
-    <p class="ayuda">Haz clic en el nombre de una estación para ver su detalle.</p>
-
-    <!-- 6. DETALLE: muestra la estación seleccionada y permite editarla. -->
-    <% for (String[] fila : estaciones) {
-        if (!fila[0].equals(detalle)) continue;
-    %>
-      <section class="panel-detalle" id="detalle">
-          <div class="encabezado-detalle">
-              <h2><%= texto(fila[1]) %></h2>
-              <a href="landing_stations.jsp" aria-label="Cerrar detalle">×</a>
-          </div>
-          <div class="datos-detalle">
-              <div><span>ID de la estación</span><strong><%= fila[0] %></strong></div>
-              <div><span>País</span><strong><%= texto(fila[2]) %></strong></div>
-              <div><span>Ciudad</span><strong><%= texto(fila[3]) %></strong></div>
-              <div><span>Estado</span><strong><%= fila[4] %></strong></div>
-          </div>
-      </section>
     <% } %>
   </main>
 </div>
+
 </body>
 </html>
