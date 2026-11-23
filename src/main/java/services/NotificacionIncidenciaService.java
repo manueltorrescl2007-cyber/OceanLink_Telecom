@@ -38,39 +38,14 @@ public class NotificacionIncidenciaService {
                 return;
             }
 
-            ArrayList<Segmento> segmentos = segmentoDao.listarSegmentosDeIncidencia(idIncidencia);
-            ArrayList<Servicio> servicios = servicioDao.listarServiciosAfectados(idIncidencia);
-
             String asunto = "OceanLink - Incidencia " + incidencia.getCodigo() + " registrada";
 
             StringBuilder contenido = new StringBuilder();
             contenido.append("Hola ").append(usuario.getNombre()).append(",\n\n");
             contenido.append("Se registró correctamente la siguiente incidencia en OceanLink.\n\n");
 
-            contenido.append("DETALLES DE LA INCIDENCIA\n\n");
-            contenido.append("Código: ").append(incidencia.getCodigo()).append("\n");
-            contenido.append("Título: ").append(incidencia.getTitulo()).append("\n");
-            contenido.append("Severidad: ").append(incidencia.getSeveridadTexto()).append("\n");
-            contenido.append("Estado: ").append(incidencia.getEstadoTexto()).append("\n");
-            contenido.append("Fecha de registro: ").append(incidencia.getFechaRegistro()).append("\n");
-            contenido.append("Descripción: ").append(incidencia.getDescripcion()).append("\n\n");
-
-            contenido.append("SEGMENTOS AFECTADOS\n\n");
-            for (Segmento s : segmentos) {
-                contenido.append("- ").append(s.getCodigo()).append("\n");
-            }
-
-            contenido.append("\nSERVICIOS Y CLIENTES AFECTADOS\n\n");
-            if (servicios.isEmpty()) {
-                contenido.append("Ningún servicio activo pasa por los segmentos de esta incidencia.\n");
-            } else {
-                for (Servicio sv : servicios) {
-                    contenido.append("- SRV-").append(sv.getIdServicio())
-                             .append(" (").append(sv.getSolicitud().getCliente().getNombre()).append(")\n");
-                }
-            }
-
-            contenido.append("\nEste es un mensaje automático de OceanLink. Si no reconoce esta operación, póngase en contacto con administracion@oceanlink.com");
+            contenido.append(construirDetalle(incidencia, idIncidencia));
+            contenido.append("\nEste es un mensaje automático de OceanLink.");
 
             emailService.enviarCorreo(usuario.getCorreo(), asunto, contenido.toString());
             LOGGER.info("Notificación enviada para la incidencia " + incidencia.getCodigo());
@@ -78,5 +53,77 @@ public class NotificacionIncidenciaService {
         } catch (MessagingException | RuntimeException e) {
             LOGGER.log(Level.WARNING, "No se pudo enviar la notificación de la incidencia " + idIncidencia, e);
         }
+    }
+
+    public void notificarCambioEstado(int idIncidencia, int idUsuario, String estadoAnterior) {
+        try {
+            Usuario usuario = usuarioDao.obtenerUsuario(idUsuario);
+            if (usuario == null || usuario.getCorreo() == null || usuario.getCorreo().isBlank()) {
+                LOGGER.warning("No se pudo notificar el cambio de estado de la incidencia " + idIncidencia + ": el usuario no tiene un correo válido.");
+                return;
+            }
+
+            // Solo se notifica al Network Operator
+            if (usuario.getRol() == null || usuario.getRol().getIdRol() != 4) {
+                return;
+            }
+
+            Incidencia incidencia = incidenciaDao.obtenerIncidencia(idIncidencia);
+            if (incidencia == null) {
+                LOGGER.warning("No se pudo notificar el cambio de estado de la incidencia " + idIncidencia + ": no existe.");
+                return;
+            }
+
+            // Para mostrar el estado anterior con tildes
+            Incidencia anterior = new Incidencia();
+            anterior.setEstado(estadoAnterior);
+
+            String asunto = "OceanLink - Incidencia " + incidencia.getCodigo() + " actualizada";
+
+            StringBuilder contenido = new StringBuilder();
+            contenido.append("Hola ").append(usuario.getNombre()).append(",\n\n");
+            contenido.append("Cambiaste el estado de la incidencia ").append(incidencia.getCodigo())
+                     .append(" de \"").append(anterior.getEstadoTexto())
+                     .append("\" a \"").append(incidencia.getEstadoTexto()).append("\".\n\n");
+            contenido.append(construirDetalle(incidencia, idIncidencia));
+            contenido.append("\nEste es un mensaje automático de OceanLink.");
+
+            emailService.enviarCorreo(usuario.getCorreo(), asunto, contenido.toString());
+            LOGGER.info("Notificación de cambio de estado enviada para la incidencia " + incidencia.getCodigo());
+
+        } catch (MessagingException | RuntimeException e) {
+            LOGGER.log(Level.WARNING, "No se pudo enviar la notificación de cambio de estado de la incidencia " + idIncidencia, e);
+        }
+    }
+
+    // Arma los datos de la incidencia, segmentos y servicios afectados
+    private String construirDetalle(Incidencia incidencia, int idIncidencia) {
+        ArrayList<Segmento> segmentos = segmentoDao.listarSegmentosDeIncidencia(idIncidencia);
+        ArrayList<Servicio> servicios = servicioDao.listarServiciosAfectados(idIncidencia);
+
+        StringBuilder detalle = new StringBuilder();
+        detalle.append("DETALLES DE LA INCIDENCIA\n\n");
+        detalle.append("Código: ").append(incidencia.getCodigo()).append("\n");
+        detalle.append("Título: ").append(incidencia.getTitulo()).append("\n");
+        detalle.append("Severidad: ").append(incidencia.getSeveridadTexto()).append("\n");
+        detalle.append("Estado: ").append(incidencia.getEstadoTexto()).append("\n");
+        detalle.append("Fecha de registro: ").append(incidencia.getFechaRegistro()).append("\n");
+        detalle.append("Descripción: ").append(incidencia.getDescripcion()).append("\n\n");
+
+        detalle.append("SEGMENTOS AFECTADOS\n\n");
+        for (Segmento s : segmentos) {
+            detalle.append("- ").append(s.getCodigo()).append("\n");
+        }
+
+        detalle.append("\nSERVICIOS Y CLIENTES AFECTADOS\n\n");
+        if (servicios.isEmpty()) {
+            detalle.append("Ningún servicio activo pasa por los segmentos de esta incidencia.\n");
+        } else {
+            for (Servicio sv : servicios) {
+                detalle.append("- SRV-").append(sv.getIdServicio())
+                         .append(" (").append(sv.getSolicitud().getCliente().getNombre()).append(")\n");
+            }
+        }
+        return detalle.toString();
     }
 }
