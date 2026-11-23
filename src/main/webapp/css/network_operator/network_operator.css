@@ -706,3 +706,42 @@ a.btn-primary {
 .configuracion button.cerrar-sesion:hover {
   background-color: var(--color-critica);
 }
+
+
+/* Paginación de la tabla de segmentos (Estado de la red) */
+.paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.paginacion-info {
+  color: var(--color-texto-claro);
+  font-size: 13px;
+}
+
+.paginacion-enlaces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btn-pagina {
+  min-width: 38px;
+  padding: 6px 12px;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Página en la que estamos */
+.pagina-actual {
+  display: inline-block;
+  color: white;
+  font-weight: bold;
+  background-color: var(--color-primario);
+  border: 1px solid var(--color-primario);
+  border-radius: 6px;
+}

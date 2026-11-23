@@ -2,6 +2,8 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="beans.networkoperator.Segmento" %>
 <%@ page import="beans.networkoperator.UtilizacionDiaria" %>
+<%@ page import="java.net.URLEncoder" %>
+<%@ page import="java.nio.charset.StandardCharsets" %>
 <%
     ArrayList<Segmento> listaSegmentos = (ArrayList<Segmento>) request.getAttribute("listaSegmentos");
     String filtroEstado = (String) request.getAttribute("filtroEstado");
@@ -22,6 +24,18 @@
     if (indiceHoy == null) { indiceHoy = 0; }
     if (cantSegmentos == null) { cantSegmentos = 0; cantNormal = 0; cantAlta = 0; cantCritica = 0; }
 
+    // Datos de la paginación (los calcula EstadoRedServlet)
+    Integer totalFiltrados = (Integer) request.getAttribute("totalFiltrados");
+    Integer paginaActual = (Integer) request.getAttribute("paginaActual");
+    Integer totalPaginas = (Integer) request.getAttribute("totalPaginas");
+    Integer primeroPagina = (Integer) request.getAttribute("primeroPagina");
+    Integer ultimoPagina = (Integer) request.getAttribute("ultimoPagina");
+    if (totalFiltrados == null) { totalFiltrados = listaSegmentos.size(); }
+    if (paginaActual == null) { paginaActual = 1; }
+    if (totalPaginas == null) { totalPaginas = 1; }
+    if (primeroPagina == null) { primeroPagina = listaSegmentos.isEmpty() ? 0 : 1; }
+    if (ultimoPagina == null) { ultimoPagina = listaSegmentos.size(); }
+
     String[] dias = {"Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"};
     String etiquetasJs = "[", ocupadaJs = "[", reservadaJs = "[", disponibleJs = "[";
     String ocupadaGbpsJs = "[", reservadaGbpsJs = "[", disponibleGbpsJs = "[";
@@ -41,6 +55,9 @@
 
     String[] estados = {"Operativo", "Degradado", "En mantenimiento", "Fuera de servicio"};
     String servlet = request.getContextPath() + "/EstadoRedServlet";
+
+    // Los enlaces de las páginas conservan el filtro de estado
+    String urlPaginas = servlet + "?estado=" + URLEncoder.encode(filtroEstado, StandardCharsets.UTF_8) + "&pagina=";
 %>
 <!DOCTYPE html>
 <html lang="es">
@@ -48,7 +65,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OceanLink - Estado de la Red</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=6">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=7">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
@@ -112,7 +129,7 @@
                 <% if (!filtroEstado.isEmpty()) { %>
                     <a class="btn-secundario" href="<%= servlet %>">Limpiar</a>
                 <% } %>
-                <span class="contador"><%= listaSegmentos.size() %> segmento(s)</span>
+                <span class="contador"><%= totalFiltrados %> segmento(s)</span>
             </form>
 
             <div class="table-wrapper">
@@ -159,6 +176,33 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Paginación: solo aparece si hay más de una página -->
+            <% if (totalPaginas > 1) { %>
+            <div class="paginacion">
+                <span class="paginacion-info">
+                    Mostrando <%= primeroPagina %>–<%= ultimoPagina %> de <%= totalFiltrados %> segmentos
+                </span>
+
+                <nav class="paginacion-enlaces" aria-label="Páginas de segmentos">
+                    <% if (paginaActual > 1) { %>
+                        <a class="btn-secundario btn-pagina" href="<%= urlPaginas + (paginaActual - 1) %>">&laquo; Anterior</a>
+                    <% } %>
+
+                    <% for (int p = 1; p <= totalPaginas; p++) { %>
+                        <% if (p == paginaActual) { %>
+                            <span class="btn-pagina pagina-actual" aria-current="page"><%= p %></span>
+                        <% } else { %>
+                            <a class="btn-secundario btn-pagina" href="<%= urlPaginas + p %>"><%= p %></a>
+                        <% } %>
+                    <% } %>
+
+                    <% if (paginaActual < totalPaginas) { %>
+                        <a class="btn-secundario btn-pagina" href="<%= urlPaginas + (paginaActual + 1) %>">Siguiente &raquo;</a>
+                    <% } %>
+                </nav>
+            </div>
+            <% } %>
         </section>
 
     </main>

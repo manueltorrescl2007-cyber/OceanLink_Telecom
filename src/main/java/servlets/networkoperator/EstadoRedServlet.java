@@ -25,6 +25,9 @@ public class EstadoRedServlet extends HttpServlet {
 
     private static final String[] ESTADOS = {"Operativo", "Degradado", "En mantenimiento", "Fuera de servicio"};
 
+    // Cantidad de segmentos que se muestran en cada página de la tabla
+    private static final int SEGMENTOS_POR_PAGINA = 10;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -43,6 +46,22 @@ public class EstadoRedServlet extends HttpServlet {
                 }
 
                 ArrayList<Segmento> listaSegmentos = segmentoDao.listarSegmentos(filtroEstado);
+
+                // Paginación: de toda la lista solo se envían los 10 segmentos de la página pedida
+                int totalFiltrados = listaSegmentos.size();
+                int totalPaginas = Math.max(1, (int) Math.ceil((double) totalFiltrados / SEGMENTOS_POR_PAGINA));
+
+                int pagina = parseId(request.getParameter("pagina"));
+                if (pagina < 1) {
+                    pagina = 1;              // sin número o número inválido: primera página
+                }
+                if (pagina > totalPaginas) {
+                    pagina = totalPaginas;   // número muy grande: última página
+                }
+
+                int desde = (pagina - 1) * SEGMENTOS_POR_PAGINA;
+                int hasta = Math.min(desde + SEGMENTOS_POR_PAGINA, totalFiltrados);
+                ArrayList<Segmento> segmentosPagina = new ArrayList<>(listaSegmentos.subList(desde, hasta));
 
                 ArrayList<Segmento> todaLaRed = segmentoDao.listarSegmentos(null);
                 int total = 0, ocupada = 0, reservada = 0;
@@ -85,7 +104,12 @@ public class EstadoRedServlet extends HttpServlet {
                     }
                 }
 
-                request.setAttribute("listaSegmentos", listaSegmentos);
+                request.setAttribute("listaSegmentos", segmentosPagina);
+                request.setAttribute("totalFiltrados", totalFiltrados);
+                request.setAttribute("paginaActual", pagina);
+                request.setAttribute("totalPaginas", totalPaginas);
+                request.setAttribute("primeroPagina", totalFiltrados == 0 ? 0 : desde + 1);
+                request.setAttribute("ultimoPagina", hasta);
                 request.setAttribute("cantSegmentos", todaLaRed.size());
                 request.setAttribute("filtroEstado", filtroEstado == null ? "" : filtroEstado);
                 request.setAttribute("fotoHoy", fotoHoy);
