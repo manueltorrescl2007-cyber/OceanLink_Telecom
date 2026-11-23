@@ -76,7 +76,7 @@
       </a>
 
       <a
-        href="${pageContext.request.contextPath}/login.jsp"
+        href="${pageContext.request.contextPath}/LogoutServlet"
         class="cerrar-sesion"
       >
         Cerrar sesión

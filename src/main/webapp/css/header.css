@@ -1,0 +1,133 @@
+/* ==================================================
+   MENÚ DEL USUARIO (clic en el nombre, arriba a la derecha)
+   Lo carga comun/header.jsp, así lo tienen los 5 roles.
+   Funciona igual que el botón ☰: un checkbox invisible
+   que se marca al hacer clic en el nombre.
+   ================================================== */
+
+.zona-usuario {
+  position: relative;
+}
+
+/* Checkbox invisible que abre y cierra el menú */
+.control-usuario {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* Nombre, rol y círculo se pueden pulsar */
+.zona-usuario .usuario {
+  gap: 10px;
+  padding: 4px 6px 4px 12px;
+  border-radius: 24px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.zona-usuario .usuario:hover {
+  background-color: var(--color-fondo);
+}
+
+/* Nombre y rol uno debajo del otro, alineados a la derecha */
+.texto-usuario {
+  text-align: right;
+}
+
+.texto-usuario span {
+  display: block;
+}
+
+/* El círculo sirve de referencia para la flechita */
+.zona-usuario .foto-usuario {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  font-size: 13px;
+}
+
+/* Flechita en la esquina inferior derecha del círculo */
+.flecha-usuario {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background-color: #e4e6eb;
+}
+
+/* Dibujo de la flecha (una "v") */
+.flecha-usuario::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 3.5px;
+  width: 4px;
+  height: 4px;
+  border-right: 1.5px solid var(--color-texto);
+  border-bottom: 1.5px solid var(--color-texto);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+/* Al abrir el menú la flecha apunta hacia arriba */
+.control-usuario:checked ~ .usuario .flecha-usuario::before {
+  top: 4.5px;
+  transform: rotate(-135deg);
+}
+
+/* Recuadro con las opciones (oculto hasta hacer clic) */
+.menu-usuario {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  padding: 8px;
+
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.control-usuario:checked ~ .menu-usuario {
+  display: block;
+}
+
+/* Perfil y Cerrar sesión con el mismo aspecto */
+.menu-usuario a,
+.menu-usuario button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+
+  color: var(--color-texto);
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.menu-usuario a:hover {
+  background-color: var(--color-fondo);
+}
+
+/* Línea separadora antes de Cerrar sesión */
+.menu-usuario form {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-borde);
+}
+
+.menu-usuario button.cerrar-sesion:hover {
+  color: white;
+  background-color: var(--color-critica);
+}

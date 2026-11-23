@@ -11,6 +11,15 @@ import java.io.IOException;
 @WebServlet(name = "LogoutServlet", value = "/LogoutServlet")
 public class LogoutServlet extends HttpServlet {
 
+  // Para los enlaces de "Cerrar sesión" del menú lateral
+  @Override
+  protected void doGet(
+    HttpServletRequest request,
+    HttpServletResponse response
+  ) throws IOException {
+    doPost(request, response);
+  }
+
   @Override
   protected void doPost(
     HttpServletRequest request,

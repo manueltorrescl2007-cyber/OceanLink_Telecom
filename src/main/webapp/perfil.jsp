@@ -31,8 +31,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OceanLink - Mi perfil</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/perfil.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css?v=2">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/perfil.css?v=2">
 </head>
 <body>
 

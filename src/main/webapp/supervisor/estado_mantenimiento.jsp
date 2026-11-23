@@ -240,7 +240,7 @@
     <div class="configuracion">
       <nav aria-label="Opciones del usuario">
         <a href="${pageContext.request.contextPath}/PerfilServlet">Perfil</a>
-        <a href="${pageContext.request.contextPath}/login.jsp"
+        <a href="${pageContext.request.contextPath}/LogoutServlet"
            class="cerrar-sesion">
           Cerrar sesión
         </a>

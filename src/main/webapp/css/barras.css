@@ -368,6 +368,32 @@ a {
   text-decoration: none;
 }
 
+/* Cerrar sesión hecho con botón (formulario POST),
+   con el mismo aspecto que los enlaces del menú */
+.form-cerrar-sesion {
+  margin: 0;
+}
+
+.configuracion button.cerrar-sesion {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+
+  color: white;
+  font-family: inherit;
+  font-size: 12px;
+  text-align: left;
+
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.configuracion button.cerrar-sesion:hover {
+  background-color: var(--color-critica);
+}
+
 
 /* ==================================================
    10. CONTROL PARA ABRIR Y CERRAR EL MENÚ
@@ -474,4 +500,30 @@ a {
 /* Mismo espaciado que el menú de Capacity Planner */
 .menu-lateral nav a {
   line-height: 1.35;
+}
+
+
+/* ==================================================
+   13. BARRA SUPERIOR Y MENÚ LATERAL FIJOS
+   Al bajar en la página, la barra superior y el menú
+   se quedan en su sitio, y Perfil / Cerrar sesión
+   siempre se ven sin tener que hacer scroll.
+   ================================================== */
+
+.barra-superior {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+/* El menú ocupa el alto de la pantalla menos la barra superior */
+.menu-lateral {
+  position: sticky;
+  top: 58px;
+  align-self: flex-start;
+  height: calc(100vh - 58px);
+
+  /* Si el menú no entra en la pantalla, se desplaza solo él */
+  overflow-x: hidden;
+  overflow-y: auto;
 }

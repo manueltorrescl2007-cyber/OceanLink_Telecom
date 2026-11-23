@@ -82,7 +82,7 @@
     <nav aria-label="Opciones del usuario">
       <a href="${pageContext.request.contextPath}/PerfilServlet"
          class="<%= "perfil".equals(activePage) ? "activo" : "" %>">Perfil</a>
-      <a href="${pageContext.request.contextPath}/login.jsp"
+      <a href="${pageContext.request.contextPath}/LogoutServlet"
          class="cerrar-sesion">
         Cerrar sesión
       </a>
