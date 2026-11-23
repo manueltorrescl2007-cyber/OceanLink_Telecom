@@ -185,9 +185,6 @@
                 <h2>Capacity Planner</h2>
                 <h1>Segmentos</h1>
             </div>
-            <a href="<%= servlet %>?accion=nuevo&amp;estado=<%= filtroUrl %>&amp;pagina=<%= pagina %>" class="boton primario">
-                + Nuevo segmento
-            </a>
         </section>
         <% if ("1".equals(request.getParameter("guardado"))) { %>
             <p class="mensaje-exito">Segmento guardado correctamente.</p>

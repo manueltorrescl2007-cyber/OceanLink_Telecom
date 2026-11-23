@@ -39,9 +39,7 @@ public class SegmentoServlet extends HttpServlet {
       previsualizarCodigo(request, response);
       return;
     }
-    boolean nuevo = "nuevo".equals(request.getParameter("accion"))
-      || "nuevo".equals(request.getParameter("ventana"));
-    mostrarVista(request, response, nuevo);
+    mostrarVista(request, response);
   }
 
   @Override
@@ -58,10 +56,8 @@ public class SegmentoServlet extends HttpServlet {
       return;
     }
 
-    String idTexto = texto(request.getParameter("id"));
-    boolean nuevo = idTexto.isEmpty();
-    int id = nuevo ? 0 : parseId(idTexto);
-    if (!nuevo && id <= 0) {
+    int id = parseId(texto(request.getParameter("id")));
+    if (id <= 0) {
       response.sendError(HttpServletResponse.SC_BAD_REQUEST, "El ID del segmento no es válido.");
       return;
     }
@@ -80,25 +76,22 @@ public class SegmentoServlet extends HttpServlet {
 
       String error = validarSegmento(segmento);
       if (error != null) {
-        mostrarError(request, response, nuevo, error);
+        mostrarError(request, response, error);
         return;
       }
 
       SegmentoDao dao = new SegmentoDao();
-      boolean guardado = guardarConCodigo(dao, segmento, nuevo);
+      boolean guardado = guardarConCodigo(dao, segmento);
       if (!guardado) {
-        mostrarError(request, response, nuevo, nuevo
-          ? "No se pudo guardar el segmento."
-          : "El segmento no existe o la capacidad total es menor que la ocupada más la reservada.");
+        mostrarError(request, response,
+          "El segmento no existe o la capacidad total es menor que la ocupada más la reservada.");
         return;
       }
 
       String destino = request.getContextPath() + "/SegmentoServlet?guardado=1&detalle="
-        + segmento.getIdSegmento();
-      if (!nuevo) {
-        destino += "&estado=" + URLEncoder.encode(filtroEstado(request), StandardCharsets.UTF_8)
-          + "&pagina=" + Math.max(1, parseId(request.getParameter("pagina")));
-      }
+        + segmento.getIdSegmento()
+        + "&estado=" + URLEncoder.encode(filtroEstado(request), StandardCharsets.UTF_8)
+        + "&pagina=" + Math.max(1, parseId(request.getParameter("pagina")));
       response.sendRedirect(destino + "#detalle");
     } catch (SQLException e) {
       getServletContext().log("Error al guardar el segmento", e);
@@ -107,7 +100,7 @@ public class SegmentoServlet extends HttpServlet {
         case 1452 -> "Una de las estaciones seleccionadas no existe.";
         default -> "No se pudo guardar el segmento.";
       };
-      mostrarError(request, response, nuevo, mensaje);
+      mostrarError(request, response, mensaje);
     }
   }
 
@@ -164,13 +157,13 @@ public class SegmentoServlet extends HttpServlet {
     }
   }
 
-  private boolean guardarConCodigo(SegmentoDao dao, Segmento segmento, boolean nuevo)
+  private boolean guardarConCodigo(SegmentoDao dao, Segmento segmento)
     throws SQLException {
     for (int intento = 0; intento < 3; intento++) {
       segmento.setCodigo(codigoPara(dao.listarSegmentos(), segmento.getIdSegmento(),
         segmento.getIdLandingInicial(), segmento.getIdLandingFinal()));
       try {
-        return nuevo ? dao.crearSegmento(segmento) : dao.actualizarSegmento(segmento);
+        return dao.actualizarSegmento(segmento);
       } catch (SQLException e) {
         if (e.getErrorCode() != 1062 || intento == 2) {
           throw e;
@@ -228,19 +221,13 @@ public class SegmentoServlet extends HttpServlet {
     return -1;
   }
 
-  private void mostrarVista(HttpServletRequest request, HttpServletResponse response, boolean nuevo)
+  private void mostrarVista(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
     try {
       String filtro = filtroEstado(request);
       int pagina = Math.max(1, parseId(request.getParameter("pagina")));
       request.setAttribute("listaEstaciones", new LandingStationDao().listarEstaciones());
       request.setAttribute("filtroEstado", filtro);
-      if (nuevo) {
-        request.setAttribute("paginaActual", pagina);
-        request.getRequestDispatcher("/capacity_planner/segmento_form.jsp").forward(request, response);
-        return;
-      }
-
       SegmentoDao dao = new SegmentoDao();
       int detalle = parseId(request.getParameter("detalle"));
       int editar = parseId(request.getParameter("editar"));
@@ -281,9 +268,9 @@ public class SegmentoServlet extends HttpServlet {
   }
 
   private void mostrarError(HttpServletRequest request, HttpServletResponse response,
-                            boolean nuevo, String mensaje) throws ServletException, IOException {
+                            String mensaje) throws ServletException, IOException {
     request.setAttribute("error", mensaje);
-    mostrarVista(request, response, nuevo);
+    mostrarVista(request, response);
   }
 
   private String filtroEstado(HttpServletRequest request) {

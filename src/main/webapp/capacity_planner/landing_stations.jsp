@@ -131,9 +131,6 @@
                 <h2>Capacity Planner</h2>
                 <h1>Landing stations</h1>
             </div>
-            <a href="<%= servlet %>?accion=nueva&amp;estado=<%= filtro %>&amp;pagina=<%= pagina %>" class="boton primario">
-                + Nueva estación
-            </a>
         </section>
         <% if ("1".equals(request.getParameter("guardado"))) { %>
             <p class="mensaje-exito">Estación guardada correctamente.</p>

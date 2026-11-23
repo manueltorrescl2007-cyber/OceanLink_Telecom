@@ -18,17 +18,7 @@ public class LandingStationServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-    if ("nueva".equals(request.getParameter("accion"))
-      || "nuevo".equals(request.getParameter("ventana"))) {
-      mostrarFormularioNuevo(request, response);
-      return;
-    }
-
-    try {
-      mostrarEstaciones(request, response);
-    } catch (SQLException e) {
-      throw new ServletException("No se pudieron cargar las estaciones.", e);
-    }
+    cargarEstaciones(request, response);
   }
 
   @Override
@@ -41,19 +31,14 @@ public class LandingStationServlet extends HttpServlet {
       return;
     }
 
-    String idTexto = texto(request.getParameter("id"));
-    boolean esNuevo = idTexto.isEmpty();
-    LandingStation estacion = new LandingStation();
-
-    if (!esNuevo) {
-      int id = parseId(idTexto);
-      if (id <= 0) {
-        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "El ID no es válido.");
-        return;
-      }
-      estacion.setIdLanding(id);
+    int id = parseId(texto(request.getParameter("id")));
+    if (id <= 0) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "El ID no es válido.");
+      return;
     }
 
+    LandingStation estacion = new LandingStation();
+    estacion.setIdLanding(id);
     estacion.setNombre(texto(request.getParameter("nombre")));
     estacion.setPais(texto(request.getParameter("pais")));
     estacion.setCiudad(texto(request.getParameter("ciudad")));
@@ -62,34 +47,36 @@ public class LandingStationServlet extends HttpServlet {
 
     String error = validarEstacion(estacion);
     if (error != null) {
-      mostrarError(request, response, esNuevo, error);
+      mostrarError(request, response, error);
       return;
     }
 
     LandingStationDao dao = new LandingStationDao();
     try {
-      boolean guardado = esNuevo
-        ? dao.crearEstacion(estacion)
-        : dao.actualizarEstacion(estacion);
-
-      if (!guardado) {
-        mostrarError(request, response, esNuevo,
-          "No se pudo guardar. La estación podría no existir.");
+      if (!dao.actualizarEstacion(estacion)) {
+        mostrarError(request, response, "No se pudo guardar. La estación podría no existir.");
         return;
       }
 
-      String destino = request.getContextPath() + "/LandingStationServlet?guardado=1";
-      if (!esNuevo) {
-        destino += "&estado=" + filtroEstado(request)
-          + "&pagina=" + Math.max(1, parseId(request.getParameter("pagina")));
-      }
+      String destino = request.getContextPath() + "/LandingStationServlet?guardado=1"
+        + "&estado=" + filtroEstado(request)
+        + "&pagina=" + Math.max(1, parseId(request.getParameter("pagina")));
       response.sendRedirect(destino);
     } catch (SQLException e) {
       getServletContext().log("Error al guardar la estación", e);
       String mensaje = e.getErrorCode() == 1062
         ? "Ya existe una estación con ese nombre."
         : "No se pudo guardar la estación.";
-      mostrarError(request, response, esNuevo, mensaje);
+      mostrarError(request, response, mensaje);
+    }
+  }
+
+  private void cargarEstaciones(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+    try {
+      mostrarEstaciones(request, response);
+    } catch (SQLException e) {
+      throw new ServletException("No se pudieron cargar las estaciones.", e);
     }
   }
 
@@ -130,27 +117,10 @@ public class LandingStationServlet extends HttpServlet {
       .forward(request, response);
   }
 
-  private void mostrarFormularioNuevo(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-    request.setAttribute("filtroEstado", filtroEstado(request));
-    request.setAttribute("paginaActual", Math.max(1, parseId(request.getParameter("pagina"))));
-    request.getRequestDispatcher("/capacity_planner/landing_station_form.jsp")
-      .forward(request, response);
-  }
-
   private void mostrarError(HttpServletRequest request, HttpServletResponse response,
-                            boolean esNuevo, String mensaje)
-    throws ServletException, IOException {
+                            String mensaje) throws ServletException, IOException {
     request.setAttribute("error", mensaje);
-    if (esNuevo) {
-      mostrarFormularioNuevo(request, response);
-      return;
-    }
-    try {
-      mostrarEstaciones(request, response);
-    } catch (SQLException e) {
-      throw new ServletException("No se pudieron cargar las estaciones.", e);
-    }
+    cargarEstaciones(request, response);
   }
 
   private String filtroEstado(HttpServletRequest request) {
