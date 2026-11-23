@@ -183,10 +183,66 @@ public class MantenimientoDao extends daos.BaseDao {
             WHERE estado IN ('Programado', 'En ejecucion')
             """;
 
-    try (Connection conn = getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    // Los segmentos con un mantenimiento en ejecución pasan a "En mantenimiento"
+    String sqlSegmentosEnMantenimiento = """
+            UPDATE segmentos s
+            SET s.estado = 'En mantenimiento'
+            WHERE s.estado <> 'En mantenimiento'
+              AND EXISTS (
+                  SELECT 1 FROM mantenimientos m
+                  WHERE m.id_segmento = s.id_segmento
+                    AND m.estado = 'En ejecucion')
+            """;
 
-      pstmt.executeUpdate();
+    // Cuando ya no tienen mantenimiento en ejecución, vuelven a su estado según sus incidencias abiertas:
+    // incidencia Crítica -> Fuera de servicio, otra incidencia -> Degradado, ninguna -> Operativo
+    String sqlSegmentosLiberados = """
+            UPDATE segmentos s
+            SET s.estado = CASE
+                WHEN EXISTS (
+                    SELECT 1 FROM segmentos_has_incidencias si
+                    JOIN incidencias i ON i.id_incidencia = si.id_incidencia
+                    WHERE si.id_segmento = s.id_segmento
+                      AND i.estado NOT IN ('Servicio restaurado', 'Cerrada')
+                      AND i.severidad = 'Critica')
+                    THEN 'Fuera de servicio'
+                WHEN EXISTS (
+                    SELECT 1 FROM segmentos_has_incidencias si
+                    JOIN incidencias i ON i.id_incidencia = si.id_incidencia
+                    WHERE si.id_segmento = s.id_segmento
+                      AND i.estado NOT IN ('Servicio restaurado', 'Cerrada'))
+                    THEN 'Degradado'
+                ELSE 'Operativo'
+            END
+            WHERE s.estado = 'En mantenimiento'
+              AND NOT EXISTS (
+                  SELECT 1 FROM mantenimientos m
+                  WHERE m.id_segmento = s.id_segmento
+                    AND m.estado = 'En ejecucion')
+            """;
+
+    try (Connection conn = getConnection()) {
+      conn.setAutoCommit(false);
+      try {
+        // 1. Estado de los mantenimientos según la fecha
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+          pstmt.executeUpdate();
+        }
+
+        // 2. Estado de los segmentos según sus mantenimientos
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlSegmentosEnMantenimiento)) {
+          pstmt.executeUpdate();
+        }
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlSegmentosLiberados)) {
+          pstmt.executeUpdate();
+        }
+
+        conn.commit();
+
+      } catch (SQLException e) {
+        conn.rollback();
+        throw e;
+      }
 
     } catch (SQLException e) {
       throw new IllegalStateException(

@@ -121,8 +121,17 @@ public class IncidenciaDao extends BaseDao {
         }
     }
 
+    // Al registrar una incidencia: sus segmentos pasan a Degradado (o Fuera de servicio si es Crítica)
+    public void marcarSegmentosAfectados(int idIncidencia, String severidad) {
+        try (Connection conn = getConnection()) {
+            actualizarSegmentosPorSeveridad(conn, idIncidencia, severidad);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public boolean cambiarSeveridad(int idIncidencia, String severidadNueva, int idUsuario) {
-        String sqlActual = "SELECT severidad FROM incidencias "
+        String sqlActual = "SELECT severidad, estado FROM incidencias "
                          + "WHERE id_incidencia = ? AND estado <> 'Cerrada' FOR UPDATE";
         String sqlUpdate = "UPDATE incidencias SET severidad = ? WHERE id_incidencia = ?";
 
@@ -130,11 +139,13 @@ public class IncidenciaDao extends BaseDao {
             conn.setAutoCommit(false);
             try {
                 String severidadActual = null;
+                String estadoIncidencia = null;
                 try (PreparedStatement pstmt = conn.prepareStatement(sqlActual)) {
                     pstmt.setInt(1, idIncidencia);
                     try (ResultSet rs = pstmt.executeQuery()) {
                         if (rs.next()) {
                             severidadActual = rs.getString("severidad");
+                            estadoIncidencia = rs.getString("estado");
                         }
                     }
                 }
@@ -152,6 +163,11 @@ public class IncidenciaDao extends BaseDao {
 
                 registrarCambio(conn, idIncidencia, idUsuario, "Cambio de severidad: "
                         + textoSeveridad(severidadActual) + " → " + textoSeveridad(severidadNueva));
+
+                // Si sube a Crítica y la falla sigue activa, sus segmentos pasan a Fuera de servicio
+                if ("Critica".equals(severidadNueva) && !"Servicio restaurado".equals(estadoIncidencia)) {
+                    actualizarSegmentosPorSeveridad(conn, idIncidencia, severidadNueva);
+                }
 
                 conn.commit();
                 return true;
@@ -194,6 +210,11 @@ public class IncidenciaDao extends BaseDao {
                 registrarCambio(conn, idIncidencia, idUsuario, "Cambio de estado: "
                         + textoEstado(estadoActual) + " → " + textoEstado(estadoNuevo));
 
+                // Servicio restaurado: los segmentos vuelven a Operativo (en la misma transacción)
+                if ("Servicio restaurado".equals(estadoNuevo)) {
+                    restaurarSegmentos(conn, idIncidencia);
+                }
+
                 conn.commit();
                 return true;
 
@@ -204,6 +225,44 @@ public class IncidenciaDao extends BaseDao {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    // Crítica -> Fuera de servicio; Leve/Media/Alta -> Degradado.
+    // Solo cambia segmentos Operativo o Degradado: no toca los que están En mantenimiento ni Fuera de servicio.
+    private void actualizarSegmentosPorSeveridad(Connection conn, int idIncidencia, String severidad) throws SQLException {
+        String sql = "UPDATE segmentos s "
+                   + "JOIN segmentos_has_incidencias si ON si.id_segmento = s.id_segmento "
+                   + "SET s.estado = CASE WHEN ? = 'Critica' THEN 'Fuera de servicio' ELSE 'Degradado' END "
+                   + "WHERE si.id_incidencia = ? "
+                   + "AND s.estado IN ('Operativo', 'Degradado')";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, severidad);
+            pstmt.setInt(2, idIncidencia);
+            pstmt.executeUpdate();
+        }
+    }
+
+    // Vuelve a Operativo los segmentos de la incidencia que no tengan otra incidencia abierta.
+    // Los que están En mantenimiento no se tocan.
+    private void restaurarSegmentos(Connection conn, int idIncidencia) throws SQLException {
+        String sql = "UPDATE segmentos s "
+                   + "JOIN segmentos_has_incidencias si ON si.id_segmento = s.id_segmento "
+                   + "SET s.estado = 'Operativo' "
+                   + "WHERE si.id_incidencia = ? "
+                   + "AND s.estado IN ('Degradado', 'Fuera de servicio') "
+                   + "AND NOT EXISTS ("
+                   + "    SELECT 1 FROM segmentos_has_incidencias si2 "
+                   + "    JOIN incidencias i2 ON i2.id_incidencia = si2.id_incidencia "
+                   + "    WHERE si2.id_segmento = s.id_segmento "
+                   + "    AND i2.id_incidencia <> ? "
+                   + "    AND i2.estado NOT IN ('Servicio restaurado', 'Cerrada'))";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, idIncidencia);
+            pstmt.setInt(2, idIncidencia);
+            pstmt.executeUpdate();
         }
     }
 

@@ -169,6 +169,8 @@ public class IncidenciaServlet extends HttpServlet {
                 for (int idSegmento : idsElegidos) {
                     incidenciaDao.asociarSegmento(idNuevo, idSegmento);
                 }
+                // Los segmentos afectados cambian de estado según la severidad
+                incidenciaDao.marcarSegmentosAfectados(idNuevo, severidad);
                 new NotificacionIncidenciaService().notificarRegistro(idNuevo, idUsuario);
                 response.sendRedirect(servlet + "?action=detalle&id=" + idNuevo + "&ok=creada");
                 break;
