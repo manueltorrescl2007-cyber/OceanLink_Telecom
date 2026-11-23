@@ -51,6 +51,14 @@
         Historial
       </a>
 
+      <!-- Servicios afectados -->
+      <a
+        href="${pageContext.request.contextPath}/ServiciosAfectadosServlet"
+        class="<%= "serviciosAfectados".equals(activePage) ? "activo" : "" %>"
+      >
+        Servicios afectados
+      </a>
+
     </nav>
 
   </div>
