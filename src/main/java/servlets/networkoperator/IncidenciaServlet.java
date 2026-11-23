@@ -201,6 +201,9 @@ public class IncidenciaServlet extends HttpServlet {
 
                 String nuevo = siguienteEstado(estadoActual);
                 boolean cambiado = nuevo != null && incidenciaDao.cambiarEstado(id, estadoActual, nuevo, idUsuario);
+                if (cambiado) {
+                    new NotificacionIncidenciaService().notificarCambioEstado(id, idUsuario, estadoActual);
+                }
 
                 response.sendRedirect(servlet + "?action=detalle&id=" + id + (cambiado ? "&ok=estado" : "&error=estado"));
                 break;
