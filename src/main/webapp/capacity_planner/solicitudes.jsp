@@ -113,7 +113,7 @@
         <div class="configuracion">
             <nav aria-label="Opciones del usuario">
                 <!-- Pendiente: colocar la dirección real de Perfil -->
-                <a href="#">Perfil</a>
+                <a href="${pageContext.request.contextPath}/PerfilServlet">Perfil</a>
                 <!-- Navega al login; el cierre real de sesión se conectará después -->
                 <a href="${pageContext.request.contextPath}/login.jsp" class="cerrar-sesion">Cerrar sesión</a>
             </nav>

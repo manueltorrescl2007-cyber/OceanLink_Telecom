@@ -49,7 +49,7 @@
 <%
   String nombreUsuarioSesion = (String) session.getAttribute("nombreUsuario");
   if (nombreUsuarioSesion == null || nombreUsuarioSesion.isBlank()) {
-    nombreUsuarioSesion = "<%= nombreUsuarioSesion %>";
+    nombreUsuarioSesion = "Administrador";
   }
   String iniciales = nombreUsuarioSesion.length() >= 2
     ? nombreUsuarioSesion.substring(0, 2).toUpperCase()

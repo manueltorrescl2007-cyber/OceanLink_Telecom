@@ -220,6 +220,44 @@ public class UsuarioDao extends BaseDao {
         }
     }
 
+    /* ========== UPDATE: cambiar contraseña desde el perfil ========== */
+    // Devuelve true si se cambió y false si la contraseña actual era incorrecta
+    public boolean cambiarContrasena(int idUsuario, String contrasenaActual, String contrasenaNueva) {
+        String sqlLeer = "SELECT contrasena FROM usuarios WHERE id_usuario = ?";
+        String sqlGuardar = "UPDATE usuarios SET contrasena = ? WHERE id_usuario = ?";
+
+        try (Connection conn = getConnection()) {
+
+            // 1. Leemos el hash que está guardado en la BD
+            String hashGuardado = null;
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlLeer)) {
+                pstmt.setInt(1, idUsuario);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        hashGuardado = rs.getString("contrasena");
+                    }
+                }
+            }
+
+            // 2. Comparamos la contraseña actual con ese hash
+            if (hashGuardado == null
+                || !PasswordUtil.verificarPassword(contrasenaActual, hashGuardado)) {
+                return false;
+            }
+
+            // 3. Guardamos el hash de la contraseña nueva
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlGuardar)) {
+                pstmt.setString(1, PasswordUtil.hashPassword(contrasenaNueva));
+                pstmt.setInt(2, idUsuario);
+                pstmt.executeUpdate();
+            }
+            return true;
+
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudo cambiar la contraseña.", e);
+        }
+    }
+
     /* ========== DELETE lógico: activar / desactivar (RF03) ========== */
     public void cambiarEstado(int idUsuario, String estado) {
         String sql = "UPDATE usuarios SET estado = ? WHERE id_usuario = ?";

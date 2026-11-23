@@ -49,7 +49,8 @@
 
   <div class="configuracion">
     <nav>
-      <a href="#">Perfil</a>
+      <a href="<%= ctx %>/PerfilServlet"
+         class="<%= "perfil".equals(activePage) ? "activo" : "" %>">Perfil</a>
       <form method="post" action="<%= ctx %>/LogoutServlet" class="form-cerrar-sesion">
         <button type="submit" class="cerrar-sesion">Cerrar sesión</button>
       </form>

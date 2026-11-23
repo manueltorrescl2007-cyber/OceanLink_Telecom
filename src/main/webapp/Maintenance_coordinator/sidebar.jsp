@@ -60,7 +60,10 @@
 
     <nav>
 
-      <a href="#">
+      <a
+        href="${pageContext.request.contextPath}/PerfilServlet"
+        class="<%= "perfil".equals(activePage) ? "activo" : "" %>"
+      >
         Perfil
       </a>
 
