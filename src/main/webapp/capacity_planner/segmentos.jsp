@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="daos.capacityplanner.HistorialSegmentoDao.Evento" %>
+<%@ page import="daos.capacityplanner.HistorialSegmentoDao.Pagina" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
@@ -54,8 +55,7 @@
 
     String filtro = (String) request.getAttribute("filtroEstado");
     int pagina = (Integer) request.getAttribute("paginaActual");
-    int totalPaginas = (Integer) request.getAttribute("totalPaginas");
-    int cantidad = (Integer) request.getAttribute("totalSegmentos");
+    int cantidad = (Integer) request.getAttribute("totalRegistros");
     String filtroUrl = java.net.URLEncoder.encode(filtro, "UTF-8");
     String urlPagina = servlet + "?estado=" + filtroUrl + "&amp;pagina=";
     String urlLista = urlPagina + pagina;
@@ -69,6 +69,7 @@
     <title>Segmentos | OceanLink</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/segmentos.css?v=3">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/paginacion.css">
 </head>
 <body class="vista-segmentos">
 <jsp:include page="/comun/header.jsp" />
@@ -107,7 +108,10 @@
         <% if (request.getAttribute("historialSegmento") != null) { %>
             <%
                 Segmento segmentoHistorial = (Segmento) request.getAttribute("segmentoDetalle");
-                List<Evento> eventos = (List<Evento>) request.getAttribute("historialSegmento");
+                Pagina historial = (Pagina) request.getAttribute("historialSegmento");
+                List<Evento> eventos = historial.eventos();
+                String urlHistorial = urlLista + "&amp;detalle=" + segmentoHistorial.getIdSegmento()
+                        + "&amp;accion=historial&amp;paginaHistorial=";
                 DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
             %>
             <section class="historial-segmento">
@@ -192,6 +196,35 @@
                         </tbody>
                     </table>
                 </section>
+
+                <% if (!eventos.isEmpty()) { %>
+                    <nav class="pagination-bar" aria-label="Paginación del historial">
+                        <span class="pagination-info">
+                            Mostrando <%= historial.desde() + 1 %>–<%= historial.desde() + eventos.size() %>
+                            de <%= historial.total() %> eventos
+                            (Página <%= historial.numero() %> de <%= historial.totalPaginas() %>)
+                        </span>
+                        <% if (historial.totalPaginas() > 1) { %>
+                            <div class="pagination-links">
+                                <% if (historial.numero() > 1) { %>
+                                    <a class="boton secundario" href="<%= urlHistorial %><%= historial.numero() - 1 %>">Anterior</a>
+                                <% } %>
+                                <% for (int numero = Math.max(1, historial.numero() - 2);
+                                        numero <= Math.min(historial.totalPaginas(), historial.numero() + 2); numero++) { %>
+                                    <% if (numero == historial.numero()) { %>
+                                        <span class="boton primario" aria-current="page"><%= numero %></span>
+                                    <% } else { %>
+                                        <a class="boton secundario" href="<%= urlHistorial %><%= numero %>"
+                                           aria-label="Página <%= numero %>"><%= numero %></a>
+                                    <% } %>
+                                <% } %>
+                                <% if (historial.numero() < historial.totalPaginas()) { %>
+                                    <a class="boton secundario" href="<%= urlHistorial %><%= historial.numero() + 1 %>">Siguiente</a>
+                                <% } %>
+                            </div>
+                        <% } %>
+                    </nav>
+                <% } %>
             </section>
         <% } else { %>
         <section class="encabezado-pagina">
@@ -261,20 +294,36 @@
             </table>
         </section>
 
-        <% if (totalPaginas > 1) { %>
-            <nav class="paginacion-segmentos" aria-label="Paginación de segmentos">
-                <span class="paginacion-indicador" aria-current="page">
-                    Página <%= pagina %> de <%= totalPaginas %>
-                </span>
-                <div class="paginacion-controles">
-                    <% if (pagina > 1) { %>
-                        <a class="boton secundario paginacion-boton" href="<%= urlPagina %><%= pagina - 1 %>">Anterior</a>
+        <%
+            int totalPaginado = (Integer) request.getAttribute("totalRegistros");
+            int paginaPaginada = (Integer) request.getAttribute("paginaActual");
+            int paginasPaginadas = (Integer) request.getAttribute("totalPaginas");
+            if (totalPaginado > 0) {
+        %>
+        <nav class="pagination-bar" aria-label="Paginación de resultados">
+            <span class="pagination-info">
+                Mostrando <%= request.getAttribute("registroInicio") %>–<%= request.getAttribute("registroFin") %>
+                de <%= totalPaginado %> registros (Página <%= paginaPaginada %> de <%= paginasPaginadas %>)
+            </span>
+            <% if (paginasPaginadas > 1) { %>
+                <div class="pagination-links">
+                    <% if (paginaPaginada > 1) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= paginaPaginada - 1 %>">Anterior</a>
                     <% } %>
-                    <% if (pagina < totalPaginas) { %>
-                        <a class="boton secundario paginacion-boton" href="<%= urlPagina %><%= pagina + 1 %>">Siguiente</a>
+                    <% for (int numero = 1; numero <= paginasPaginadas; numero++) { %>
+                        <% if (numero == paginaPaginada) { %>
+                            <span class="boton primario" aria-current="page"><%= numero %></span>
+                        <% } else { %>
+                            <a class="boton secundario" href="<%= urlPagina %><%= numero %>"
+                               aria-label="Página <%= numero %>"><%= numero %></a>
+                        <% } %>
+                    <% } %>
+                    <% if (paginaPaginada < paginasPaginadas) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= paginaPaginada + 1 %>">Siguiente</a>
                     <% } %>
                 </div>
-            </nav>
+            <% } %>
+        </nav>
         <% } %>
 
         <% Segmento segmento = (Segmento) request.getAttribute("segmentoDetalle");

@@ -1,15 +1,3 @@
-.paginacion-rutas {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin: 12px 0 24px;
-  color: #64748b;
-}
-
-.paginacion-rutas .acciones { margin: 0; }
-
 .ruta-formulario {
   padding: clamp(18px, 3vw, 25px);
   background: #fff;

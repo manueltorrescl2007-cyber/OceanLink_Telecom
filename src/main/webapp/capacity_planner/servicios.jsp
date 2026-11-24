@@ -82,6 +82,11 @@
         filtro = "";
     }
 
+    int pagina = (Integer) request.getAttribute("paginaActual");
+    int cantidad = (Integer) request.getAttribute("totalRegistros");
+    String urlPagina = servlet + "?estado=" + filtro + "&amp;pagina=";
+    String urlLista = urlPagina + pagina;
+
     String[] estados = {"Pendiente", "Activo", "Suspendido", "Cancelado"};
 
     boolean nuevo = "nuevo".equals(request.getParameter("ventana"))
@@ -118,6 +123,7 @@
           href="${pageContext.request.contextPath}/css/barras.css">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/capacity_planner/servicio_form.css?v=2">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/paginacion.css">
 </head>
 <body>
 <jsp:include page="header.jsp" />
@@ -178,7 +184,7 @@
             <h2>Capacity Planner</h2>
             <h1>Nuevo servicio</h1>
         </div>
-        <a class="boton secundario" href="<%= servlet %>">Volver a servicios</a>
+        <a class="boton secundario" href="<%= urlLista %>">Volver a servicios</a>
     </section>
 
     <section class="servicio-tarjeta" aria-labelledby="titulo-solicitud">
@@ -195,6 +201,8 @@
                     <p class="mensaje-error" role="alert">La solicitud seleccionada ya no está disponible.</p>
                 <% } %>
                 <form method="get" action="<%= servlet %>" class="servicio-opciones">
+                    <input type="hidden" name="estado" value="<%= filtro %>">
+                    <input type="hidden" name="pagina" value="<%= pagina %>">
                     <input type="hidden" name="ventana" value="nuevo">
                     <% for (Solicitud solicitud : solicitudes) { %>
                         <button type="submit" name="solicitud" value="<%= solicitud.getIdSolicitud() %>"
@@ -216,7 +224,7 @@
                 <div><dt>Destino</dt><dd><%= texto(solicitudActual.getNombreDestino()) %></dd></div>
                 <div><dt>Capacidad solicitada</dt><dd><%= solicitudActual.getCapacidadSolicitada() %> Gbps</dd></div>
             </dl>
-            <a class="boton secundario" href="<%= servlet %>?ventana=nuevo">Cambiar solicitud</a>
+            <a class="boton secundario" href="<%= urlLista %>&amp;ventana=nuevo">Cambiar solicitud</a>
         <% } %>
     </section>
 
@@ -227,6 +235,8 @@
                 <p class="servicio-ayuda">No hay rutas activas con ese recorrido y capacidad suficiente.</p>
             <% } else { %>
                 <form method="post" action="<%= servlet %>">
+                    <input type="hidden" name="estado" value="<%= filtro %>">
+                    <input type="hidden" name="pagina" value="<%= pagina %>">
                     <input type="hidden" name="accion" value="guardar">
                     <input type="hidden" name="id_solicitud" value="<%= solicitudActual.getIdSolicitud() %>">
                     <div class="servicio-opciones" role="group" aria-labelledby="titulo-rutas">
@@ -241,7 +251,7 @@
                     </div>
                     <p class="servicio-ayuda">Al guardar, el servicio queda Pendiente y reserva la capacidad solicitada.</p>
                     <div class="acciones">
-                        <a class="boton secundario" href="<%= servlet %>">Cancelar</a>
+                        <a class="boton secundario" href="<%= urlLista %>">Cancelar</a>
                         <button class="boton primario" type="submit">Guardar servicio</button>
                     </div>
                 </form>
@@ -256,7 +266,7 @@
                 <h1>Servicios</h1>
             </div>
             <a class="boton primario"
-               href="<%= servlet %>?ventana=nuevo">+ Nuevo servicio</a>
+               href="<%= urlLista %>&amp;ventana=nuevo">+ Nuevo servicio</a>
         </section>
 
         <% if ("1".equals(request.getParameter("guardado"))) { %>
@@ -308,7 +318,7 @@
                 </select>
                 <button class="boton secundario" type="submit">Filtrar</button>
             </form>
-            <span><%= servicios.size() %> <%= servicios.size() == 1 ? "servicio" : "servicios" %></span>
+            <span><%= cantidad %> <%= cantidad == 1 ? "servicio" : "servicios" %></span>
         </section>
 
         <section class="contenedor-tabla">
@@ -331,7 +341,7 @@
                     <tr>
                         <td>
                             <a class="enlace-servicio"
-                               href="<%= servlet %>?servicio=<%= servicio.getIdServicio() %>">
+                               href="<%= urlLista %>&amp;servicio=<%= servicio.getIdServicio() %>">
                                 SER-<%= servicio.getIdServicio() %>
                             </a>
                         </td>
@@ -363,13 +373,45 @@
             </table>
         </section>
 
+        <%
+            int totalPaginado = (Integer) request.getAttribute("totalRegistros");
+            int paginaPaginada = (Integer) request.getAttribute("paginaActual");
+            int paginasPaginadas = (Integer) request.getAttribute("totalPaginas");
+            if (totalPaginado > 0) {
+        %>
+        <nav class="pagination-bar" aria-label="Paginación de resultados">
+            <span class="pagination-info">
+                Mostrando <%= request.getAttribute("registroInicio") %>–<%= request.getAttribute("registroFin") %>
+                de <%= totalPaginado %> registros (Página <%= paginaPaginada %> de <%= paginasPaginadas %>)
+            </span>
+            <% if (paginasPaginadas > 1) { %>
+                <div class="pagination-links">
+                    <% if (paginaPaginada > 1) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= paginaPaginada - 1 %>">Anterior</a>
+                    <% } %>
+                    <% for (int numero = 1; numero <= paginasPaginadas; numero++) { %>
+                        <% if (numero == paginaPaginada) { %>
+                            <span class="boton primario" aria-current="page"><%= numero %></span>
+                        <% } else { %>
+                            <a class="boton secundario" href="<%= urlPagina %><%= numero %>"
+                               aria-label="Página <%= numero %>"><%= numero %></a>
+                        <% } %>
+                    <% } %>
+                    <% if (paginaPaginada < paginasPaginadas) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= paginaPaginada + 1 %>">Siguiente</a>
+                    <% } %>
+                </div>
+            <% } %>
+        </nav>
+        <% } %>
+
         <% if (seleccionado != null) {
             Ruta rutaDetalle = buscarRuta(rutas, seleccionado.getIdRuta());
         %>
         <section class="panel-detalle">
             <div class="encabezado-detalle">
                 <h2>Detalle de SER-<%= seleccionado.getIdServicio() %></h2>
-                <a href="<%= servlet %>" aria-label="Cerrar detalle">&times;</a>
+                <a href="<%= urlLista %>" aria-label="Cerrar detalle">&times;</a>
             </div>
 
             <div class="datos-detalle">
@@ -467,6 +509,8 @@
 
                 <% if ("Pendiente".equals(seleccionado.getEstado())) { %>
                     <form method="post" action="<%= servlet %>">
+                        <input type="hidden" name="estado" value="<%= filtro %>">
+                        <input type="hidden" name="pagina" value="<%= pagina %>">
                         <input type="hidden" name="accion" value="activar">
                         <input type="hidden" name="id_servicio"
                                value="<%= seleccionado.getIdServicio() %>">
@@ -481,6 +525,8 @@
                     <details class="servicio-confirmacion">
                         <summary class="boton secundario">Suspender servicio</summary>
                         <form method="post" action="<%= servlet %>">
+                            <input type="hidden" name="estado" value="<%= filtro %>">
+                            <input type="hidden" name="pagina" value="<%= pagina %>">
                             <input type="hidden" name="accion" value="suspender">
                             <input type="hidden" name="id_servicio"
                                    value="<%= seleccionado.getIdServicio() %>">
@@ -497,6 +543,8 @@
                     <details class="servicio-confirmacion">
                         <summary class="boton peligro">Cancelar servicio</summary>
                         <form method="post" action="<%= servlet %>">
+                            <input type="hidden" name="estado" value="<%= filtro %>">
+                            <input type="hidden" name="pagina" value="<%= pagina %>">
                             <input type="hidden" name="accion" value="cancelar">
                             <input type="hidden" name="id_servicio"
                                    value="<%= seleccionado.getIdServicio() %>">
@@ -508,6 +556,8 @@
 
                 <% if ("Suspendido".equals(seleccionado.getEstado())) { %>
                     <form method="post" action="<%= servlet %>">
+                        <input type="hidden" name="estado" value="<%= filtro %>">
+                        <input type="hidden" name="pagina" value="<%= pagina %>">
                         <input type="hidden" name="accion" value="reactivar">
                         <input type="hidden" name="id_servicio"
                                value="<%= seleccionado.getIdServicio() %>">

@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 
 @WebServlet(name = "RutaServlet", value = "/RutaServlet")
 public class RutaServlet extends HttpServlet {
-  private static final int POR_PAGINA = 10;
   private static final Pattern NOMBRE_RUTA =
     Pattern.compile("([A-Z0-9]{2,12})-([A-Z0-9]{2,12})-R[0-9]+");
   private static final Pattern CODIGO_SEGMENTO =
@@ -280,10 +279,6 @@ public class RutaServlet extends HttpServlet {
     String filtro = filtro(request);
     List<Ruta> rutas = dao.listarRutas();
     List<Ruta> filtradas = rutas.stream().filter(ruta -> "Todas".equals(filtro) || filtro.equals(ruta.getEstado())).toList();
-    int total = filtradas.size();
-    int paginas = Math.max(1, (total + POR_PAGINA - 1) / POR_PAGINA);
-    int pagina = Math.min(paginas, Math.max(1, id(request.getParameter("pagina"))));
-    int inicio = (pagina - 1) * POR_PAGINA;
     int detalle = id(request.getParameter("detalle"));
     if (detalle <= 0 && "eliminar".equals(request.getParameter("accion"))) {
       detalle = id(request.getParameter("id_ruta"));
@@ -295,10 +290,7 @@ public class RutaServlet extends HttpServlet {
       }
     }
 
-    request.setAttribute("listaRutas", filtradas.subList(inicio, Math.min(total, inicio + POR_PAGINA)));
-    request.setAttribute("cantidad", total);
-    request.setAttribute("paginaActual", pagina);
-    request.setAttribute("paginas", paginas);
+    request.setAttribute("listaRutas", Paginacion.aplicar(request, filtradas));
     request.getRequestDispatcher("/capacity_planner/rutas.jsp").forward(request, response);
   }
 

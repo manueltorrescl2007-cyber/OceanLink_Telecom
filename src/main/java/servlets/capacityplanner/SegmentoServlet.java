@@ -17,7 +17,6 @@ import java.util.Set;
 
 @WebServlet(name = "SegmentoServlet", value = "/SegmentoServlet")
 public class SegmentoServlet extends HttpServlet {
-  private static final int POR_PAGINA = 10;
   private static final Set<String> ESTADOS =
     Set.of("Normal", "Alta", "Crítica");
   @Override
@@ -30,7 +29,6 @@ public class SegmentoServlet extends HttpServlet {
     throws ServletException, IOException {
     try {
       String filtro = filtroEstado(request);
-      int pagina = Math.max(1, parseId(request.getParameter("pagina")));
       request.setAttribute("filtroEstado", filtro);
       SegmentoDao dao = new SegmentoDao();
       int detalle = parseId(request.getParameter("detalle"));
@@ -43,22 +41,14 @@ public class SegmentoServlet extends HttpServlet {
           request.setAttribute("segmentoDetalle", segmento);
         }
       }
-      int total = filtrados.size();
-      int totalPaginas = Math.max(1, (total + POR_PAGINA - 1) / POR_PAGINA);
-      pagina = Math.min(pagina, totalPaginas);
-      int desde = (pagina - 1) * POR_PAGINA;
-      int hasta = Math.min(desde + POR_PAGINA, total);
-
-      request.setAttribute("listaSegmentos", new ArrayList<>(filtrados.subList(desde, hasta)));
-      request.setAttribute("totalSegmentos", total);
-      request.setAttribute("totalPaginas", totalPaginas);
-      request.setAttribute("paginaActual", pagina);
+      request.setAttribute("listaSegmentos", Paginacion.aplicar(request, filtrados));
       if ("historial".equals(request.getParameter("accion"))) {
         if (request.getAttribute("segmentoDetalle") == null) {
           response.sendError(HttpServletResponse.SC_NOT_FOUND, "Segmento no encontrado.");
           return;
         }
-        request.setAttribute("historialSegmento", new HistorialSegmentoDao().listar(detalle));
+        request.setAttribute("historialSegmento", new HistorialSegmentoDao().listarPagina(
+          detalle, Paginacion.numeroPagina(request.getParameter("paginaHistorial"))));
       }
       request.getRequestDispatcher("/capacity_planner/segmentos.jsp").forward(request, response);
     } catch (SQLException e) {

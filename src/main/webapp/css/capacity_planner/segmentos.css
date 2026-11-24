@@ -267,31 +267,6 @@ body.vista-segmentos {
 }
 
 /* Paginación y nivel de utilización. */
-.paginacion-segmentos {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.paginacion-segmentos .paginacion-controles {
-  display: flex;
-  gap: 8px;
-  margin-inline-start: auto;
-}
-
-.paginacion-segmentos .boton.paginacion-boton {
-  background: #fff;
-  border: 1px solid var(--color-borde, #d9e1e8);
-}
-
-.paginacion-segmentos .paginacion-indicador {
-  color: var(--color-texto-claro, #64748b);
-  font-size: .875rem;
-}
-
 .utilizacion-detalle {
   margin-top: 16px;
 }

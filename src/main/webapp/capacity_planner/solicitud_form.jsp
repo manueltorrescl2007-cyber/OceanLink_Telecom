@@ -15,6 +15,12 @@
 <%
     String servlet = request.getContextPath() + "/SolicitudesServlet";
 
+    String filtroEstado = request.getParameter("filtroEstado");
+    if (filtroEstado == null) filtroEstado = "";
+    String pagina = request.getParameter("pagina");
+    String urlLista = servlet + "?estado=" + java.net.URLEncoder.encode(filtroEstado, "UTF-8")
+            + "&amp;pagina=" + java.net.URLEncoder.encode(pagina == null ? "1" : pagina, "UTF-8");
+
     Solicitud solicitud =
             (Solicitud) request.getAttribute("solicitud");
 
@@ -284,7 +290,7 @@
             <% } %>
 
             <form method="post"
-                  action="<%= servlet %>?action=guardar"
+                  action="<%= servlet %>?action=guardar&amp;filtroEstado=<%= java.net.URLEncoder.encode(filtroEstado, "UTF-8") %>&amp;pagina=<%= java.net.URLEncoder.encode(pagina == null ? "1" : pagina, "UTF-8") %>"
                   class="formulario-solicitud" novalidate>
 
                 <input type="hidden"
@@ -428,7 +434,7 @@
                 </label>
 
                 <div class="botones-formulario ancho-completo">
-                    <a class="boton secundario" href="<%= servlet %>">
+                    <a class="boton secundario" href="<%= urlLista %>">
                         Cancelar
                     </a>
 

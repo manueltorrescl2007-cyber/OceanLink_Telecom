@@ -15,6 +15,8 @@ import jakarta.servlet.http.HttpSession;
 import services.NotificacionCapacityPlannerService;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
 @WebServlet(name = "SolicitudesServlet", value = "/SolicitudesServlet")
@@ -42,20 +44,7 @@ public class SolicitudesServlet extends HttpServlet {
           String estado = request.getParameter("estado");
           var solicitudes = solicitudDao.listarSolicitudes(estado);
 
-          final int porPagina = 10;
-          int total = solicitudes.size();
-          int totalPaginas = Math.max(1, (total + porPagina - 1) / porPagina);
-          int pagina = parseId(request.getParameter("pagina"));
-          pagina = Math.max(1, Math.min(pagina, totalPaginas));
-
-          int desde = (pagina - 1) * porPagina;
-          int hasta = Math.min(desde + porPagina, total);
-
-          request.setAttribute("listaSolicitudes",
-            new java.util.ArrayList<>(solicitudes.subList(desde, hasta)));
-          request.setAttribute("paginaActual", pagina);
-          request.setAttribute("totalPaginas", totalPaginas);
-          request.setAttribute("totalSolicitudes", total);
+          request.setAttribute("listaSolicitudes", Paginacion.aplicar(request, solicitudes));
           request.setAttribute("filtroEstado", estado == null ? "" : estado);
 
           int id = parseId(request.getParameter("id"));
@@ -198,7 +187,7 @@ public class SolicitudesServlet extends HttpServlet {
             notificaciones.notificarSolicitud(solicitud.getIdSolicitud(), "Registrada");
           }
 
-          response.sendRedirect(servlet + "?mensaje=guardado");
+          response.sendRedirect(urlLista(request) + "&mensaje=guardado");
           break;
 
         case "cambiarEstado":
@@ -221,7 +210,7 @@ public class SolicitudesServlet extends HttpServlet {
             : "cambioNoPermitido";
 
           response.sendRedirect(
-            servlet + "?id=" + idEstado
+            urlLista(request) + "&id=" + idEstado
               + "&mensaje=" + mensajeEstado
           );
           break;
@@ -238,7 +227,7 @@ public class SolicitudesServlet extends HttpServlet {
             : "eliminacionNoPermitida";
 
           response.sendRedirect(
-            servlet + "?mensaje=" + mensajeEliminar
+            urlLista(request) + "&mensaje=" + mensajeEliminar
           );
           break;
 
@@ -293,6 +282,13 @@ public class SolicitudesServlet extends HttpServlet {
     }
 
     return null;
+  }
+
+  private String urlLista(HttpServletRequest request) {
+    String filtro = texto(request.getParameter("filtroEstado"));
+    return request.getContextPath() + "/SolicitudesServlet?estado="
+      + URLEncoder.encode(filtro, StandardCharsets.UTF_8)
+      + "&pagina=" + Paginacion.numeroPagina(request.getParameter("pagina"));
   }
 
   private int parseId(String valor) {

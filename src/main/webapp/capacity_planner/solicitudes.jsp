@@ -34,8 +34,8 @@
     if (filtro == null) filtro = "";
     String filtroUrl = java.net.URLEncoder.encode(filtro, "UTF-8");
     int paginaActual = (Integer) request.getAttribute("paginaActual");
-    int totalPaginas = (Integer) request.getAttribute("totalPaginas");
     String urlPagina = servlet + "?estado=" + filtroUrl + "&amp;pagina=";
+    String contextoLista = "&amp;filtroEstado=" + filtroUrl + "&amp;pagina=" + paginaActual;
     String[] estados = {"Registrada", "En evaluacion", "Aprobada", "Provisionada",
             "Activa", "Rechazada", "Pendiente por capacidad"};
 
@@ -54,32 +54,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/solicitudes.css?v=2">
     <!-- Las barras comunes se cargan al final. -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
-    <style>
-        .paginacion-solicitudes {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 8px;
-        }
-
-        .paginacion-solicitudes .paginacion-controles {
-            display: flex;
-            gap: 8px;
-            margin-inline-start: auto;
-        }
-
-        .paginacion-solicitudes .boton.paginacion-boton {
-            background: #fff;
-            border: 1px solid var(--color-borde, #d9e1e8);
-        }
-
-        .paginacion-solicitudes .paginacion-indicador {
-            color: var(--color-texto-claro, #64748b);
-            font-size: .875rem;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/paginacion.css">
 </head>
 <body>
 <!-- 5. BARRAS COMUNES: misma estructura que Clientes. -->
@@ -124,7 +99,7 @@
         <!-- 6. ENCABEZADO Y FILTRO -->
         <section class="encabezado-panel" id="encabezadoSolicitudes">
             <div><h2>Capacity Planner</h2><h1>Solicitudes</h1></div>
-            <button id="botonNuevaSolicitud" class="boton primario" type="button" onclick="location.href='<%= servlet %>?action=formCrear'">+ Nueva solicitud</button>
+            <a id="botonNuevaSolicitud" class="boton primario" href="<%= servlet %>?action=formCrear<%= contextoLista %>">+ Nueva solicitud</a>
         </section>
         <% if (error != null) { %><p class="mensaje-error" role="alert"><%= texto(error) %></p><% } %>
         <% if ("guardado".equals(mensaje) || "estadoActualizado".equals(mensaje) || "eliminado".equals(mensaje)) { %>
@@ -141,7 +116,7 @@
                 </select>
                 <button class="boton secundario" type="submit">Filtrar</button>
             </form>
-            <span class="cantidad-solicitudes">${totalSolicitudes} solicitudes</span>
+            <span class="cantidad-solicitudes">${totalRegistros} solicitudes</span>
         </section>
         <!-- 7. TABLA: el ID abre el detalle sin JavaScript. -->
         <section class="tabla-contenedor">
@@ -162,17 +137,35 @@
                 </tbody>
             </table>
         </section>
-        <% if (totalPaginas > 1) { %>
-        <nav class="paginacion-solicitudes" aria-label="Paginación de solicitudes">
-            <span class="paginacion-indicador" aria-current="page">Página <%= paginaActual %> de <%= totalPaginas %></span>
-            <div class="paginacion-controles">
-                <% if (paginaActual > 1) { %>
-                    <a class="boton secundario paginacion-boton" href="<%= urlPagina %><%= paginaActual - 1 %>">Anterior</a>
-                <% } %>
-                <% if (paginaActual < totalPaginas) { %>
-                    <a class="boton secundario paginacion-boton" href="<%= urlPagina %><%= paginaActual + 1 %>">Siguiente</a>
-                <% } %>
-            </div>
+        <%
+            int totalPaginado = (Integer) request.getAttribute("totalRegistros");
+            int paginaPaginada = (Integer) request.getAttribute("paginaActual");
+            int paginasPaginadas = (Integer) request.getAttribute("totalPaginas");
+            if (totalPaginado > 0) {
+        %>
+        <nav class="pagination-bar" aria-label="Paginación de resultados">
+            <span class="pagination-info">
+                Mostrando <%= request.getAttribute("registroInicio") %>–<%= request.getAttribute("registroFin") %>
+                de <%= totalPaginado %> registros (Página <%= paginaPaginada %> de <%= paginasPaginadas %>)
+            </span>
+            <% if (paginasPaginadas > 1) { %>
+                <div class="pagination-links">
+                    <% if (paginaPaginada > 1) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= paginaPaginada - 1 %>">Anterior</a>
+                    <% } %>
+                    <% for (int numero = 1; numero <= paginasPaginadas; numero++) { %>
+                        <% if (numero == paginaPaginada) { %>
+                            <span class="boton primario" aria-current="page"><%= numero %></span>
+                        <% } else { %>
+                            <a class="boton secundario" href="<%= urlPagina %><%= numero %>"
+                               aria-label="Página <%= numero %>"><%= numero %></a>
+                        <% } %>
+                    <% } %>
+                    <% if (paginaPaginada < paginasPaginadas) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= paginaPaginada + 1 %>">Siguiente</a>
+                    <% } %>
+                </div>
+            <% } %>
         </nav>
         <% } %>
         <!-- 8. DETALLE: datos, estado y edición de la solicitud seleccionada. -->
@@ -205,6 +198,8 @@
                   onsubmit="if (this.elements['estado'].value === 'Aprobada') {
                       return confirm('¿Confirmas que deseas aprobar esta solicitud? Una vez aprobada, podrá utilizarse para crear un servicio.');
                   }">
+                <input type="hidden" name="filtroEstado" value="<%= texto(filtro) %>">
+                <input type="hidden" name="pagina" value="<%= paginaActual %>">
                 <input type="hidden" name="action" value="cambiarEstado">
                 <input type="hidden" name="id_solicitud" value="<%= s.getIdSolicitud() %>">
                 <label for="estadoSolicitud">Evaluación:</label>
@@ -226,7 +221,7 @@
             <% } %>
             <div class="acciones-detalle">
                 <% if (editable) { %>
-                    <a class="boton secundario" href="<%= servlet %>?action=editar&amp;id=<%= s.getIdSolicitud() %>">Editar solicitud</a>
+                    <a class="boton secundario" href="<%= servlet %>?action=editar&amp;id=<%= s.getIdSolicitud() %><%= contextoLista %>">Editar solicitud</a>
                 <% } %>
                 <% if (editable || "Rechazada".equals(estadoActual)) { %>
                     <button class="boton-eliminar-solicitud" type="button" popovertarget="confirmarEliminar">Eliminar solicitud</button>
@@ -238,6 +233,8 @@
             <h2>Eliminar SOL-<%= s.getIdSolicitud() %></h2>
             <p class="aviso-prueba">¿Deseas eliminar esta solicitud? Esta acción no se puede deshacer.</p>
             <form method="post" action="<%= servlet %>" class="botones-formulario">
+                <input type="hidden" name="filtroEstado" value="<%= texto(filtro) %>">
+                <input type="hidden" name="pagina" value="<%= paginaActual %>">
                 <input type="hidden" name="action" value="eliminar">
                 <input type="hidden" name="id_solicitud" value="<%= s.getIdSolicitud() %>">
                 <button class="boton secundario" type="button" popovertarget="confirmarEliminar" popovertargetaction="hide">Cancelar</button>

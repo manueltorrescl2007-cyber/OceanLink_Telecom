@@ -47,6 +47,7 @@
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/rutas_formulario.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/paginacion.css">
 </head>
 <body class="vista-rutas">
 
@@ -116,8 +117,7 @@
         <%
             List<Ruta> rutas = (List<Ruta>) request.getAttribute("listaRutas");
             Ruta rutaDetalle = (Ruta) request.getAttribute("rutaDetalle");
-            int cantidad = (Integer) request.getAttribute("cantidad");
-            int paginas = (Integer) request.getAttribute("paginas");
+            int cantidad = (Integer) request.getAttribute("totalRegistros");
             String urlPagina = servlet + "?filtro=" + filtro + "&amp;pagina=";
         %>
         <% if ("1".equals(request.getParameter("guardado"))) { %>
@@ -199,18 +199,36 @@
             </table>
         </section>
 
-        <% if (paginas > 1) { %>
-            <nav class="paginacion-rutas" aria-label="Paginación de rutas">
-                <span>Página <%= pagina %> de <%= paginas %></span>
-                <div class="acciones">
-                    <% if (pagina > 1) { %>
-                        <a class="boton secundario" href="<%= urlPagina %><%= pagina - 1 %>">Anterior</a>
+        <%
+            int totalPaginado = (Integer) request.getAttribute("totalRegistros");
+            int paginaPaginada = (Integer) request.getAttribute("paginaActual");
+            int paginasPaginadas = (Integer) request.getAttribute("totalPaginas");
+            if (totalPaginado > 0) {
+        %>
+        <nav class="pagination-bar" aria-label="Paginación de resultados">
+            <span class="pagination-info">
+                Mostrando <%= request.getAttribute("registroInicio") %>–<%= request.getAttribute("registroFin") %>
+                de <%= totalPaginado %> registros (Página <%= paginaPaginada %> de <%= paginasPaginadas %>)
+            </span>
+            <% if (paginasPaginadas > 1) { %>
+                <div class="pagination-links">
+                    <% if (paginaPaginada > 1) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= paginaPaginada - 1 %>">Anterior</a>
                     <% } %>
-                    <% if (pagina < paginas) { %>
-                        <a class="boton secundario" href="<%= urlPagina %><%= pagina + 1 %>">Siguiente</a>
+                    <% for (int numero = 1; numero <= paginasPaginadas; numero++) { %>
+                        <% if (numero == paginaPaginada) { %>
+                            <span class="boton primario" aria-current="page"><%= numero %></span>
+                        <% } else { %>
+                            <a class="boton secundario" href="<%= urlPagina %><%= numero %>"
+                               aria-label="Página <%= numero %>"><%= numero %></a>
+                        <% } %>
+                    <% } %>
+                    <% if (paginaPaginada < paginasPaginadas) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= paginaPaginada + 1 %>">Siguiente</a>
                     <% } %>
                 </div>
-            </nav>
+            <% } %>
+        </nav>
         <% } %>
 
         <% if (rutaDetalle != null) {

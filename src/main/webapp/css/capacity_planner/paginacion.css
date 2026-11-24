@@ -1,0 +1,30 @@
+.pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
+.pagination-info {
+  color: var(--color-texto-claro, #64748b);
+  font-size: 13px;
+}
+
+.pagination-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pagination-links .boton {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.pagination-links [aria-current="page"] {
+  cursor: default;
+  pointer-events: none;
+}

@@ -50,7 +50,8 @@ public class ServicioServlet extends HttpServlet {
     request.setCharacterEncoding("UTF-8");
 
     String accion = request.getParameter("accion");
-    String servlet = request.getContextPath() + "/ServicioServlet";
+    String urlLista = request.getContextPath() + "/ServicioServlet?estado="
+      + filtroEstado(request) + "&pagina=" + Paginacion.numeroPagina(request.getParameter("pagina"));
 
     if (accion == null) {
       accion = "";
@@ -94,8 +95,8 @@ public class ServicioServlet extends HttpServlet {
           }
 
           notificaciones.notificarServicio(servicio.getIdServicio(), "Capacidad reservada");
-          response.sendRedirect(servlet
-            + "?guardado=1&servicio="
+          response.sendRedirect(urlLista
+            + "&guardado=1&servicio="
             + servicio.getIdServicio());
           break;
         }
@@ -128,8 +129,8 @@ public class ServicioServlet extends HttpServlet {
           if (usuarioSesion instanceof Usuario usuario && !alertas.isEmpty()) {
             notificaciones.notificarUtilizacion(usuario, idServicio, alertas);
           }
-          response.sendRedirect(servlet
-            + "?activado=1&servicio=" + idServicio);
+          response.sendRedirect(urlLista
+            + "&activado=1&servicio=" + idServicio);
           break;
         }
 
@@ -153,8 +154,8 @@ public class ServicioServlet extends HttpServlet {
           }
 
           notificaciones.notificarServicio(idServicio, "Servicio suspendido");
-          response.sendRedirect(servlet
-            + "?suspendido=1&servicio=" + idServicio);
+          response.sendRedirect(urlLista
+            + "&suspendido=1&servicio=" + idServicio);
           break;
         }
 
@@ -181,8 +182,8 @@ public class ServicioServlet extends HttpServlet {
           }
 
           notificaciones.notificarServicio(idServicio, "Servicio cancelado");
-          response.sendRedirect(servlet
-            + "?cancelado=1&servicio=" + idServicio);
+          response.sendRedirect(urlLista
+            + "&cancelado=1&servicio=" + idServicio);
           break;
         }
 
@@ -209,8 +210,8 @@ public class ServicioServlet extends HttpServlet {
           }
 
           notificaciones.notificarServicio(idServicio, "Servicio reactivado");
-          response.sendRedirect(servlet
-            + "?reactivado=1&servicio=" + idServicio);
+          response.sendRedirect(urlLista
+            + "&reactivado=1&servicio=" + idServicio);
           break;
         }
 
@@ -239,18 +240,10 @@ public class ServicioServlet extends HttpServlet {
     SolicitudDao solicitudDao = new SolicitudDao();
     RutaDao rutaDao = new RutaDao();
 
-    String estado = request.getParameter("estado");
-
-    if (!"Pendiente".equals(estado)
-      && !"Activo".equals(estado)
-      && !"Suspendido".equals(estado)
-      && !"Cancelado".equals(estado)) {
-
-      estado = "";
-    }
+    String estado = filtroEstado(request);
 
     request.setAttribute("listaServicios",
-      servicioDao.listarServicios(estado));
+      Paginacion.aplicar(request, servicioDao.listarServicios(estado)));
 
     request.setAttribute("filtroEstado", estado);
 
@@ -301,6 +294,20 @@ public class ServicioServlet extends HttpServlet {
       throw new ServletException(
         "No se pudieron cargar los servicios.", e);
     }
+  }
+
+  private String filtroEstado(HttpServletRequest request) {
+    String estado = request.getParameter("estado");
+
+    if (!"Pendiente".equals(estado)
+      && !"Activo".equals(estado)
+      && !"Suspendido".equals(estado)
+      && !"Cancelado".equals(estado)) {
+
+      return "";
+    }
+
+    return estado;
   }
 
   private int parseId(String valor) {

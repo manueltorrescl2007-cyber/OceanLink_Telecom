@@ -15,6 +15,11 @@ public class HistorialSegmentoDao extends BaseDao {
                        long cambioOcupada, long cambioReservada, long total,
                        long ocupada, long reservada) {}
 
+  public record Pagina(List<Evento> eventos, int total, int numero,
+                       int totalPaginas, int desde) {}
+
+  private static final int EVENTOS_POR_PAGINA = 10;
+
   static void registrarReserva(Connection conn, int idRuta, int idServicio, long capacidad)
     throws SQLException {
     String sql = """
@@ -36,17 +41,49 @@ public class HistorialSegmentoDao extends BaseDao {
   }
 
   public List<Evento> listar(int idSegmento) throws SQLException {
-    String sql = """
-      SELECT fecha, evento, referencia, cambio_ocupada, cambio_reservada,
-             capacidad_total, capacidad_ocupada, capacidad_reservada
-      FROM historial_segmento
-      WHERE id_segmento = ?
-      ORDER BY fecha DESC, id_historial DESC
-      """;
+    try (Connection conn = getConnection()) {
+      return consultarEventos(conn, idSegmento, null);
+    }
+  }
+
+  public Pagina listarPagina(int idSegmento, int paginaSolicitada) throws SQLException {
+    String contar = "SELECT COUNT(*) FROM historial_segmento WHERE id_segmento = ?";
+    try (Connection conn = getConnection()) {
+      int total;
+      try (PreparedStatement stmt = conn.prepareStatement(contar)) {
+        stmt.setInt(1, idSegmento);
+        try (ResultSet rs = stmt.executeQuery()) {
+          rs.next();
+          total = rs.getInt(1);
+        }
+      }
+
+      int paginas = Math.max(1, Math.ceilDiv(total, EVENTOS_POR_PAGINA));
+      int pagina = Math.min(paginas, Math.max(1, paginaSolicitada));
+      int desde = (pagina - 1) * EVENTOS_POR_PAGINA;
+      List<Evento> eventos = consultarEventos(conn, idSegmento, desde);
+      return new Pagina(eventos, total, pagina, paginas, desde);
+    }
+  }
+
+  private static final String EVENTOS_SQL = """
+    SELECT fecha, evento, referencia, cambio_ocupada, cambio_reservada,
+           capacidad_total, capacidad_ocupada, capacidad_reservada
+    FROM historial_segmento
+    WHERE id_segmento = ?
+    ORDER BY fecha DESC, id_historial DESC
+    """;
+
+  private List<Evento> consultarEventos(Connection conn, int idSegmento,
+                                        Integer desde) throws SQLException {
+    String sql = desde == null ? EVENTOS_SQL : EVENTOS_SQL + "LIMIT ? OFFSET ?";
     List<Evento> eventos = new ArrayList<>();
-    try (Connection conn = getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
       stmt.setInt(1, idSegmento);
+      if (desde != null) {
+        stmt.setInt(2, EVENTOS_POR_PAGINA);
+        stmt.setInt(3, desde);
+      }
       try (ResultSet rs = stmt.executeQuery()) {
         while (rs.next()) {
           eventos.add(new Evento(rs.getObject("fecha", LocalDateTime.class),

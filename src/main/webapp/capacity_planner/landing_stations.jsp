@@ -24,8 +24,7 @@
 
     String filtro = (String) request.getAttribute("filtroEstado");
     int pagina = (Integer) request.getAttribute("paginaActual");
-    int totalPaginas = (Integer) request.getAttribute("totalPaginas");
-    int cantidad = (Integer) request.getAttribute("totalEstaciones");
+    int cantidad = (Integer) request.getAttribute("totalRegistros");
     String urlPagina = servlet + "?estado=" + filtro + "&amp;pagina=";
     String urlLista = urlPagina + pagina;
 %>
@@ -39,32 +38,7 @@
     <!-- Estilos de la página primero; barras comunes después. -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/landing_stations.css?v=1">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
-    <style>
-        .vista-landings .paginacion-estaciones {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 8px;
-        }
-
-        .paginacion-estaciones .paginacion-controles {
-            display: flex;
-            gap: 8px;
-            margin-inline-start: auto;
-        }
-
-        .paginacion-estaciones .boton.paginacion-boton {
-            background: #fff;
-            border: 1px solid var(--color-borde, #d9e1e8);
-        }
-
-        .paginacion-estaciones .paginacion-indicador {
-            color: var(--color-texto-claro, #64748b);
-            font-size: .875rem;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/paginacion.css">
 </head>
 <body class="vista-landings">
 <jsp:include page="header.jsp" />
@@ -166,17 +140,35 @@
         </section>
 
 
-        <% if (totalPaginas > 1) { %>
-        <nav class="paginacion-estaciones" aria-label="Paginación de estaciones">
-            <span class="paginacion-indicador" aria-current="page">Página <%= pagina %> de <%= totalPaginas %></span>
-            <div class="paginacion-controles">
-                <% if (pagina > 1) { %>
-                    <a class="boton secundario paginacion-boton" href="<%= urlPagina %><%= pagina - 1 %>">Anterior</a>
-                <% } %>
-                <% if (pagina < totalPaginas) { %>
-                    <a class="boton secundario paginacion-boton" href="<%= urlPagina %><%= pagina + 1 %>">Siguiente</a>
-                <% } %>
-            </div>
+        <%
+            int totalPaginado = (Integer) request.getAttribute("totalRegistros");
+            int paginaPaginada = (Integer) request.getAttribute("paginaActual");
+            int paginasPaginadas = (Integer) request.getAttribute("totalPaginas");
+            if (totalPaginado > 0) {
+        %>
+        <nav class="pagination-bar" aria-label="Paginación de resultados">
+            <span class="pagination-info">
+                Mostrando <%= request.getAttribute("registroInicio") %>–<%= request.getAttribute("registroFin") %>
+                de <%= totalPaginado %> registros (Página <%= paginaPaginada %> de <%= paginasPaginadas %>)
+            </span>
+            <% if (paginasPaginadas > 1) { %>
+                <div class="pagination-links">
+                    <% if (paginaPaginada > 1) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= paginaPaginada - 1 %>">Anterior</a>
+                    <% } %>
+                    <% for (int numero = 1; numero <= paginasPaginadas; numero++) { %>
+                        <% if (numero == paginaPaginada) { %>
+                            <span class="boton primario" aria-current="page"><%= numero %></span>
+                        <% } else { %>
+                            <a class="boton secundario" href="<%= urlPagina %><%= numero %>"
+                               aria-label="Página <%= numero %>"><%= numero %></a>
+                        <% } %>
+                    <% } %>
+                    <% if (paginaPaginada < paginasPaginadas) { %>
+                        <a class="boton secundario" href="<%= urlPagina %><%= paginaPaginada + 1 %>">Siguiente</a>
+                    <% } %>
+                </div>
+            <% } %>
         </nav>
         <% } %>
 

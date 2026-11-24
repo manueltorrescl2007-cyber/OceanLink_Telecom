@@ -46,17 +46,7 @@ public class LandingStationServlet extends HttpServlet {
       }
     }
 
-    final int porPagina = 10;
-    int total = filtradas.size();
-    int totalPaginas = Math.max(1, (total + porPagina - 1) / porPagina);
-    int pagina = Math.max(1, Math.min(parseId(request.getParameter("pagina")), totalPaginas));
-    int desde = (pagina - 1) * porPagina;
-    int hasta = Math.min(desde + porPagina, total);
-
-    request.setAttribute("listaEstaciones", new ArrayList<>(filtradas.subList(desde, hasta)));
-    request.setAttribute("totalEstaciones", total);
-    request.setAttribute("totalPaginas", totalPaginas);
-    request.setAttribute("paginaActual", pagina);
+    request.setAttribute("listaEstaciones", Paginacion.aplicar(request, filtradas));
     request.setAttribute("filtroEstado", filtro);
     request.getRequestDispatcher("/capacity_planner/landing_stations.jsp")
       .forward(request, response);
