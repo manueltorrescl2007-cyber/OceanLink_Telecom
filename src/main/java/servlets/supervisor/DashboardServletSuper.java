@@ -128,10 +128,15 @@ public class DashboardServletSuper extends HttpServlet {
     String claseUtilizacion = utilizacion > 95.0 ? "kpi-alerta-critica" : (utilizacion >= 80.0 ? "kpi-alerta-alta" : "kpi-alerta-normal");
 
     String estadoRed;
-    if (segmentos.isEmpty()) estadoRed = "SIN DATOS";
-    else if (fueraServicio > 0) estadoRed = "INTERRUMPIDA";
-    else if (degradados > 0 || mantenimiento > 0) estadoRed = "DEGRADADA";
-    else estadoRed = "OPERATIVA";
+    if (segmentos.isEmpty()) {
+      estadoRed = "SIN DATOS";
+    } else if (fueraServicio > 0 || disponibilidad < 80.0) {
+      estadoRed = "INTERRUMPIDA";
+    } else if (disponibilidad < 90.0) {
+      estadoRed = "DEGRADADA";
+    } else {
+      estadoRed = "OPERATIVA";
+    }
 
     String claseEstadoRed = "INTERRUMPIDA".equals(estadoRed) ? "kpi-alerta-critica"
       : ("DEGRADADA".equals(estadoRed) ? "kpi-alerta-alta" : "kpi-alerta-normal");

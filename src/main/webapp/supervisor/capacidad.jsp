@@ -1,10 +1,15 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="beans.networkoperator.Segmento" %>
 <%@ page import="beans.networkoperator.UtilizacionDiaria" %>
+<%@ page import="beans.capacityplanner.Solicitud" %>
 <%
-  ArrayList<Segmento> listaSegmentos = (ArrayList<Segmento>) request.getAttribute("listaSegmentos");
-  String filtroEstado = (String) request.getAttribute("filtroEstado");
+  String servletTarjetas = request.getContextPath() + "/TarjetasServletSuper";
+
+  if (request.getAttribute("totalSolicitudes") == null) {
+    response.sendRedirect(servletTarjetas);
+    return;
+  }
+
   UtilizacionDiaria fotoHoy = (UtilizacionDiaria) request.getAttribute("fotoHoy");
   UtilizacionDiaria[] semana = (UtilizacionDiaria[]) request.getAttribute("semana");
   String[] fechasSemana = (String[]) request.getAttribute("fechasSemana");
@@ -14,8 +19,6 @@
   Integer cantAlta = (Integer) request.getAttribute("cantAlta");
   Integer cantCritica = (Integer) request.getAttribute("cantCritica");
 
-  if (listaSegmentos == null) { listaSegmentos = new ArrayList<>(); }
-  if (filtroEstado == null) { filtroEstado = ""; }
   if (fotoHoy == null) { fotoHoy = new UtilizacionDiaria(); }
   if (semana == null) { semana = new UtilizacionDiaria[7]; }
   if (fechasSemana == null) { fechasSemana = new String[]{"", "", "", "", "", "", ""}; }
@@ -39,251 +42,118 @@
   etiquetasJs += "]"; ocupadaJs += "]"; reservadaJs += "]"; disponibleJs += "]";
   ocupadaGbpsJs += "]"; reservadaGbpsJs += "]"; disponibleGbpsJs += "]";
 
-  String[] estados = {"Operativo", "Degradado", "En mantenimiento", "Fuera de servicio"};
-  String servletEstadoRed = request.getContextPath() + "/EstadoRedServletSuper";
+  int totalSolicitudes = (Integer) request.getAttribute("totalSolicitudes");
+  int pendientesEvaluacion = (Integer) request.getAttribute("pendientesEvaluacion");
+  int solicitudesAprobadas = (Integer) request.getAttribute("solicitudesAprobadas");
+  int pendientesCapacidad = (Integer) request.getAttribute("pendientesCapacidad");
+  int serviciosActivos = (Integer) request.getAttribute("serviciosActivos");
+
+  int segmentosNormales = (Integer) request.getAttribute("segmentosNormales");
+  int segmentosAltos = (Integer) request.getAttribute("segmentosAltos");
+  int segmentosCriticos = (Integer) request.getAttribute("segmentosCriticos");
+  int segmentosSinCapacidad = (Integer) request.getAttribute("segmentosSinCapacidad");
+
+  ArrayList<Solicitud> acciones = (ArrayList<Solicitud>) request.getAttribute("accionesPendientes");
+  if (acciones == null) { acciones = new ArrayList<>(); }
 %>
-
-<%@ page import="beans.capacityplanner.Solicitud" %>
-<%
-  String servletTarjetas = request.getContextPath() + "/TarjetasServletSuper";
-
-  if (request.getAttribute("totalSolicitudes") == null) {
-    response.sendRedirect(servletTarjetas);
-    return;
-  }
-
-  int totalSolicitudes =
-    (Integer) request.getAttribute("totalSolicitudes");
-
-  int pendientesEvaluacion =
-    (Integer) request.getAttribute("pendientesEvaluacion");
-
-  int solicitudesAprobadas =
-    (Integer) request.getAttribute("solicitudesAprobadas");
-
-  int pendientesCapacidad =
-    (Integer) request.getAttribute("pendientesCapacidad");
-
-  int serviciosActivos =
-    (Integer) request.getAttribute("serviciosActivos");
-
-  int segmentosEstables =
-    (Integer) request.getAttribute("segmentosEstables");
-
-  int segmentosLimitados =
-    (Integer) request.getAttribute("segmentosLimitados");
-
-  int segmentosCriticos =
-    (Integer) request.getAttribute("segmentosCriticos");
-
-  ArrayList<Solicitud> acciones =
-    (ArrayList<Solicitud>) request.getAttribute("accionesPendientes");
-%>
-<!-- Contenido visual -->
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OceanLink - Capacidad y Utilización de la Red</title>
 
-  <title>OceanLink | Dashboard</title>
-
-  <link rel="stylesheet"
-        href="${pageContext.request.contextPath}/css/capacity_planner/capacity_planner.css">
-  <link rel="stylesheet"
-      href="${pageContext.request.contextPath}/css/network_operator/network_operator.css">
-  <link rel="stylesheet"
-      href="${pageContext.request.contextPath}/css/supervisor/capacidad.css">
-  <link rel="stylesheet"
-        href="${pageContext.request.contextPath}/css/barras.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/capacity_planner.css?v=2">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=7">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/supervisor/capacidad.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 </head>
-
 <body>
 
-<!-- Barra superior -->
 <jsp:include page="header.jsp" />
 
 <div class="contenedor">
 
-  <!-- Barra lateral -->
   <aside class="menu-lateral">
-
     <div class="contenido-menu">
-
       <h2>Menú</h2>
+      <nav class="navegacion-lateral" aria-label="Menú principal">
 
-      <nav class="navegacion-lateral"
-           aria-label="Menú principal">
-
-        <!-- Dashboard -->
         <a href="${pageContext.request.contextPath}/DashboardServletSuper">
-            Dashboard general
+          Dashboard general
         </a>
 
-        <!-- Incidencias -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
-          <input
-            type="checkbox"
-            id="control-incidencias"
-            class="control-submenu"
-          >
-           <!-- Al hacer clic, marca o desmarca el checkbox -->
-          <label for="control-incidencias"
-                 class="titulo-grupo">
+          <input type="checkbox" id="control-incidencias" class="control-submenu">
+          <label for="control-incidencias" class="titulo-grupo">
             <span>Incidencias</span>
             <span class="flecha-submenu"></span>
           </label>
-          <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper"
-               class="subopcion">
-                Visualizar
-            </a>
-
-            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper"
-               class="subopcion">
-                Historial de incidencias
-            </a>
+            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper" class="subopcion">Visualizar</a>
+            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper?action=historial" class="subopcion">Historial de incidencias</a>
           </div>
         </div>
 
-        <!-- Estado de la red -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
-          <input
-            type="checkbox"
-            id="controlEstadoRed"
-            class="control-submenu"
-            checked>
-
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
-          <label for="controlEstadoRed"
-                 class="titulo-grupo">
-            <span class="texto-grupo">
-                Estado de la red
-            </span>
-            <span class="flecha-submenu"></span>
-          </label>
-
-          <!-- Opciones que aparecen al desplegar -->
-          <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/TarjetasServletSuper" class="subopcion activo">
-              Capacidad</a>
-            <a href="${pageContext.request.contextPath}/RutaServletSuper"
-               class="subopcion">
-                Rutas
-            </a>
-            <a href="${pageContext.request.contextPath}/SegmentoServletSuper"
-               class="subopcion">
-                Segmentos
-            </a>
-            <a href="${pageContext.request.contextPath}/LandingStationServletSuper"
-               class="subopcion">
-                Landing stations
-            </a>
-          </div>
-        </div>
-
-        <!-- Servicios y clientes -->
-        <div class="grupo-menu">
-          <input
-            type="checkbox"
-            id="control-servicios-clientes"
-            class="control-submenu"
-          >
-
-          <label for="control-servicios-clientes"
-                  class="titulo-grupo">
-            <span class="texto-grupo">
-                Servicios y clientes
-            </span>
+          <input type="checkbox" id="controlEstadoRed" class="control-submenu" checked>
+          <label for="controlEstadoRed" class="titulo-grupo">
+            <span class="texto-grupo">Estado de la red</span>
             <span class="flecha-submenu"></span>
           </label>
           <div class="contenido-submenu">
-
-            <a href="${pageContext.request.contextPath}/ClienteServletSuper"
-               class="subopcion">
-                Clientes
-            </a>
-
-            <a href="${pageContext.request.contextPath}/ServicioServletSuper"
-               class="subopcion">
-                Servicios
-            </a>
-            <a
-                href="${pageContext.request.contextPath}/SolicitudesServletSuper"
-                class="subopcion">
-                Solicitudes
-            </a>
+            <a href="${pageContext.request.contextPath}/TarjetasServletSuper" class="subopcion activo">Capacidad</a>
+            <a href="${pageContext.request.contextPath}/RutaServletSuper" class="subopcion">Rutas</a>
+            <a href="${pageContext.request.contextPath}/SegmentoServletSuper" class="subopcion">Segmentos</a>
+            <a href="${pageContext.request.contextPath}/LandingStationServletSuper" class="subopcion">Landing stations</a>
           </div>
         </div>
 
-        <!-- Mantenimientos -->
         <div class="grupo-menu">
-
-          <input
-            type="checkbox"
-            id="control-mantenimientos"
-            class="control-submenu"
-          >
-
-          <label
-                  for="control-mantenimientos"
-                  class="titulo-grupo">
-
-            <span class="texto-grupo">
-                Mantenimientos
-            </span>
-
+          <input type="checkbox" id="control-servicios-clientes" class="control-submenu">
+          <label for="control-servicios-clientes" class="titulo-grupo">
+            <span class="texto-grupo">Servicios y clientes</span>
             <span class="flecha-submenu"></span>
-
           </label>
-
           <div class="contenido-submenu">
-
-            <a
-                    href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=listar"
-                    class="subopcion">
-                Programación
-            </a>
-
-            <a
-                    href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=historial"
-                    class="subopcion">
-                Historial de mantenimientos
-            </a>
+            <a href="${pageContext.request.contextPath}/ClienteServletSuper" class="subopcion">Clientes</a>
+            <a href="${pageContext.request.contextPath}/ServicioServletSuper" class="subopcion">Servicios</a>
+            <a href="${pageContext.request.contextPath}/SolicitudesServletSuper" class="subopcion">Solicitudes</a>
           </div>
         </div>
-        <!-- Reportes -->
-        <a href="${pageContext.request.contextPath}/ReporteServletSuper">
-            Reportes
-        </a>
-        <!-- Históricos -->
-        <a href="${pageContext.request.contextPath}/HistoricoServletSuper">
-            Históricos
-        </a>
+
+        <div class="grupo-menu">
+          <input type="checkbox" id="control-mantenimientos" class="control-submenu">
+          <label for="control-mantenimientos" class="titulo-grupo">
+            <span class="texto-grupo">Mantenimientos</span>
+            <span class="flecha-submenu"></span>
+          </label>
+          <div class="contenido-submenu">
+            <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=listar" class="subopcion">Programación</a>
+            <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=historial" class="subopcion">Historial de mantenimientos</a>
+          </div>
+        </div>
+
+        <a href="${pageContext.request.contextPath}/ReporteServletSuper">Reportes</a>
+        <a href="${pageContext.request.contextPath}/HistoricoServletSuper">Históricos</a>
       </nav>
     </div>
-    <!-- parte baja -->
+
     <div class="configuracion">
       <nav aria-label="Opciones del usuario">
-          <a href="${pageContext.request.contextPath}/PerfilServlet">Perfil</a>
-          <a href="${pageContext.request.contextPath}/LogoutServlet"
-             class="cerrar-sesion">
-              Cerrar sesión
-          </a>
+        <a href="${pageContext.request.contextPath}/PerfilServlet">Perfil</a>
+        <a href="${pageContext.request.contextPath}/LogoutServlet" class="cerrar-sesion">Cerrar sesión</a>
       </nav>
     </div>
   </aside>
 
-  <!-- Contenido principal -->
   <main class="contenido-principal">
     <div class="encabezado-panel">
       <h2>Supervisor</h2>
       <h1>Utilización de la red</h1>
     </div>
+
     <section class="card">
       <div class="chart-header">
         <h2 class="card-title">Utilización de la red (<%= fotoHoy.getPorcentajeOcupada() %>%)</h2>
@@ -303,16 +173,16 @@
       </ul>
 
       <div class="resumen-niveles">
-        <div class="nivel-caja nivel-normal"><strong><%= cantNormal %></strong><span>Normal (&lt; 80%)</span></div>
+        <div class="nivel-caja nivel-normal"><strong><%= cantNormal %></strong><span>Normal (< 80%)</span></div>
         <div class="nivel-caja nivel-alta"><strong><%= cantAlta %></strong><span>Alta (80% - 95%)</span></div>
-        <div class="nivel-caja nivel-critica"><strong><%= cantCritica %></strong><span>Crítica (&gt; 95%)</span></div>
+        <div class="nivel-caja nivel-critica"><strong><%= cantCritica %></strong><span>Crítica (> 95%)</span></div>
       </div>
     </section>
 
     <div class="encabezado-panel">
       <h1>Detalles generales</h1>
     </div>
-    <!-- Las tres tarjetas conservan el diseño existente -->
+
     <section class="tarjetas">
 
       <!-- Resumen consultado desde MySQL -->
@@ -345,27 +215,30 @@
         </div>
       </article>
 
-      <!-- Utilización: ocupada + reservada -->
+      <!-- Utilización de segmentos -->
       <article class="tarjeta tarjeta-segmentos">
-        <h3>Estado de segmentos</h3>
+        <h3>Utilización de segmentos</h3>
 
         <div class="fila">
-          <span><%= segmentosEstables %> estables</span>
-          <span class="estado disponible"
-                aria-label="Normal"></span>
+          <span>Normal · <%= segmentosNormales %></span>
+          <span class="estado disponible" aria-label="Normal"></span>
         </div>
 
         <div class="fila">
-          <span><%= segmentosLimitados %> limitados</span>
-          <span class="estado limitada"
-                aria-label="Alta utilización"></span>
+          <span>Alta · <%= segmentosAltos %></span>
+          <span class="estado limitada" aria-label="Alta utilización"></span>
         </div>
 
         <div class="fila">
-          <span><%= segmentosCriticos %> críticos</span>
-          <span class="estado insuficiente"
-                aria-label="Utilización crítica"></span>
+          <span>Crítica · <%= segmentosCriticos %></span>
+          <span class="estado insuficiente" aria-label="Utilización crítica"></span>
         </div>
+
+        <% if (segmentosSinCapacidad > 0) { %>
+        <div class="fila">
+          <span>Sin capacidad · <%= segmentosSinCapacidad %></span>
+        </div>
+        <% } %>
 
         <div class="fila enlace-segmentos">
           <a href="${pageContext.request.contextPath}/SegmentoServletSuper">
@@ -378,9 +251,7 @@
       <article class="tarjeta acciones">
         <div class="encabezado-acciones">
           <h3>Acciones pendientes</h3>
-          <span class="cantidad-acciones">
-                        <%= acciones.size() %>
-                    </span>
+          <span class="cantidad-acciones"><%= acciones.size() %></span>
         </div>
 
         <% if (acciones.isEmpty()) { %>
@@ -409,17 +280,14 @@
           <li>
             <div class="informacion-accion">
               <a href="${pageContext.request.contextPath}/SolicitudesServletSuper?id=<%= solicitud.getIdSolicitud() %>">
-                <strong>
-                  SOL-<%= solicitud.getIdSolicitud() %>
-                </strong>
+                <strong>SOL-<%= solicitud.getIdSolicitud() %></strong>
               </a>
               <span><%= accion %></span>
             </div>
           </li>
           <% } %>
         </ul>
-        <a href="${pageContext.request.contextPath}/SolicitudesServletSuper"
-           class="boton-nuevo">
+        <a href="${pageContext.request.contextPath}/SolicitudesServletSuper" class="boton-nuevo">
           Ver solicitudes
         </a>
       </article>
@@ -478,7 +346,6 @@
         legend: { position: 'bottom' },
         tooltip: {
           callbacks: {
-
             label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + '% ('
               + ctx.dataset.gbps[ctx.dataIndex] + ' Gbps)'
           }

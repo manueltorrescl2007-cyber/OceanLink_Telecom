@@ -108,10 +108,10 @@ public class DashboardAdminDao extends BaseDao {
           if (totalSeg == 0) {
             estadoRed = "SIN DATOS";
             claseEstadoRed = "";
-          } else if (segFuera > 0) {
+          } else if (segFuera > 0 || porcentajeOperativo < 80.0) {
             estadoRed = "INTERRUMPIDA";
             claseEstadoRed = "kpi-estado-critico";
-          } else if (segNoOp > 0) {
+          } else if (porcentajeOperativo < 90.0) {
             estadoRed = "DEGRADADA";
             claseEstadoRed = "kpi-estado-alerta";
           } else {

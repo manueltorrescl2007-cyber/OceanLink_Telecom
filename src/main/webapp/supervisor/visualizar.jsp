@@ -2,7 +2,6 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="beans.networkoperator.Incidencia" %>
 <%@ page import="beans.networkoperator.Segmento" %>
-
 <%
   ArrayList<Incidencia> listaIncidencias = (ArrayList<Incidencia>) request.getAttribute("listaIncidencias");
   ArrayList<Segmento> listaSegmentos = (ArrayList<Segmento>) request.getAttribute("listaSegmentos");
@@ -17,204 +16,98 @@
   String[] severidades = {"Critica", "Alta", "Media", "Leve"};
   String servlet = request.getContextPath() + "/IncidenciaServletSuper";
 %>
-
 <!doctype html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>OceanLink | Dashboard</title>
-
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/network_operator/network_operator.css">
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/barras.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OceanLink - Visualizar Incidencias</title>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/network_operator/network_operator.css?v=7">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 </head>
-
 <body>
 
-<!-- Barra superior -->
 <jsp:include page="header.jsp" />
 
 <div class="contenedor">
 
-  <!-- Barra lateral -->
   <aside class="menu-lateral">
-
     <div class="contenido-menu">
-
       <h2>Menú</h2>
+      <nav class="navegacion-lateral" aria-label="Menú principal">
 
-      <nav class="navegacion-lateral"
-           aria-label="Menú principal">
-
-        <!-- Dashboard -->
         <a href="${pageContext.request.contextPath}/DashboardServletSuper">
-            Dashboard general
+          Dashboard general
         </a>
 
-        <!-- Incidencias -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
-          <input
-            type="checkbox"
-            id="control-incidencias"
-            class="control-submenu"
-            checked
-          >
-           <!-- Al hacer clic, marca o desmarca el checkbox -->
-          <label for="control-incidencias"
-                 class="titulo-grupo">
+          <input type="checkbox" id="control-incidencias" class="control-submenu" checked>
+          <label for="control-incidencias" class="titulo-grupo">
             <span>Incidencias</span>
             <span class="flecha-submenu"></span>
           </label>
-          <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper"
-               class="subopcion activo">
-                Visualizar
+            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper" class="subopcion activo">
+              Visualizar
             </a>
-
-            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper?action=historial"
-               class="subopcion">
-                Historial de incidencias
+            <a href="${pageContext.request.contextPath}/IncidenciaServletSuper?action=historial" class="subopcion">
+              Historial de incidencias
             </a>
           </div>
         </div>
 
-        <!-- Estado de la red -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
-          <input
-            type="checkbox"
-            id="controlEstadoRed"
-            class="control-submenu">
-
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
-          <label for="controlEstadoRed"
-                 class="titulo-grupo">
-            <span class="texto-grupo">
-                Estado de la red
-            </span>
-            <span class="flecha-submenu"></span>
-          </label>
-
-          <!-- Opciones que aparecen al desplegar -->
-          <div class="contenido-submenu">
-            <a href="${pageContext.request.contextPath}/TarjetasServletSuper"
-               class="subopcion">
-                Capacidad
-            </a>
-            <a href="${pageContext.request.contextPath}/RutaServletSuper"
-               class="subopcion">
-                Rutas
-            </a>
-            <a href="${pageContext.request.contextPath}/SegmentoServletSuper"
-               class="subopcion">
-                Segmentos
-            </a>
-            <a href="${pageContext.request.contextPath}/LandingStationServletSuper"
-               class="subopcion">
-                Landing stations
-            </a>
-          </div>
-        </div>
-
-        <!-- Servicios y clientes -->
-        <div class="grupo-menu">
-          <input
-            type="checkbox"
-            id="control-servicios-clientes"
-            class="control-submenu"
-          >
-
-          <label for="control-servicios-clientes"
-                  class="titulo-grupo">
-            <span class="texto-grupo">
-                Servicios y clientes
-            </span>
+          <input type="checkbox" id="controlEstadoRed" class="control-submenu">
+          <label for="controlEstadoRed" class="titulo-grupo">
+            <span class="texto-grupo">Estado de la red</span>
             <span class="flecha-submenu"></span>
           </label>
           <div class="contenido-submenu">
-
-            <a href="${pageContext.request.contextPath}/ClienteServletSuper"
-               class="subopcion">
-                Clientes
-            </a>
-
-            <a href="${pageContext.request.contextPath}/ServicioServletSuper"
-               class="subopcion">
-                Servicios
-            </a>
-            <a
-                    href="${pageContext.request.contextPath}/SolicitudesServletSuper"
-                    class="subopcion">
-                Solicitudes
-            </a>
+            <a href="${pageContext.request.contextPath}/TarjetasServletSuper" class="subopcion">Capacidad</a>
+            <a href="${pageContext.request.contextPath}/RutaServletSuper" class="subopcion">Rutas</a>
+            <a href="${pageContext.request.contextPath}/SegmentoServletSuper" class="subopcion">Segmentos</a>
+            <a href="${pageContext.request.contextPath}/LandingStationServletSuper" class="subopcion">Landing stations</a>
           </div>
         </div>
 
-        <!-- Mantenimientos -->
         <div class="grupo-menu">
-
-          <input
-            type="checkbox"
-            id="control-mantenimientos"
-            class="control-submenu"
-          >
-
-          <label
-                  for="control-mantenimientos"
-                  class="titulo-grupo">
-
-            <span class="texto-grupo">
-                Mantenimientos
-            </span>
-
+          <input type="checkbox" id="control-servicios-clientes" class="control-submenu">
+          <label for="control-servicios-clientes" class="titulo-grupo">
+            <span class="texto-grupo">Servicios y clientes</span>
             <span class="flecha-submenu"></span>
-
           </label>
-
           <div class="contenido-submenu">
-
-            <a
-                    href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=listar"
-                    class="subopcion">
-                Programación
-            </a>
-
-            <a
-                    href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=historial"
-                    class="subopcion">
-                Historial de Mantenimientos
-            </a>
+            <a href="${pageContext.request.contextPath}/ClienteServletSuper" class="subopcion">Clientes</a>
+            <a href="${pageContext.request.contextPath}/ServicioServletSuper" class="subopcion">Servicios</a>
+            <a href="${pageContext.request.contextPath}/SolicitudesServletSuper" class="subopcion">Solicitudes</a>
           </div>
         </div>
-        <!-- Reportes -->
-        <a href="${pageContext.request.contextPath}/ReporteServletSuper">
-            Reportes
-        </a>
-        <!-- Históricos -->
-        <a href="${pageContext.request.contextPath}/HistoricoServletSuper">
-            Históricos
-        </a>
+
+        <div class="grupo-menu">
+          <input type="checkbox" id="control-mantenimientos" class="control-submenu">
+          <label for="control-mantenimientos" class="titulo-grupo">
+            <span class="texto-grupo">Mantenimientos</span>
+            <span class="flecha-submenu"></span>
+          </label>
+          <div class="contenido-submenu">
+            <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=listar" class="subopcion">Programación</a>
+            <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=historial" class="subopcion">Historial de mantenimientos</a>
+          </div>
+        </div>
+
+        <a href="${pageContext.request.contextPath}/ReporteServletSuper">Reportes</a>
+        <a href="${pageContext.request.contextPath}/HistoricoServletSuper">Históricos</a>
       </nav>
     </div>
-    <!-- parte baja -->
+
     <div class="configuracion">
       <nav aria-label="Opciones del usuario">
-          <a href="${pageContext.request.contextPath}/PerfilServlet">Perfil</a>
-          <a href="${pageContext.request.contextPath}/LogoutServlet"
-             class="cerrar-sesion">
-              Cerrar sesión
-          </a>
+        <a href="${pageContext.request.contextPath}/PerfilServlet">Perfil</a>
+        <a href="${pageContext.request.contextPath}/LogoutServlet" class="cerrar-sesion">Cerrar sesión</a>
       </nav>
     </div>
   </aside>
 
-  <!-- Contenido principal -->
   <main class="contenido-principal">
 
     <section class="encabezado-panel">
@@ -251,12 +144,12 @@
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
-              <tr>
-                  <th>ID</th>
-                  <th>Segmento</th>
-                  <th>Severidad</th>
-                  <th>Estado</th>
-              </tr>
+          <tr>
+            <th>ID</th>
+            <th>Segmento</th>
+            <th>Severidad</th>
+            <th>Estado</th>
+          </tr>
           </thead>
           <tbody>
           <% if (listaIncidencias.isEmpty()) { %>

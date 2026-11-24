@@ -1,16 +1,27 @@
 /* Correcciones exclusivas de Capacidad del Supervisor */
 
+.tarjetas {
+  align-items: start;
+}
+
 .tarjetas > .tarjeta {
   display: block;
   padding: 24px;
   margin-bottom: 0;
   background-color: white;
+}
+
+.tarjetas .tarjeta-resumen,
+.tarjetas .tarjeta-segmentos {
+  height: auto;
   min-height: 0;
+  align-self: start;
 }
 
 .tarjetas > .tarjeta.acciones {
   display: flex;
   flex-direction: column;
+  min-height: 285px;
 }
 
 .tarjetas .fila {
@@ -29,28 +40,6 @@
   margin-bottom: 0;
 }
 
-/* Las tres tarjetas tendrán la misma altura */
-.tarjetas {
-  align-items: stretch;
-}
-
-/* Altura uniforme */
-.tarjetas > .tarjeta {
-  min-height: 285px;
-  height: 100%;
-  align-self: stretch;
-}
-
-/* Mantener el botón al final */
-.tarjetas > .tarjeta.acciones {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Ajuste para pantallas pequeñas */
-@media (max-width: 700px) {
-  .tarjetas > .tarjeta {
-    height: auto;
-    min-height: 285px;
-  }
+.tarjeta-segmentos .enlace-segmentos {
+  margin-top: 20px;
 }

@@ -52,8 +52,7 @@ public class EmailService {
 
     MimeMessage mensaje = new MimeMessage(sesion);
     mensaje.setFrom(new InternetAddress(remitente));
-    mensaje.setRecipient(Message.RecipientType.TO, new InternetAddress(remitente));
-    mensaje.setRecipients(Message.RecipientType.BCC, direcciones);
+    mensaje.setRecipients(Message.RecipientType.TO, direcciones);
     mensaje.setSubject(asunto, "UTF-8");
     mensaje.setText(contenido, "UTF-8");
 

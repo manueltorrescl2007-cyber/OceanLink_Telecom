@@ -57,37 +57,37 @@ public class TarjetasServletSuper extends HttpServlet {
         }
       }
 
-      int estables = 0;
-      int limitados = 0;
+      int normales = 0;
+      int altos = 0;
       int criticos = 0;
+      int sinCapacidad = 0;
 
       for (Segmento segmento : segmentos) {
         long total = segmento.getCapacidadTotal();
         if (total <= 0) {
-          criticos++;
+          sinCapacidad++;
           continue;
         }
 
-        double porcentaje = (segmento.getCapacidadOcupada() + segmento.getCapacidadReservada()) * 100.0 / total;
-
+        double porcentaje = segmento.getCapacidadOcupada() * 100.0 / total;
         if (porcentaje < 80) {
-          estables++;
+          normales++;
         } else if (porcentaje <= 95) {
-          limitados++;
+          altos++;
         } else {
           criticos++;
         }
       }
 
-      // Inyección de atributos en la petición
       request.setAttribute("totalSolicitudes", solicitudes.size());
       request.setAttribute("pendientesEvaluacion", pendientesEvaluacion);
       request.setAttribute("solicitudesAprobadas", aprobadas);
       request.setAttribute("pendientesCapacidad", pendientesCapacidad);
       request.setAttribute("serviciosActivos", servicioDao.listarServicios("Activo").size());
-      request.setAttribute("segmentosEstables", estables);
-      request.setAttribute("segmentosLimitados", limitados);
+      request.setAttribute("segmentosNormales", normales);
+      request.setAttribute("segmentosAltos", altos);
       request.setAttribute("segmentosCriticos", criticos);
+      request.setAttribute("segmentosSinCapacidad", sinCapacidad);
       request.setAttribute("accionesPendientes", acciones);
 
       // Reenvía en cadena al Servlet de Estado de Red para consolidar los datos de la gráfica
