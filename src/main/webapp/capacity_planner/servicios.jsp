@@ -117,7 +117,7 @@
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/capacity_planner/servicio_form.css">
+          href="${pageContext.request.contextPath}/css/capacity_planner/servicio_form.css?v=2">
 </head>
 <body>
 <jsp:include page="header.jsp" />

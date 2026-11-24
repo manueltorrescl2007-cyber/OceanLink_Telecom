@@ -1,20 +1,19 @@
 .servicio-contenido {
   width: 100%;
-  max-width: 920px;
-  margin-inline: auto;
 }
 
 .servicio-tarjeta {
   margin-bottom: 16px;
-  padding: clamp(16px, 3vw, 24px);
+  padding: clamp(18px, 3vw, 25px);
   border: 1px solid #d9e1e8;
-  border-radius: 12px;
+  border-radius: 9px;
   background: #fff;
+  box-shadow: 0 2px 7px rgba(11, 61, 92, 0.08);
 }
 
 .servicio-tarjeta h2 {
   margin: 0 0 16px;
-  font-size: 1.15rem;
+  font-size: 16px;
   color: #0b3d5c;
 }
 
@@ -33,6 +32,7 @@
   padding: 11px 13px;
   text-align: left;
   font: inherit;
+  font-size: 13px;
   color: #1e293b;
   border: 1px solid #d9e1e8;
   border-radius: 8px;
@@ -41,6 +41,7 @@
 }
 
 .servicio-opcion:hover,
+.servicio-opcion:focus-visible,
 .servicio-opcion:has(input:checked) {
   border-color: #1c8c9c;
   background: #eef7f8;
@@ -57,7 +58,7 @@
 .servicio-capacidad {
   margin-left: auto;
   color: #0b3d5c;
-  font-size: .875rem;
+  font-size: 13px;
 }
 
 .servicio-datos {
@@ -79,3 +80,30 @@
 .servicio-confirmacion summary::-webkit-details-marker { display: none; }
 .servicio-confirmacion form { margin-top: 8px; }
 .servicio-confirmacion p { margin-bottom: 8px; }
+
+.servicio-contenido .boton {
+  padding: 11px 17px;
+  border-radius: 7px;
+  font-size: 13px;
+}
+
+.servicio-contenido .boton.secundario {
+  color: var(--color-primario, #0b3d5c);
+  background: #fff;
+  border-color: var(--color-borde, #d9e1e8);
+}
+
+.servicio-contenido .boton.primario {
+  color: #fff;
+  background: var(--color-primario, #0b3d5c);
+  border-color: var(--color-primario, #0b3d5c);
+}
+
+.servicio-contenido .boton.primario:hover {
+  background: var(--color-acento, #1c8c9c);
+  border-color: var(--color-acento, #1c8c9c);
+}
+
+.servicio-contenido .mensaje-error {
+  text-align: center;
+}

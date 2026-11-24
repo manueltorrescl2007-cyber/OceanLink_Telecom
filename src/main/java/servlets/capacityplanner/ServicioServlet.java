@@ -1,8 +1,10 @@
 package servlets.capacityplanner;
 
+import beans.Usuario;
 import beans.capacityplanner.Servicio;
 import daos.capacityplanner.RutaDao;
 import daos.capacityplanner.ServicioDao;
+import daos.capacityplanner.ServicioDao.AlertaUtilizacion;
 import daos.capacityplanner.SolicitudDao;
 
 import jakarta.servlet.ServletException;
@@ -10,12 +12,19 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+import services.NotificacionCapacityPlannerService;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 @WebServlet(name = "ServicioServlet", value = "/ServicioServlet")
 public class ServicioServlet extends HttpServlet {
+
+  private final NotificacionCapacityPlannerService notificaciones =
+    new NotificacionCapacityPlannerService();
 
   // Mostrar la lista y el detalle de un servicio
   @Override
@@ -84,6 +93,7 @@ public class ServicioServlet extends HttpServlet {
             return;
           }
 
+          notificaciones.notificarServicio(servicio.getIdServicio(), "Capacidad reservada");
           response.sendRedirect(servlet
             + "?guardado=1&servicio="
             + servicio.getIdServicio());
@@ -100,8 +110,8 @@ public class ServicioServlet extends HttpServlet {
             return;
           }
 
-          boolean activado =
-            servicioDao.activarServicio(idServicio);
+          ArrayList<AlertaUtilizacion> alertas = new ArrayList<>();
+          boolean activado = servicioDao.activarServicio(idServicio, alertas);
 
           if (!activado) {
             mostrarError(request, response,
@@ -112,6 +122,12 @@ public class ServicioServlet extends HttpServlet {
             return;
           }
 
+          notificaciones.notificarServicio(idServicio, "Servicio activado");
+          HttpSession sesion = request.getSession(false);
+          Object usuarioSesion = sesion == null ? null : sesion.getAttribute("usuarioLogueado");
+          if (usuarioSesion instanceof Usuario usuario && !alertas.isEmpty()) {
+            notificaciones.notificarUtilizacion(usuario, idServicio, alertas);
+          }
           response.sendRedirect(servlet
             + "?activado=1&servicio=" + idServicio);
           break;
@@ -136,6 +152,7 @@ public class ServicioServlet extends HttpServlet {
             return;
           }
 
+          notificaciones.notificarServicio(idServicio, "Servicio suspendido");
           response.sendRedirect(servlet
             + "?suspendido=1&servicio=" + idServicio);
           break;
@@ -163,6 +180,7 @@ public class ServicioServlet extends HttpServlet {
             return;
           }
 
+          notificaciones.notificarServicio(idServicio, "Servicio cancelado");
           response.sendRedirect(servlet
             + "?cancelado=1&servicio=" + idServicio);
           break;
@@ -190,6 +208,7 @@ public class ServicioServlet extends HttpServlet {
             return;
           }
 
+          notificaciones.notificarServicio(idServicio, "Servicio reactivado");
           response.sendRedirect(servlet
             + "?reactivado=1&servicio=" + idServicio);
           break;

@@ -44,8 +44,11 @@
     String destino = solicitud != null
             ? String.valueOf(solicitud.getIdLandingDestino()) : "";
 
-    String capacidad = solicitud != null
-            ? String.valueOf(solicitud.getCapacidadSolicitada()) : "";
+    String capacidadEnviada = "POST".equals(request.getMethod())
+            ? request.getParameter("capacidad_solicitada") : null;
+    String capacidad = capacidadEnviada != null ? capacidadEnviada
+            : solicitud != null && solicitud.getCapacidadSolicitada() > 0
+                ? String.valueOf(solicitud.getCapacidadSolicitada()) : "";
 
     String motivo = solicitud != null
             ? solicitud.getJustificacion() : "";
@@ -82,7 +85,7 @@
     <title><%= esEdicion ? "Editar solicitud" : "Nueva solicitud" %> | OceanLink</title>
 
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/capacity_planner/solicitudes.css?v=2">
+          href="${pageContext.request.contextPath}/css/capacity_planner/solicitudes.css?v=3">
 
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
@@ -269,7 +272,7 @@
 
         <section class="panel-detalle">
             <% if (error != null) { %>
-                <p class="mensaje-error" role="alert">
+                <p class="mensaje-error aviso-solicitud" role="alert">
                     <%= texto(error) %>
                 </p>
             <% } %>
@@ -282,7 +285,7 @@
 
             <form method="post"
                   action="<%= servlet %>?action=guardar"
-                  class="formulario-solicitud">
+                  class="formulario-solicitud" novalidate>
 
                 <input type="hidden"
                        name="id_solicitud"
@@ -414,7 +417,7 @@
                            min="1"
                            max="4294967295"
                            step="1"
-                           value="<%= capacidad %>"
+                           value="<%= texto(capacidad) %>"
                            required>
                 </label>
 
@@ -478,16 +481,10 @@
             flecha.setAttribute("aria-expanded", "true");
         }
 
-        function validar() {
-            campo.setCustomValidity(
-                oculto.value ? "" : "Selecciona una opción de la lista."
-            );
-        }
-
         campo.addEventListener("input", function() {
             // No enviar el ID anterior si se modifica el nombre.
             oculto.value = "";
-            validar();
+
             abrir(false);
         });
 
@@ -512,7 +509,7 @@
             opcion.addEventListener("click", function() {
                 campo.value = opcion.dataset.nombre;
                 oculto.value = opcion.dataset.id;
-                validar();
+
                 campo.focus();
                 cerrar();
             });
@@ -570,7 +567,6 @@
             oculto.value = "";
         }
 
-        validar();
     });
 </script>
 <script>

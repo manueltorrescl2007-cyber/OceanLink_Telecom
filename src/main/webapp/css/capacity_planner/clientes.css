@@ -957,3 +957,71 @@
   margin-top: 0 !important;
   white-space: nowrap;
 }
+
+/* Buscador en línea del listado de clientes. */
+.titulo-seccion.titulo-clientes {
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+}
+
+.herramientas-clientes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-inline-start: auto;
+  max-width: 100%;
+}
+
+.busqueda-clientes {
+  width: min(180px, 38vw);
+  min-width: 0;
+  padding: 7px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--color-borde, #d9e1e8);
+  background: transparent;
+  color: var(--color-texto, #1e293b);
+  font: inherit;
+  font-size: 14px;
+}
+
+.lupa-clientes {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 4px;
+  background: transparent;
+  color: var(--color-acento, #1c8c9c);
+  cursor: pointer;
+}
+
+#listaClientes li[hidden] {
+  display: none;
+}
+
+.aviso-formulario-cliente {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: #fbe7e7;
+  color: #a12828;
+  font-size: 14px;
+  text-align: center;
+}
+
+.aviso-operacion-cliente {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 20;
+  max-width: calc(100vw - 48px);
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid #b7dec9;
+  border-radius: 8px;
+  background: #e4f4eb;
+  color: #195a3a;
+  font-size: 14px;
+}

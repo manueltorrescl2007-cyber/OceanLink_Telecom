@@ -150,7 +150,7 @@
                 <tbody>
                 <% for (Solicitud s : solicitudes) { %>
                 <tr class="fila-solicitud <%= seleccionada != null && seleccionada.getIdSolicitud() == s.getIdSolicitud() ? "fila-seleccionada" : "" %>">
-                    <td><a class="id-solicitud" href="<%= urlPagina %><%= paginaActual %>&amp;id=<%= s.getIdSolicitud() %>">SOL-<%= s.getIdSolicitud() %></a></td>
+                    <td><a class="id-solicitud" href="<%= urlPagina %><%= paginaActual %>&amp;id=<%= s.getIdSolicitud() %>#detalle-solicitud">SOL-<%= s.getIdSolicitud() %></a></td>
                     <td><%= texto(s.getNombreCliente()) %></td>
                     <td><%= texto(s.getNombreOrigen()) %></td>
                     <td><%= texto(s.getNombreDestino()) %></td>
@@ -183,7 +183,7 @@
                     || "En evaluacion".equals(estadoActual)
                     || "Pendiente por capacidad".equals(estadoActual);
         %>
-        <section class="panel-detalle">
+        <section class="panel-detalle" id="detalle-solicitud">
             <div class="encabezado-detalle">
                 <div><span>Detalle de solicitud</span><h2>SOL-<%= s.getIdSolicitud() %></h2></div>
                 <a href="<%= urlPagina %><%= paginaActual %>" class="cerrar-detalle" aria-label="Cerrar detalle">&times;</a>

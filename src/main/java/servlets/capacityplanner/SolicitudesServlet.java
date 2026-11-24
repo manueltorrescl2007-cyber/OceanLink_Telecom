@@ -1,5 +1,6 @@
 package servlets.capacityplanner;
 
+import beans.Usuario;
 import beans.capacityplanner.Solicitud;
 import daos.capacityplanner.ClienteDao;
 import daos.capacityplanner.SolicitudDao;
@@ -9,6 +10,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+import services.NotificacionCapacityPlannerService;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -16,8 +20,8 @@ import java.sql.SQLException;
 @WebServlet(name = "SolicitudesServlet", value = "/SolicitudesServlet")
 public class SolicitudesServlet extends HttpServlet {
 
-  // Temporal, hasta conectar el inicio de sesión.
-  private static final int ID_USUARIO_PRUEBA = 4;
+  private final NotificacionCapacityPlannerService notificaciones =
+    new NotificacionCapacityPlannerService();
 
   @Override
   protected void doGet(HttpServletRequest request,
@@ -141,8 +145,6 @@ public class SolicitudesServlet extends HttpServlet {
             parseId(request.getParameter("id_cliente"))
           );
 
-          solicitud.setIdUsuario(ID_USUARIO_PRUEBA);
-
           solicitud.setIdLandingOrigen(
             parseId(request.getParameter("id_landing_origen"))
           );
@@ -151,11 +153,8 @@ public class SolicitudesServlet extends HttpServlet {
             parseId(request.getParameter("id_landing_destino"))
           );
 
-          solicitud.setCapacidadSolicitada(
-            parseCapacidad(
-              request.getParameter("capacidad_solicitada")
-            )
-          );
+          String capacidadTexto = texto(request.getParameter("capacidad_solicitada"));
+          solicitud.setCapacidadSolicitada(parseCapacidad(capacidadTexto));
 
           solicitud.setJustificacion(
             texto(request.getParameter("justificacion"))
@@ -163,7 +162,7 @@ public class SolicitudesServlet extends HttpServlet {
 
           request.setAttribute("solicitud", solicitud);
 
-          String error = validarSolicitud(solicitud);
+          String error = validarSolicitud(solicitud, capacidadTexto);
 
           if (error != null) {
             request.setAttribute("error", error);
@@ -174,6 +173,15 @@ public class SolicitudesServlet extends HttpServlet {
           boolean guardado;
 
           if (esNuevo) {
+            HttpSession sesion = request.getSession(false);
+            Object usuarioSesion = sesion == null ? null : sesion.getAttribute("usuarioLogueado");
+
+            if (!(usuarioSesion instanceof Usuario usuario) || usuario.getIdUsuario() <= 0) {
+              response.sendRedirect(request.getContextPath() + "/LoginServlet");
+              return;
+            }
+
+            solicitud.setIdUsuario(usuario.getIdUsuario());
             guardado = solicitudDao.crearSolicitud(solicitud);
           } else {
             guardado = solicitudDao.actualizarSolicitud(solicitud);
@@ -184,6 +192,10 @@ public class SolicitudesServlet extends HttpServlet {
               "No se pudo guardar. Revisa el estado de la solicitud.");
             mostrarFormulario(request, response);
             return;
+          }
+
+          if (esNuevo) {
+            notificaciones.notificarSolicitud(solicitud.getIdSolicitud(), "Registrada");
           }
 
           response.sendRedirect(servlet + "?mensaje=guardado");
@@ -197,6 +209,12 @@ public class SolicitudesServlet extends HttpServlet {
 
           boolean actualizado =
             solicitudDao.cambiarEstado(idEstado, nuevoEstado);
+
+          if (actualizado) {
+            String estadoNotificado = "En evaluacion".equals(nuevoEstado)
+              ? "En evaluación" : nuevoEstado;
+            notificaciones.notificarSolicitud(idEstado, estadoNotificado);
+          }
 
           String mensajeEstado = actualizado
             ? "estadoActualizado"
@@ -254,15 +272,14 @@ public class SolicitudesServlet extends HttpServlet {
     ).forward(request, response);
   }
 
-  private String validarSolicitud(Solicitud solicitud) {
+  private String validarSolicitud(Solicitud solicitud, String capacidadTexto) {
 
-    if (solicitud.getIdCliente() <= 0) {
-      return "Selecciona un cliente.";
-    }
-
-    if (solicitud.getIdLandingOrigen() <= 0
-      || solicitud.getIdLandingDestino() <= 0) {
-      return "Selecciona las estaciones de origen y destino.";
+    if (solicitud.getIdCliente() <= 0
+      || solicitud.getIdLandingOrigen() <= 0
+      || solicitud.getIdLandingDestino() <= 0
+      || capacidadTexto.isEmpty()
+      || solicitud.getJustificacion().isEmpty()) {
+      return "Completa todos los campos para continuar.";
     }
 
     if (solicitud.getIdLandingOrigen()
@@ -273,10 +290,6 @@ public class SolicitudesServlet extends HttpServlet {
     if (solicitud.getCapacidadSolicitada() <= 0
       || solicitud.getCapacidadSolicitada() > 4294967295L) {
       return "Ingresa una capacidad entre 1 y 4294967295 Gbps.";
-    }
-
-    if (solicitud.getJustificacion().isEmpty()) {
-      return "Ingresa una justificación.";
     }
 
     return null;

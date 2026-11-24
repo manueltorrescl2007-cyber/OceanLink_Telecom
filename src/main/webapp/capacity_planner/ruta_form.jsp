@@ -46,7 +46,7 @@
           href="${pageContext.request.contextPath}/css/capacity_planner/rutas.css?v=4">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/rutas_formulario.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/rutas_formulario.css?v=3">
 </head>
 <body class="vista-rutas">
 
@@ -155,19 +155,21 @@
                 <label for="<%= extremo %>"><%= etiqueta %></label>
                 <div class="ruta-selector-campo">
                     <input id="<%= extremo %>" name="<%= extremo %>" required autocomplete="off"
-                           placeholder="Escribe o selecciona una estación"
+                           placeholder="Selecciona o busca una estación"
                            value="<%= texto(entrada == null ? nombreEstacion : entrada) %>">
                     <details class="ruta-selector-lista">
                         <summary aria-label="Ver estaciones de <%= extremo %>"
-                                 title="Ver estaciones de <%= extremo %>">▾</summary>
-                        <div class="ruta-opciones">
+                                 title="Ver estaciones de <%= extremo %>" aria-controls="opciones-<%= extremo %>">▾</summary>
+                        <div class="ruta-opciones" id="opciones-<%= extremo %>">
                             <% for (LandingStation estacion : estaciones) { %>
                                 <button type="submit" name="accion" value="actualizar" formnovalidate
                                         formaction="<%= servlet %>?elegir_<%= extremo %>=<%= estacion.getIdLanding() %>"
+                                        data-nombre="<%= texto(estacion.getNombre()) %>"
                                         <%= estacion.getIdLanding() == seleccion ? "class=seleccionada" : "" %>>
                                     <%= texto(estacion.getNombre()) %>
                                 </button>
                             <% } %>
+                            <p class="ruta-sin-opciones" role="status" hidden>No hay estaciones que coincidan.</p>
                         </div>
                     </details>
                 </div>
@@ -270,5 +272,74 @@
         </div>
     </main>
 </div>
+<script>
+    (() => {
+        const normalizar = texto => texto.trim().toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        document.querySelectorAll('#ruta-form .ruta-selector').forEach(selector => {
+            const campo = selector.querySelector('input');
+            const lista = selector.querySelector('details');
+            const flecha = lista.querySelector('summary');
+            const opciones = Array.from(lista.querySelectorAll('button[data-nombre]'));
+            const aviso = lista.querySelector('.ruta-sin-opciones');
+
+            function filtrar(consulta) {
+                for (const opcion of opciones) {
+                    opcion.hidden = !normalizar(opcion.dataset.nombre).startsWith(consulta);
+                }
+                aviso.hidden = opciones.some(opcion => !opcion.hidden);
+            }
+
+            campo.addEventListener('focus', () => {
+                const consulta = normalizar(campo.value);
+                const coincideCompleto = opciones.some(opcion =>
+                    normalizar(opcion.dataset.nombre) === consulta);
+                filtrar(coincideCompleto ? '' : consulta);
+                lista.open = true;
+            });
+            campo.addEventListener('click', () => { lista.open = true; });
+            campo.addEventListener('input', () => {
+                filtrar(normalizar(campo.value));
+                lista.open = true;
+            });
+            flecha.addEventListener('click', () => {
+                if (!lista.open) filtrar('');
+            });
+            for (const opcion of opciones) {
+                opcion.addEventListener('click', evento => {
+                    evento.preventDefault();
+                    campo.value = opcion.dataset.nombre;
+                    campo.focus();
+                    lista.open = false;
+                });
+            }
+            selector.addEventListener('focusout', evento => {
+                if (!selector.contains(evento.relatedTarget)) lista.open = false;
+            });
+            document.addEventListener('click', evento => {
+                if (!selector.contains(evento.target)) lista.open = false;
+            });
+            selector.addEventListener('keydown', evento => {
+                if (evento.key === 'Escape' && lista.open) {
+                    evento.preventDefault();
+                    campo.focus();
+                    lista.open = false;
+                }
+                if (evento.key !== 'ArrowDown' && evento.key !== 'ArrowUp') return;
+
+                evento.preventDefault();
+                lista.open = true;
+                const visibles = opciones.filter(opcion => !opcion.hidden);
+                if (!visibles.length) return;
+                const indice = visibles.indexOf(document.activeElement);
+                const siguiente = evento.key === 'ArrowDown'
+                    ? (indice + 1) % visibles.length
+                    : (indice <= 0 ? visibles.length - 1 : indice - 1);
+                visibles[siguiente].focus();
+            });
+        });
+    })();
+</script>
 </body>
 </html>

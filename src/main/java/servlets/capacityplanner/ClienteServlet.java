@@ -47,6 +47,7 @@ public class ClienteServlet extends HttpServlet {
     try {
       boolean realizado;
       String mensaje;
+      int idEditado = 0;
 
       switch (action) {
 
@@ -88,6 +89,7 @@ public class ClienteServlet extends HttpServlet {
           } else {
             realizado = clienteDao.actualizarCliente(cliente);
             mensaje = "actualizado";
+            idEditado = idCliente;
           }
 
           break;
@@ -129,9 +131,11 @@ public class ClienteServlet extends HttpServlet {
       }
 
       // Redirigir evita repetir el formulario al actualizar la página
-      response.sendRedirect(
-        request.getContextPath()
-          + "/ClienteServlet?mensaje=" + mensaje);
+      String destino = request.getContextPath() + "/ClienteServlet?mensaje=" + mensaje;
+      if (idEditado > 0) {
+        destino += "&id=" + idEditado;
+      }
+      response.sendRedirect(destino);
 
     } catch (SQLException e) {
       getServletContext().log("Error al guardar un cliente", e);
@@ -226,14 +230,20 @@ public class ClienteServlet extends HttpServlet {
   private String validarCliente(Cliente cliente) {
 
     if (cliente.getNombre().isEmpty()
-      || cliente.getNombre().length() > 100) {
-      return "El nombre es obligatorio y admite hasta 100 caracteres.";
+      || cliente.getRazonSocial().isEmpty()
+      || cliente.getRuc().isEmpty()
+      || cliente.getCorreo().isEmpty()
+      || cliente.getTelefono().isEmpty()
+      || cliente.getEstado().isEmpty()) {
+      return "Completa todos los campos para continuar.";
     }
 
-    if (cliente.getRazonSocial().isEmpty()
-      || cliente.getRazonSocial().length() > 150) {
-      return "La razón social es obligatoria "
-        + "y admite hasta 150 caracteres.";
+    if (cliente.getNombre().length() > 100) {
+      return "El nombre admite hasta 100 caracteres.";
+    }
+
+    if (cliente.getRazonSocial().length() > 150) {
+      return "La razón social admite hasta 150 caracteres.";
     }
 
     if (!cliente.getRuc().matches("[0-9]{11}")) {

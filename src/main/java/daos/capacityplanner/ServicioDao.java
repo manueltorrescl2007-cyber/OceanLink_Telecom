@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ServicioDao extends BaseDao {
 
@@ -280,6 +281,8 @@ public class ServicioDao extends BaseDao {
           }
         }
 
+        HistorialSegmentoDao.registrarReserva(conn, servicio.getIdRuta(), idServicio, capacidad);
+
         // La solicitud ya tiene ruta y capacidad reservada
         String sqlProvisionar =
           "UPDATE solicitudes SET estado = 'Provisionada' "
@@ -313,7 +316,16 @@ public class ServicioDao extends BaseDao {
   }
 
   // Activar y pasar la capacidad reservada a ocupada
+  public record AlertaUtilizacion(String codigo, long total, long ocupadaAntes,
+                                  long ocupadaDespues, String nivelAntes, String nivelDespues) {}
+
   public boolean activarServicio(int idServicio) throws SQLException {
+    return activarServicio(idServicio, new ArrayList<>());
+  }
+
+  public boolean activarServicio(int idServicio, List<AlertaUtilizacion> alertasConfirmadas)
+    throws SQLException {
+    List<AlertaUtilizacion> alertas = new ArrayList<>();
 
     try (Connection conn = getConnection()) {
       conn.setAutoCommit(false);
@@ -407,6 +419,14 @@ public class ServicioDao extends BaseDao {
               }
 
               idsSegmentos.add(rs.getInt("id_segmento"));
+
+              long ocupadaDespues = ocupada + capacidad;
+              int nivelAntes = nivelUtilizacion(ocupada, total);
+              int nivelDespues = nivelUtilizacion(ocupadaDespues, total);
+              if (nivelDespues > nivelAntes) {
+                alertas.add(new AlertaUtilizacion(rs.getString("codigo"), total,
+                  ocupada, ocupadaDespues, NIVELES[nivelAntes], NIVELES[nivelDespues]));
+              }
             }
           }
         }
@@ -472,6 +492,7 @@ public class ServicioDao extends BaseDao {
         }
 
         conn.commit();
+        alertasConfirmadas.addAll(alertas);
         return true;
 
       } catch (SQLException e) {
@@ -479,6 +500,14 @@ public class ServicioDao extends BaseDao {
         throw e;
       }
     }
+  }
+
+  private static final String[] NIVELES = {"Normal", "Alta", "Crítica"};
+
+  private static int nivelUtilizacion(long ocupada, long total) {
+    if (ocupada * 100 > total * 95) return 2;
+    if (ocupada * 100 >= total * 80) return 1;
+    return 0;
   }
 
   // Suspender sin liberar la capacidad ocupada

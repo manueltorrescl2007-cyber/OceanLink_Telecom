@@ -24,11 +24,13 @@
     int serviciosActivos =
             (Integer) request.getAttribute("serviciosActivos");
 
-    int segmentosEstables =
-            (Integer) request.getAttribute("segmentosEstables");
+    int segmentosNormales =
+            (Integer) request.getAttribute("segmentosNormales");
 
-    int segmentosLimitados =
-            (Integer) request.getAttribute("segmentosLimitados");
+    int segmentosAltos =
+            (Integer) request.getAttribute("segmentosAltos");
+
+    int segmentosSinCapacidad = (Integer) request.getAttribute("segmentosSinCapacidad");
 
     int segmentosCriticos =
             (Integer) request.getAttribute("segmentosCriticos");
@@ -50,7 +52,7 @@
           href="${pageContext.request.contextPath}/css/barras.css">
 </head>
 <body>
-<jsp:include page="header.jsp" />
+<jsp:include page="/comun/header.jsp" />
 
 <div class="contenedor">
     <aside class="menu-lateral">
@@ -154,27 +156,33 @@
                 </div>
             </article>
 
-            <!-- Utilización: ocupada + reservada -->
+            <!-- Utilización: capacidad ocupada sobre capacidad total. -->
             <article class="tarjeta tarjeta-segmentos">
-                <h3>Estado de segmentos</h3>
+                <h3>Utilización de segmentos</h3>
 
                 <div class="fila">
-                    <span><%= segmentosEstables %> estables</span>
+                    <span>Normal · <%= segmentosNormales %></span>
                     <span class="estado disponible"
                           aria-label="Normal"></span>
                 </div>
 
                 <div class="fila">
-                    <span><%= segmentosLimitados %> limitados</span>
+                    <span>Alta · <%= segmentosAltos %></span>
                     <span class="estado limitada"
                           aria-label="Alta utilización"></span>
                 </div>
 
                 <div class="fila">
-                    <span><%= segmentosCriticos %> críticos</span>
+                    <span>Crítica · <%= segmentosCriticos %></span>
                     <span class="estado insuficiente"
                           aria-label="Utilización crítica"></span>
                 </div>
+
+                <% if (segmentosSinCapacidad > 0) { %>
+                    <div class="fila">
+                        <span>Sin capacidad · <%= segmentosSinCapacidad %></span>
+                    </div>
+                <% } %>
 
                 <div class="fila enlace-segmentos">
                     <a href="${pageContext.request.contextPath}/SegmentoServlet">

@@ -39,7 +39,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" >
     <title><%= esEdicion ? "Editar cliente" : "Nuevo cliente" %> | OceanLink</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/clientes.css" >
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/clientes.css?v=3" >
     <!-- CSS compartido: colores, animaciones y tamaño de las barras -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 </head>
@@ -89,9 +89,9 @@
         </section>
         <section class="panel-detalle">
             <% if (error != null) { %>
-                <p role="alert"><%= texto(error) %></p>
+                <p class="aviso-formulario-cliente" role="alert"><%= texto(error) %></p>
             <% } %>
-            <form method="post" action="<%= servlet %>?action=guardar">
+            <form method="post" action="<%= servlet %>?action=guardar" novalidate>
                 <!-- Vacío: crear. Con un identificador: actualizar. -->
                 <input type="hidden" name="id_cliente" value="<%= idCliente %>">
                 <div class="grupo-formulario">
@@ -111,8 +111,8 @@
                     <input id="correo" name="correo" type="email" value="<%= texto(correo) %>" maxlength="100" required>
                 </div>
                 <div class="grupo-formulario">
-                    <label for="telefono">Teléfono (opcional)</label>
-                    <input id="telefono" name="telefono" type="tel" value="<%= texto(telefono) %>" maxlength="15">
+                    <label for="telefono">Teléfono</label>
+                    <input id="telefono" name="telefono" type="tel" value="<%= texto(telefono) %>" maxlength="15" required>
                 </div>
                 <div class="grupo-formulario">
                     <label for="estado">Estado</label>
@@ -122,7 +122,7 @@
                     </select>
                 </div>
                 <div class="botones-modal">
-                    <a class="boton secundario" href="<%= servlet %>">Cancelar</a>
+                    <a class="boton secundario" href="<%= esEdicion ? servlet + "?id=" + idCliente : servlet %>">Cancelar</a>
                     <button class="boton-guardar" type="submit"><%= esEdicion ? "Guardar cambios" : "Crear cliente" %></button>
                 </div>
             </form>

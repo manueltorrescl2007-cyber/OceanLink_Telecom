@@ -28,24 +28,6 @@
     int cantidad = (Integer) request.getAttribute("totalEstaciones");
     String urlPagina = servlet + "?estado=" + filtro + "&amp;pagina=";
     String urlLista = urlPagina + pagina;
-
-    String error = (String) request.getAttribute("error");
-    if (error == null) error = "";
-
-    String[] formulario = {"", "", "", "", "Activa"};
-    LandingStation datos = (LandingStation) request.getAttribute("estacionFormulario");
-
-    if (datos != null) {
-        formulario = new String[]{
-                datos.getIdLanding() > 0
-                        ? String.valueOf(datos.getIdLanding()) : "",
-                datos.getNombre(),
-                datos.getPais(),
-                datos.getCiudad(),
-                datos.getEstado()
-        };
-    }
-
 %>
 
 <!doctype html>
@@ -132,9 +114,6 @@
                 <h1>Landing stations</h1>
             </div>
         </section>
-        <% if ("1".equals(request.getParameter("guardado"))) { %>
-            <p class="mensaje-exito">Estación guardada correctamente.</p>
-        <% } %>
         <div class="barra-herramientas">
             <form action="<%= servlet %>" method="get" class="formulario-filtro">
                 <label for="filtroEstado">Estado:</label>
@@ -231,58 +210,9 @@
                      </div>
                  </div>
 
-                 <div class="acciones">
-                     <a href="<%= urlLista %>&amp;editar=<%= estacion.getIdLanding() %>"
-                        class="boton primario">
-                         Editar estación
-                     </a>
-                 </div>
              </section>
          <% } %>
     </main>
 </div>
-
-<!-- 7. FORMULARIO: registro y edición sin JavaScript. -->
-<% if (datos != null) { %>
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloFormulario">
-    <section class="contenido-modal">
-        <div class="encabezado-detalle">
-            <h2 id="tituloFormulario">Editar estación</h2>
-            <a href="<%= urlLista %>" aria-label="Cerrar formulario">×</a>
-        </div>
-        <% if (!error.isEmpty()) { %><p class="mensaje-error"><%= texto(error) %></p><% } %>
-        <form action="<%= servlet %>" method="post">
-            <input type="hidden" name="accion" value="guardar">
-            <input type="hidden" name="estado" value="<%= filtro %>">
-            <input type="hidden" name="pagina" value="<%= pagina %>">
-            <input type="hidden" name="id" value="<%= texto(formulario[0]) %>">
-            <div class="grupo-formulario">
-                <label for="nombre">Nombre</label>
-                <input id="nombre" name="nombre" maxlength="100" placeholder="Ejemplo: Callao Landing" value="<%= texto(formulario[1]) %>" required>
-            </div>
-            <div class="grupo-formulario">
-                <label for="pais">País</label>
-                <input id="pais" name="pais" maxlength="45" placeholder="Ejemplo: Perú" value="<%= texto(formulario[2]) %>" required>
-            </div>
-            <div class="grupo-formulario">
-                <label for="ciudad">Ciudad</label>
-                <input id="ciudad" name="ciudad" maxlength="45" placeholder="Ejemplo: Callao" value="<%= texto(formulario[3]) %>" required>
-            </div>
-            <div class="grupo-formulario">
-                <label for="estadoEstacion">Estado</label>
-                <select id="estadoEstacion" name="estadoEstacion" required>
-                    <% for (String estado : estados) { %>
-                        <option value="<%= estado %>" <%= estado.equals(formulario[4]) ? "selected" : "" %>><%= estado %></option>
-                    <% } %>
-                </select>
-            </div>
-            <div class="acciones">
-                <a href="<%= urlLista %>" class="boton secundario">Cancelar</a>
-                <button type="submit" class="boton primario">Guardar</button>
-            </div>
-        </form>
-    </section>
-</div>
-<% } %>
 </body>
 </html>

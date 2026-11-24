@@ -265,3 +265,75 @@ body.vista-segmentos {
   background: #e4f4eb;
   border-radius: 6px;
 }
+
+/* Paginación y nivel de utilización. */
+.paginacion-segmentos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.paginacion-segmentos .paginacion-controles {
+  display: flex;
+  gap: 8px;
+  margin-inline-start: auto;
+}
+
+.paginacion-segmentos .boton.paginacion-boton {
+  background: #fff;
+  border: 1px solid var(--color-borde, #d9e1e8);
+}
+
+.paginacion-segmentos .paginacion-indicador {
+  color: var(--color-texto-claro, #64748b);
+  font-size: .875rem;
+}
+
+.utilizacion-detalle {
+  margin-top: 16px;
+}
+
+.utilizacion-indicador {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.utilizacion-indicador progress {
+  width: min(100%, 320px);
+  accent-color: var(--color-disponible, #2fa36b);
+}
+
+.utilizacion-indicador progress.degradado {
+  accent-color: var(--color-alta, #e8871e);
+}
+
+.utilizacion-indicador progress.fuera {
+  accent-color: var(--color-critica, #d64545);
+}
+
+.vista-segmentos .contenedor-tabla th:last-child,
+.vista-segmentos .contenedor-tabla td:last-child {
+  text-align: center;
+}
+
+.pagina-segmentos .pie-detalle-segmento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pagina-segmentos .historial-segmento .contenedor-tabla {
+  margin-top: 24px;
+}
+
+.pagina-segmentos .historial-segmento table {
+  min-width: 700px;
+}

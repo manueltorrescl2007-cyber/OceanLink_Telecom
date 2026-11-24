@@ -1,5 +1,6 @@
 package servlets.capacityplanner;
 
+import beans.Usuario;
 import beans.capacityplanner.Segmento;
 import beans.capacityplanner.Solicitud;
 import daos.capacityplanner.SegmentoDao;
@@ -11,6 +12,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -23,6 +25,12 @@ public class CapacityPlannerServlet extends HttpServlet {
   protected void doGet(HttpServletRequest request,
                        HttpServletResponse response)
     throws ServletException, IOException {
+
+    HttpSession sesion = request.getSession(false);
+    if (sesion == null || !(sesion.getAttribute("usuarioLogueado") instanceof Usuario)) {
+      response.sendRedirect(request.getContextPath() + "/LoginServlet");
+      return;
+    }
 
     SolicitudDao solicitudDao = new SolicitudDao();
     SegmentoDao segmentoDao = new SegmentoDao();
@@ -65,29 +73,17 @@ public class CapacityPlannerServlet extends HttpServlet {
         }
       }
 
-      int estables = 0;
-      int limitados = 0;
+      int normales = 0;
+      int altos = 0;
       int criticos = 0;
+      int sinCapacidad = 0;
 
-      // Clasificar según capacidad ocupada + reservada
       for (Segmento segmento : segmentos) {
-        long total = segmento.getCapacidadTotal();
-
-        if (total <= 0) {
-          criticos++;
-          continue;
-        }
-
-        double porcentaje =
-          (segmento.getCapacidadOcupada()
-            + segmento.getCapacidadReservada()) * 100.0 / total;
-
-        if (porcentaje < 80) {
-          estables++;
-        } else if (porcentaje <= 95) {
-          limitados++;
-        } else {
-          criticos++;
+        switch (SegmentoServlet.nivelUtilizacion(segmento)) {
+          case "Normal" -> normales++;
+          case "Alta" -> altos++;
+          case "Crítica" -> criticos++;
+          default -> sinCapacidad++;
         }
       }
 
@@ -99,9 +95,10 @@ public class CapacityPlannerServlet extends HttpServlet {
       request.setAttribute("serviciosActivos",
         servicioDao.listarServicios("Activo").size());
 
-      request.setAttribute("segmentosEstables", estables);
-      request.setAttribute("segmentosLimitados", limitados);
+      request.setAttribute("segmentosNormales", normales);
+      request.setAttribute("segmentosAltos", altos);
       request.setAttribute("segmentosCriticos", criticos);
+      request.setAttribute("segmentosSinCapacidad", sinCapacidad);
       request.setAttribute("accionesPendientes", acciones);
 
       request.getRequestDispatcher(

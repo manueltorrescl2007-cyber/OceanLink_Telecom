@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 public class SolicitudDao extends BaseDao {
@@ -92,7 +93,7 @@ public class SolicitudDao extends BaseDao {
         + "VALUES (?, ?, ?, ?, ?, 'Registrada', ?)";
 
     try (Connection conn = getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+         PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
       pstmt.setInt(1, solicitud.getIdCliente());
       pstmt.setInt(2, solicitud.getIdUsuario());
@@ -101,7 +102,16 @@ public class SolicitudDao extends BaseDao {
       pstmt.setLong(5, solicitud.getCapacidadSolicitada());
       pstmt.setString(6, solicitud.getJustificacion());
 
-      return pstmt.executeUpdate() == 1;
+      if (pstmt.executeUpdate() != 1) {
+        return false;
+      }
+
+      try (ResultSet claves = pstmt.getGeneratedKeys()) {
+        if (claves.next()) {
+          solicitud.setIdSolicitud(claves.getInt(1));
+        }
+      }
+      return true;
     }
   }
 

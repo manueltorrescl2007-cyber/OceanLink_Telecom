@@ -96,7 +96,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" >
     <title>Clientes | OceanLink</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/clientes.css" >
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/clientes.css?v=4" >
     <!-- CSS compartido: colores, animaciones y tamaño de las barras -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/barras.css">
 </head>
@@ -148,91 +148,36 @@
         <% if (error != null) { %><p role="alert"><%= texto(error) %></p><% } %>
         <% if ("creado".equals(mensaje) || "actualizado".equals(mensaje)
                 || "activado".equals(mensaje) || "desactivado".equals(mensaje)) { %>
-            <p role="status">Operación realizada correctamente.</p>
+            <p id="avisoOperacionCliente" class="aviso-operacion-cliente" role="status">Operación realizada correctamente.</p>
         <% } %>
         <section class="seccion-clientes">
             <div class="panel-clientes">
-                <div class="titulo-seccion"
-                     style="display: flex; align-items: center;
-                            justify-content: space-between; gap: 16px;">
-
+                <div class="titulo-seccion titulo-clientes">
                     <h2>Clientes frecuentes</h2>
-
-                    <div style="display: flex; align-items: center; gap: 16px;">
-
-                        <details style="position: relative;">
-                            <summary aria-label="Buscar clientes"
-                                     title="Buscar clientes"
-                                     style="display: flex; align-items: center;
-                                            cursor: pointer; color: #1c8c9c;">
-                                <svg width="23" height="23" viewBox="0 0 24 24"
-                                     fill="none" stroke="currentColor"
-                                     stroke-width="2" stroke-linecap="round"
-                                     aria-hidden="true">
-                                    <circle cx="10.5" cy="10.5" r="6.5"></circle>
-                                    <path d="M16 16L21 21"></path>
-                                </svg>
-                            </summary>
-
-                            <form method="get" action="<%= servlet %>"
-                                  style="position: absolute; right: 0; top: 36px;
-                                         z-index: 10; width: 280px;
-                                         max-width: 70vw; padding: 16px;
-                                         box-sizing: border-box; background: white;
-                                         border: 1px solid #d9e1e8;
-                                         border-radius: 10px;
-                                         box-shadow: 0 4px 16px #00000015;">
-
-                                <div style="display: flex; align-items: center;
-                                            justify-content: space-between; margin-bottom: 8px;">
-
-                                    <label for="buscarCliente"
-                                           style="font-size: 14px; color: #0b3d5c;">
-                                        Buscar cliente
-                                    </label>
-
-                                    <button type="button"
-                                            aria-label="Cerrar buscador"
-                                            onclick="this.closest('details').open = false;"
-                                            style="border: none; background: transparent;
-                                                   color: #64748b; font-size: 22px;
-                                                   line-height: 1; cursor: pointer;
-                                                   padding: 4px;">
-                                        &times;
-                                    </button>
-
-                                </div>
-
-                                <input type="search"
-                                       id="buscarCliente"
-                                       name="buscar"
-                                       placeholder="Escribe tu búsqueda..."
-                                       value="<%= texto(request.getParameter("buscar")) %>"
-                                       style="width: 100%; box-sizing: border-box;
-                                              padding: 10px 12px;
-                                              border: 1px solid #d9e1e8;
-                                              border-radius: 6px;
-                                              font-size: 14px;">
-
-                                <div style="display: flex; align-items: center;
-                                            gap: 12px; margin-top: 12px;">
-                                    <button type="submit" class="boton primario">
-                                        Buscar
-                                    </button>
-                                </div>
-                            </form>
-                        </details>
-
-                        <span class="cantidad-clientes">
+                    <div class="herramientas-clientes">
+                        <input type="search" id="buscarCliente" class="busqueda-clientes"
+                               placeholder="Buscar cliente" aria-label="Buscar cliente por nombre"
+                               autocomplete="off" hidden>
+                        <button type="button" id="abrirBusquedaCliente" class="lupa-clientes"
+                                aria-label="Buscar clientes" aria-controls="buscarCliente"
+                                aria-expanded="false">
+                            <svg width="23" height="23" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round" aria-hidden="true">
+                                <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                                <path d="M16 16L21 21"></path>
+                            </svg>
+                        </button>
+                        <span id="cantidadClientes" class="cantidad-clientes" aria-live="polite">
                             <%= clientes.size() %>
                         </span>
-
                     </div>
                 </div>
                 <!-- LISTA: conserva el orden calculado a partir de los clics -->
-                <ul class="lista-clientes">
+                <ul class="lista-clientes" id="listaClientes">
                     <% for (Cliente c : clientes) { %>
-                    <li class="<%= c.getIdCliente() == idCliente ? "cliente-seleccionado" : "" %>">
+                    <li data-id="<%= c.getIdCliente() %>" data-nombre="<%= texto(c.getNombre()) %>"
+                        class="<%= c.getIdCliente() == idCliente ? "cliente-seleccionado" : "" %>">
                         <a class="cliente-enlace" href="<%= servlet %>?id=<%= c.getIdCliente() %>&amp;visita=1">
                             <span class="avatar-cliente"><%= texto(c.getNombre().isEmpty() ? "" : c.getNombre().substring(0, 1)) %></span>
                             <span class="datos-cliente">
@@ -245,6 +190,7 @@
                     <% } %>
                 </ul>
                 <% if (clientes.isEmpty()) { %><p>No hay clientes registrados.</p><% } %>
+                <p id="sinCoincidenciasClientes" role="status" hidden>No hay clientes con ese nombre.</p>
                 <!-- Formularios separados; conservamos el estilo de los botones -->
                 <div class="botones-clientes">
                     <button class="boton primario" type="button" onclick="location.href='${pageContext.request.contextPath}/capacity_planner/cliente_form.jsp'">+ Nuevo cliente</button>
@@ -509,5 +455,116 @@
         </form>
     </div>
 </div>
+<script>
+    (() => {
+        const lupa = document.getElementById('abrirBusquedaCliente');
+        const campo = document.getElementById('buscarCliente');
+        const lista = document.getElementById('listaClientes');
+        const filas = lista.querySelectorAll('li[data-id]');
+        const claveVista = location.pathname + ':vista-clientes';
+        const aviso = document.getElementById('avisoOperacionCliente');
+
+        if (aviso) {
+            setTimeout(() => aviso.remove(), 3000);
+            const url = new URL(location.href);
+            url.searchParams.delete('mensaje');
+            history.replaceState(history.state, '', url);
+        }
+        const cantidad = document.getElementById('cantidadClientes');
+        const sinCoincidencias = document.getElementById('sinCoincidenciasClientes');
+
+        const normalizar = texto => texto.trim().toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        function filtrar() {
+            const consulta = normalizar(campo.value);
+            let visibles = 0;
+            for (const fila of filas) {
+                const coincide = normalizar(fila.dataset.nombre).startsWith(consulta);
+                fila.hidden = !coincide;
+                if (coincide) visibles++;
+            }
+            cantidad.textContent = visibles;
+            sinCoincidencias.hidden = !consulta || visibles > 0;
+        }
+
+        function mostrarBusqueda(abrir) {
+            campo.hidden = !abrir;
+            lupa.setAttribute('aria-expanded', String(abrir));
+            if (abrir) {
+                campo.focus();
+            } else {
+                campo.value = '';
+                filtrar();
+                lupa.focus();
+            }
+        }
+
+        lupa.addEventListener('click', () => mostrarBusqueda(campo.hidden));
+        campo.addEventListener('input', filtrar);
+        campo.addEventListener('blur', evento => {
+            if (!campo.value.trim() && evento.relatedTarget !== lupa) {
+                campo.hidden = true;
+                lupa.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        lista.addEventListener('click', evento => {
+            const enlace = evento.target.closest('.cliente-enlace');
+            if (!enlace || evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.altKey) return;
+
+            const destino = enlace.closest('li').dataset.id;
+            try {
+                sessionStorage.setItem(claveVista, JSON.stringify({
+                    destino,
+                    orden: Array.from(lista.querySelectorAll('li[data-id]'), fila => fila.dataset.id),
+                    desplazamiento: lista.scrollTop,
+                    consulta: campo.value,
+                    abierta: !campo.hidden
+                }));
+            } catch {
+                // El cliente seleccionado se mantiene visible aunque no se pueda guardar la posición.
+            }
+        });
+
+        let vista = null;
+        try {
+            vista = JSON.parse(sessionStorage.getItem(claveVista));
+            sessionStorage.removeItem(claveVista);
+        } catch {
+            // La lista sigue disponible cuando el almacenamiento de sesión está deshabilitado.
+        }
+
+        const seleccionado = lista.querySelector('.cliente-seleccionado');
+        if (vista && seleccionado && vista.destino === seleccionado.dataset.id) {
+            const porId = new Map(Array.from(filas, fila => [fila.dataset.id, fila]));
+            for (const id of vista.orden) {
+                const fila = porId.get(id);
+                if (fila) lista.appendChild(fila);
+            }
+            campo.value = vista.consulta;
+            campo.hidden = !vista.abierta;
+            lupa.setAttribute('aria-expanded', String(vista.abierta));
+            filtrar();
+            lista.scrollTop = vista.desplazamiento;
+        }
+
+        if (seleccionado && !seleccionado.hidden) {
+            const limites = lista.getBoundingClientRect();
+            const fila = seleccionado.getBoundingClientRect();
+            if (fila.top < limites.top) {
+                lista.scrollTop += fila.top - limites.top;
+            } else if (fila.bottom > limites.bottom) {
+                lista.scrollTop += fila.bottom - limites.bottom;
+            }
+        }
+        campo.addEventListener('keydown', evento => {
+            if (evento.key === 'Escape') {
+                evento.preventDefault();
+                mostrarBusqueda(false);
+            }
+        });
+    })();
+</script>
 </body>
 </html>
