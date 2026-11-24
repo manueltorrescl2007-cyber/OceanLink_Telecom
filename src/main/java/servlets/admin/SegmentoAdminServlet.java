@@ -1,14 +1,18 @@
 package servlets.admin;
 
+import beans.Usuario;
 import beans.capacityplanner.LandingStation;
 import beans.capacityplanner.Segmento;
 import daos.admin.LandingStationAdminDao;
 import daos.admin.SegmentoAdminDao;
+import services.NotificacionAdminService;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -30,6 +34,8 @@ public class SegmentoAdminServlet extends HttpServlet {
     Set.of("Operativo", "Degradado", "En mantenimiento", "Fuera de servicio");
   private static final Pattern CODIGO_ESTACIONES =
     Pattern.compile("([A-Z0-9]{2,7})-([A-Z0-9]{2,7})-[0-9]+");
+
+  private final NotificacionAdminService notificacionAdminService = new NotificacionAdminService();
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -124,6 +130,8 @@ public class SegmentoAdminServlet extends HttpServlet {
         return;
       }
 
+      Segmento anterior = esNuevo ? null : segmentoDao.obtenerSegmento(id);
+
       boolean guardado = guardarConCodigo(segmentoDao, segmento, esNuevo);
       if (!guardado) {
         String msg = esNuevo
@@ -132,6 +140,29 @@ public class SegmentoAdminServlet extends HttpServlet {
         reenviarFormularioError(request, response, stationDao, segmentoDao, segmento, msg);
         return;
       }
+
+      Segmento completo = segmentoDao.obtenerSegmento(segmento.getIdSegmento());
+      String tramo = (completo != null && completo.getNombreInicial() != null && completo.getNombreFinal() != null)
+        ? completo.getNombreInicial() + " -> " + completo.getNombreFinal()
+        : "Landing #" + segmento.getIdLandingInicial() + " -> Landing #" + segmento.getIdLandingFinal();
+
+      boolean esAlertaCritica = !"Operativo".equalsIgnoreCase(segmento.getEstado());
+      String accionTexto = esNuevo ? "Nuevo segmento registrado" : "Actualización de segmento";
+      String detalle = "Tramo: " + tramo
+        + " | Capacidad total: " + segmento.getCapacidadTotal() + " Gbps"
+        + " | Estado: " + segmento.getEstado();
+      if (anterior != null && !anterior.getEstado().equalsIgnoreCase(segmento.getEstado())) {
+        detalle += " (estado anterior: " + anterior.getEstado() + ")";
+      }
+
+      notificacionAdminService.notificarCambioInfraestructura(
+        "Segmento submarino",
+        accionTexto,
+        segmento.getCodigo(),
+        detalle,
+        esAlertaCritica,
+        obtenerUsuarioSesion(request)
+      );
 
       response.sendRedirect(urlListado(request, "guardado"));
     } catch (SQLException e) {
@@ -263,6 +294,14 @@ public class SegmentoAdminServlet extends HttpServlet {
       }
     }
     return "E" + Integer.toString(id, 36).toUpperCase(Locale.ROOT);
+  }
+
+  private Usuario obtenerUsuarioSesion(HttpServletRequest request) {
+    HttpSession sesion = request.getSession(false);
+    if (sesion != null && sesion.getAttribute("usuarioLogueado") instanceof Usuario u) {
+      return u;
+    }
+    return null;
   }
 
   private String urlListado(HttpServletRequest request, String msg) {

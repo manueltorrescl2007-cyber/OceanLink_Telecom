@@ -1,9 +1,3 @@
-/* =========================================================
-   OCEANLINK — admin_dashboard.css
-   Estilos exclusivos del Dashboard general del Administrador (RF06).
-   La barra superior, el menú lateral y variables vienen de barras.css.
-   ========================================================= */
-
 /* 1. Cuadrícula de 5 tarjetas KPI superiores */
 .kpi-grid-cinco {
   display: grid;
@@ -36,6 +30,18 @@
   line-height: 1.1;
 }
 
+.kpi-value.kpi-alerta-normal {
+  color: #168077;
+}
+
+.kpi-value.kpi-alerta-alta {
+  color: #d97706;
+}
+
+.kpi-value.kpi-alerta-critica {
+  color: #dc2626;
+}
+
 .kpi-value-estado {
   font-size: 20px;
   letter-spacing: 0.3px;
@@ -47,6 +53,10 @@
 
 .kpi-estado-alerta {
   color: #b45309;
+}
+
+.kpi-estado-critico {
+  color: #dc2626;
 }
 
 .kpi-detail {
@@ -205,12 +215,22 @@
   background-color: #d97706;
 }
 
+.barra-segmento-alta::-moz-progress-bar {
+  background-color: #d97706;
+  border-radius: 999px;
+}
+
 .barra-segmento-critica {
   accent-color: #dc2626;
 }
 
 .barra-segmento-critica::-webkit-progress-value {
   background-color: #dc2626;
+}
+
+.barra-segmento-critica::-moz-progress-bar {
+  background-color: #dc2626;
+  border-radius: 999px;
 }
 
 /* 5. Mapa central de Topología de red submarina (idéntico a Supervisor) */

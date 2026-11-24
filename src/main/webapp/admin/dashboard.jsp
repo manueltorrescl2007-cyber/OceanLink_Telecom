@@ -42,6 +42,7 @@
 
   String porcentajeUsoTexto = String.format(Locale.US, "%.1f%%", porcentajeUso);
   String porcentajeOpTexto = String.format(Locale.US, "%.1f%%", porcentajeOperativo);
+  String claseUtilizacion = porcentajeUso > 95.0 ? "kpi-alerta-critica" : (porcentajeUso >= 80.0 ? "kpi-alerta-alta" : "kpi-alerta-normal");
   boolean redOperativa = segmentosNoOperativos == 0;
 %>
 <!DOCTYPE html>
@@ -73,10 +74,14 @@
     <!-- FILA 1: 5 TARJETAS KPI -->
     <section class="kpi-grid-cinco" aria-label="Indicadores generales de la plataforma">
 
+      <%
+        String estadoRed = (String) resumen.get("estadoRed");
+        String claseEstadoRed = (String) resumen.get("claseEstadoRed");
+      %>
       <article class="kpi-card">
         <span class="kpi-label">Estado de la red</span>
-        <strong class="kpi-value kpi-value-estado <%= redOperativa ? "kpi-estado-ok" : "kpi-estado-alerta" %>">
-          <%= redOperativa ? "OPERATIVA" : "CON ALERTAS" %>
+        <strong class="kpi-value kpi-value-estado <%= claseEstadoRed %>">
+          <%= estadoRed %>
         </strong>
         <span class="kpi-detail">Segmentos operativos: <%= porcentajeOpTexto %></span>
       </article>
@@ -98,13 +103,13 @@
       <article class="kpi-card">
         <span class="kpi-label">Segmentos de fibra</span>
         <strong class="kpi-value"><%= totalSegmentos %></strong>
-        <span class="kpi-detail"><%= segmentosOperativos %> operativos · <%= segmentosNoOperativos %> fuera de servicio</span>
+        <span class="kpi-detail"><%= segmentosOperativos %> operativos · <%= segmentosNoOperativos %> no operativos</span>
         <a class="kpi-link" href="${pageContext.request.contextPath}/SegmentoAdminServlet">Ver segmentos →</a>
       </article>
 
       <article class="kpi-card">
         <span class="kpi-label">Utilización de la red</span>
-        <strong class="kpi-value"><%= porcentajeUsoTexto %></strong>
+        <strong class="kpi-value <%= claseUtilizacion %>"><%= porcentajeUsoTexto %></strong>
         <span class="kpi-detail">Capacidad global plataforma</span>
         <span class="kpi-detail"><%= capacidadUsada %> / <%= capacidadTotal %> Gbps</span>
       </article>

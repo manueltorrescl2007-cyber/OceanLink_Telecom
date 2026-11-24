@@ -4,6 +4,7 @@ import beans.Rol;
 import beans.Usuario;
 import daos.RolDao;
 import daos.UsuarioDao;
+import services.NotificacionAdminService;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -11,6 +12,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 public class UsuarioServlet extends HttpServlet {
 
   private static final int TAMANO_PAGINA = 10;
+  private final NotificacionAdminService notificacionAdminService = new NotificacionAdminService();
 
   /* ===================== GET: mostrar páginas y acciones por enlace ===================== */
   @Override
@@ -36,11 +39,10 @@ public class UsuarioServlet extends HttpServlet {
     switch (action) {
 
       case "lista":
-        // Filtros opcionales que llegan por la URL: ?idRol=3&estado=activo
-        int filtroIdRol = parseId(request.getParameter("idRol"));      // -1 = todos
+        int filtroIdRol = parseId(request.getParameter("idRol"));
         String filtroEstado = request.getParameter("estado");
         if (!"activo".equals(filtroEstado) && !"inactivo".equals(filtroEstado)) {
-          filtroEstado = null;                                       // null = todos
+          filtroEstado = null;
         }
 
         ArrayList<Usuario> todos = usuarioDao.listarUsuarios(filtroIdRol, filtroEstado);
@@ -67,8 +69,8 @@ public class UsuarioServlet extends HttpServlet {
         int registroFin = totalRegistros == 0 ? 0 : fin;
 
         request.setAttribute("listaUsuarios", paginaUsuarios);
-        request.setAttribute("listaRoles", rolDao.listarRoles());     // para el <select> de rol
-        request.setAttribute("filtroIdRol", filtroIdRol);             // para recordar lo elegido
+        request.setAttribute("listaRoles", rolDao.listarRoles());
+        request.setAttribute("filtroIdRol", filtroIdRol);
         request.setAttribute("filtroEstado", filtroEstado == null ? "" : filtroEstado);
         request.setAttribute("paginaActual", paginaActual);
         request.setAttribute("totalPaginas", totalPaginas);
@@ -126,7 +128,7 @@ public class UsuarioServlet extends HttpServlet {
     switch (action) {
 
       case "guardar":
-        String idUsuario  = request.getParameter("idUsuario");   // vacío si es nuevo
+        String idUsuario  = request.getParameter("idUsuario");
         String nombre     = request.getParameter("nombre");
         String correo     = request.getParameter("correo");
         String contrasena = request.getParameter("contrasena");
@@ -144,6 +146,9 @@ public class UsuarioServlet extends HttpServlet {
           // CREATE
           usuario.setContrasena(contrasena);
           usuarioDao.crearUsuario(usuario);
+
+          Usuario adminEjecutor = obtenerUsuarioSesion(request);
+          notificacionAdminService.notificarCreacionUsuario(usuario, contrasena, adminEjecutor);
         } else {
           // UPDATE
           usuario.setIdUsuario(parseId(idUsuario));
@@ -157,7 +162,14 @@ public class UsuarioServlet extends HttpServlet {
     }
   }
 
-  /* Convierte un parámetro a int; devuelve -1 si viene vacío o no es número */
+  private Usuario obtenerUsuarioSesion(HttpServletRequest request) {
+    HttpSession sesion = request.getSession(false);
+    if (sesion != null && sesion.getAttribute("usuarioLogueado") instanceof Usuario u) {
+      return u;
+    }
+    return null;
+  }
+
   private int parseId(String valor) {
     try {
       return Integer.parseInt(valor);

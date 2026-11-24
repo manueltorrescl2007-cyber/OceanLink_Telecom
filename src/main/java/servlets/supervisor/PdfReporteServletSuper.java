@@ -1,5 +1,6 @@
 package servlets.supervisor;
 
+import beans.Usuario;
 import beans.supervisor.ReporteSupervisor;
 import com.lowagie.text.Document;
 import com.lowagie.text.Font;
@@ -11,11 +12,13 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import daos.supervisor.ReporteSupervisorDao;
+import services.NotificacionSupervisorService;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -25,6 +28,8 @@ import java.util.List;
 
 @WebServlet(name = "PdfReporteServletSuper", value = "/PdfReporteServletSuper")
 public class PdfReporteServletSuper extends HttpServlet {
+
+  private final NotificacionSupervisorService notificacionSupervisorService = new NotificacionSupervisorService();
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -50,6 +55,8 @@ public class PdfReporteServletSuper extends HttpServlet {
 
     String fechaActual = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     String nombreArchivo = "Reporte_" + tipo + "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm")) + ".pdf";
+    String nombreTitulo = obtenerNombreTitulo(tipo);
+    String lineaFiltros = construirLineaFiltros(tipo, desde, hasta, segmento, cliente, severidad, estado);
 
     resp.setContentType("application/pdf");
     resp.setHeader("Content-Disposition", (descargar ? "attachment" : "inline") + "; filename=\"" + nombreArchivo + "\"");
@@ -65,8 +72,8 @@ public class PdfReporteServletSuper extends HttpServlet {
       Font fontCelda = FontFactory.getFont(FontFactory.HELVETICA, 9, Color.BLACK);
 
       doc.add(new Paragraph("OceanLink Telecom - Reporte de Supervisión", fontTitulo));
-      doc.add(new Paragraph("Tipo de reporte: " + obtenerNombreTitulo(tipo), fontSub));
-      doc.add(new Paragraph(construirLineaFiltros(tipo, desde, hasta, segmento, cliente, severidad, estado), fontSub));
+      doc.add(new Paragraph("Tipo de reporte: " + nombreTitulo, fontSub));
+      doc.add(new Paragraph(lineaFiltros, fontSub));
       doc.add(new Paragraph("Fecha de emisión: " + fechaActual + " | Total registros: " + lista.size(), fontSub));
       doc.add(new Paragraph(" "));
 
@@ -98,6 +105,21 @@ public class PdfReporteServletSuper extends HttpServlet {
 
       doc.add(tabla);
       doc.close();
+
+      // Enviar correo al Supervisor únicamente cuando descarga el reporte PDF
+      if (descargar) {
+        HttpSession sesion = req.getSession(false);
+        if (sesion != null && sesion.getAttribute("usuarioLogueado") instanceof Usuario supervisor) {
+          notificacionSupervisorService.notificarDescargaReporte(
+            supervisor,
+            nombreTitulo,
+            lineaFiltros,
+            lista.size(),
+            nombreArchivo
+          );
+        }
+      }
+
     } catch (Exception e) {
       throw new RuntimeException("Error al generar el PDF del reporte", e);
     }

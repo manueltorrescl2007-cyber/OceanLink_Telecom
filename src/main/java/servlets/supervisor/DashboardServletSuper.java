@@ -63,7 +63,7 @@ public class DashboardServletSuper extends HttpServlet {
     }
 
     long capacidadTotal = 0;
-    long capacidadOcupada = 0;
+    long capacidadUtilizada = 0;
     int operativos = 0;
     int degradados = 0;
     int fueraServicio = 0;
@@ -82,7 +82,7 @@ public class DashboardServletSuper extends HttpServlet {
       long capUsada = capOcu + capRes;
 
       capacidadTotal += capTot;
-      capacidadOcupada += capOcu;
+      capacidadUtilizada += capUsada;
 
       String estado = segmento.getEstado();
       if ("Operativo".equals(estado)) operativos++;
@@ -124,12 +124,17 @@ public class DashboardServletSuper extends HttpServlet {
     }
 
     double disponibilidad = segmentos.isEmpty() ? 0 : operativos * 100.0 / segmentos.size();
-    double utilizacion = capacidadTotal == 0 ? 0 : capacidadOcupada * 100.0 / capacidadTotal;
+    double utilizacion = capacidadTotal == 0 ? 0 : capacidadUtilizada * 100.0 / capacidadTotal;
+    String claseUtilizacion = utilizacion > 95.0 ? "kpi-alerta-critica" : (utilizacion >= 80.0 ? "kpi-alerta-alta" : "kpi-alerta-normal");
+
     String estadoRed;
     if (segmentos.isEmpty()) estadoRed = "SIN DATOS";
     else if (fueraServicio > 0) estadoRed = "INTERRUMPIDA";
     else if (degradados > 0 || mantenimiento > 0) estadoRed = "DEGRADADA";
     else estadoRed = "OPERATIVA";
+
+    String claseEstadoRed = "INTERRUMPIDA".equals(estadoRed) ? "kpi-alerta-critica"
+      : ("DEGRADADA".equals(estadoRed) ? "kpi-alerta-alta" : "kpi-alerta-normal");
 
     Integer proximosMantenimientos = null;
     List<Mantenimiento> listaProximosMantenimientos = new ArrayList<>();
@@ -163,6 +168,7 @@ public class DashboardServletSuper extends HttpServlet {
       : incidencias;
 
     request.setAttribute("estadoRed", estadoRed);
+    request.setAttribute("claseEstadoRed", claseEstadoRed);
     request.setAttribute("disponibilidad", String.format(Locale.US, "%.1f", disponibilidad));
     request.setAttribute("totalIncidencias", incidencias.size());
     request.setAttribute("incidenciasCriticas", criticas);
@@ -171,6 +177,7 @@ public class DashboardServletSuper extends HttpServlet {
     request.setAttribute("serviciosAfectados", idsServicios.size());
     request.setAttribute("mantenimientosProgramados", proximosMantenimientos);
     request.setAttribute("utilizacion", String.format(Locale.US, "%.1f", utilizacion));
+    request.setAttribute("claseUtilizacion", claseUtilizacion);
 
     request.setAttribute("topSegmentos", rankingSegmentos);
     request.setAttribute("topClientes", topClientes);

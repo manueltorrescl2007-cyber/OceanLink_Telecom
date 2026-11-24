@@ -118,6 +118,18 @@
   overflow-wrap: anywhere;
 }
 
+.information strong.kpi-alerta-normal {
+  color: var(--color-disponible);
+}
+
+.information strong.kpi-alerta-alta {
+  color: var(--color-alta);
+}
+
+.information strong.kpi-alerta-critica {
+  color: var(--color-critica);
+}
+
 /* =====================================================
    PANEL CENTRAL EN 3 COLUMNAS (CAPACIDAD - MAPA - CLIENTES)
    ===================================================== */

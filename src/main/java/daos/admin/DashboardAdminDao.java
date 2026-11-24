@@ -29,6 +29,8 @@ public class DashboardAdminDao extends BaseDao {
     resumen.put("segmentosOperativos", 0);
     resumen.put("segmentosNoOperativos", 0);
     resumen.put("porcentajeOperativo", 100.0);
+    resumen.put("estadoRed", "SIN DATOS");
+    resumen.put("claseEstadoRed", "");
 
     resumen.put("capacidadTotal", 0L);
     resumen.put("capacidadOcupada", 0L);
@@ -54,6 +56,7 @@ public class DashboardAdminDao extends BaseDao {
       "COUNT(*) AS total, " +
       "COALESCE(SUM(CASE WHEN estado = 'Operativo' THEN 1 ELSE 0 END), 0) AS operativos, " +
       "COALESCE(SUM(CASE WHEN estado <> 'Operativo' THEN 1 ELSE 0 END), 0) AS no_operativos, " +
+      "COALESCE(SUM(CASE WHEN estado = 'Fuera de servicio' THEN 1 ELSE 0 END), 0) AS fuera_servicio, " +
       "COALESCE(SUM(capacidad_total), 0) AS cap_total, " +
       "COALESCE(SUM(capacidad_ocupada), 0) AS cap_ocupada, " +
       "COALESCE(SUM(capacidad_reservada), 0) AS cap_reservada " +
@@ -92,6 +95,7 @@ public class DashboardAdminDao extends BaseDao {
           int totalSeg = rs.getInt("total");
           int segOp = rs.getInt("operativos");
           int segNoOp = rs.getInt("no_operativos");
+          int segFuera = rs.getInt("fuera_servicio");
           long capTotal = rs.getLong("cap_total");
           long capOcupada = rs.getLong("cap_ocupada");
           long capReservada = rs.getLong("cap_reservada");
@@ -99,10 +103,28 @@ public class DashboardAdminDao extends BaseDao {
           double porcentajeUso = capTotal > 0 ? ((capOcupada + capReservada) * 100.0) / capTotal : 0.0;
           double porcentajeOperativo = totalSeg > 0 ? (segOp * 100.0) / totalSeg : 100.0;
 
+          String estadoRed;
+          String claseEstadoRed;
+          if (totalSeg == 0) {
+            estadoRed = "SIN DATOS";
+            claseEstadoRed = "";
+          } else if (segFuera > 0) {
+            estadoRed = "INTERRUMPIDA";
+            claseEstadoRed = "kpi-estado-critico";
+          } else if (segNoOp > 0) {
+            estadoRed = "DEGRADADA";
+            claseEstadoRed = "kpi-estado-alerta";
+          } else {
+            estadoRed = "OPERATIVA";
+            claseEstadoRed = "kpi-estado-ok";
+          }
+
           resumen.put("totalSegmentos", totalSeg);
           resumen.put("segmentosOperativos", segOp);
           resumen.put("segmentosNoOperativos", segNoOp);
           resumen.put("porcentajeOperativo", porcentajeOperativo);
+          resumen.put("estadoRed", estadoRed);
+          resumen.put("claseEstadoRed", claseEstadoRed);
           resumen.put("capacidadTotal", capTotal);
           resumen.put("capacidadOcupada", capOcupada);
           resumen.put("capacidadReservada", capReservada);

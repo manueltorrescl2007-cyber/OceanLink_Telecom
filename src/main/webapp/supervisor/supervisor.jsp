@@ -42,6 +42,9 @@
 
   Map<Integer, String> mapaCodigosSegmento = (Map<Integer, String>) request.getAttribute("mapaCodigosSegmento");
 
+  String claseUtilizacion = (String) request.getAttribute("claseUtilizacion");
+  if (claseUtilizacion == null) claseUtilizacion = "kpi-alerta-normal";
+
   DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.forLanguageTag("es-PE"));
 %>
 
@@ -239,7 +242,9 @@
           <p>Estado de la red</p>
         </div>
         <div class="information">
-          <strong><%= html((String) request.getAttribute("estadoRed")) %></strong>
+          <strong class="<%= html((String) request.getAttribute("claseEstadoRed")) %>">
+            <%= html((String) request.getAttribute("estadoRed")) %>
+          </strong>
         </div>
         <div class="information">
           <p>Segmentos operativos:
@@ -296,10 +301,10 @@
           <p>Utilización de la red</p>
         </div>
         <div class="information">
-          <strong><%= request.getAttribute("utilizacion") %>%</strong>
+          <strong class="<%= html(claseUtilizacion) %>"><%= request.getAttribute("utilizacion") %>%</strong>
         </div>
         <div class="information">
-          <p>Capacidad ocupada / total</p>
+          <p>Capacidad utilizada / total</p>
         </div>
       </article>
     </section>

@@ -1,12 +1,16 @@
 package servlets.admin;
 
+import beans.Usuario;
 import beans.capacityplanner.LandingStation;
 import daos.admin.LandingStationAdminDao;
+import services.NotificacionAdminService;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -18,6 +22,7 @@ import java.util.ArrayList;
 public class LandingStationAdminServlet extends HttpServlet {
 
   private static final int POR_PAGINA = 10;
+  private final NotificacionAdminService notificacionAdminService = new NotificacionAdminService();
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -47,15 +52,43 @@ public class LandingStationAdminServlet extends HttpServlet {
           }
           break;
 
-        case "desactivar":
-          dao.cambiarEstado(parseId(request.getParameter("id")), "Inactiva");
+        case "desactivar": {
+          int idDesactivar = parseId(request.getParameter("id"));
+          if (dao.cambiarEstado(idDesactivar, "Inactiva")) {
+            LandingStation est = dao.obtenerEstacion(idDesactivar);
+            String nombreEst = est != null ? est.getNombre() : "Landing #" + idDesactivar;
+            String ubicacion = est != null ? " (" + est.getCiudad() + ", " + est.getPais() + ")" : "";
+            notificacionAdminService.notificarCambioInfraestructura(
+              "Landing Station",
+              "Desactivación de estación",
+              nombreEst + ubicacion,
+              "La estación pasó a estado Inactiva y queda fuera de operación.",
+              true,
+              obtenerUsuarioSesion(request)
+            );
+          }
           response.sendRedirect(urlListado(request, "estadoOk"));
           break;
+        }
 
-        case "activar":
-          dao.cambiarEstado(parseId(request.getParameter("id")), "Activa");
+        case "activar": {
+          int idActivar = parseId(request.getParameter("id"));
+          if (dao.cambiarEstado(idActivar, "Activa")) {
+            LandingStation est = dao.obtenerEstacion(idActivar);
+            String nombreEst = est != null ? est.getNombre() : "Landing #" + idActivar;
+            String ubicacion = est != null ? " (" + est.getCiudad() + ", " + est.getPais() + ")" : "";
+            notificacionAdminService.notificarCambioInfraestructura(
+              "Landing Station",
+              "Activación de estación",
+              nombreEst + ubicacion,
+              "La estación pasó a estado Activa y está operativa.",
+              false,
+              obtenerUsuarioSesion(request)
+            );
+          }
           response.sendRedirect(urlListado(request, "estadoOk"));
           break;
+        }
 
         case "eliminar":
           try {
@@ -122,6 +155,7 @@ public class LandingStationAdminServlet extends HttpServlet {
 
     LandingStationAdminDao dao = new LandingStationAdminDao();
     try {
+      LandingStation anterior = esNuevo ? null : dao.obtenerEstacion(estacion.getIdLanding());
       boolean ok = esNuevo ? dao.crearEstacion(estacion) : dao.actualizarEstacion(estacion);
       if (!ok) {
         request.setAttribute("error", "No se pudo guardar la estación.");
@@ -131,6 +165,24 @@ public class LandingStationAdminServlet extends HttpServlet {
         request.getRequestDispatcher("/admin/landing_station_form.jsp").forward(request, response);
         return;
       }
+
+      boolean esCritica = "Inactiva".equalsIgnoreCase(estacion.getEstado());
+      String accionTexto = esNuevo ? "Nueva estación registrada" : "Actualización de estación";
+      String detalle = "Ubicación: " + estacion.getCiudad() + ", " + estacion.getPais()
+        + " | Estado: " + estacion.getEstado();
+      if (anterior != null && !anterior.getEstado().equalsIgnoreCase(estacion.getEstado())) {
+        detalle += " (anterior: " + anterior.getEstado() + ")";
+      }
+
+      notificacionAdminService.notificarCambioInfraestructura(
+        "Landing Station",
+        accionTexto,
+        estacion.getNombre(),
+        detalle,
+        esCritica,
+        obtenerUsuarioSesion(request)
+      );
+
       response.sendRedirect(urlListado(request, "guardado"));
     } catch (SQLException e) {
       String msg = (e.getErrorCode() == 1062)
@@ -179,6 +231,14 @@ public class LandingStationAdminServlet extends HttpServlet {
     request.setAttribute("registroFin", registroFin);
 
     request.getRequestDispatcher("/admin/landing_stations.jsp").forward(request, response);
+  }
+
+  private Usuario obtenerUsuarioSesion(HttpServletRequest request) {
+    HttpSession sesion = request.getSession(false);
+    if (sesion != null && sesion.getAttribute("usuarioLogueado") instanceof Usuario u) {
+      return u;
+    }
+    return null;
   }
 
   private String urlListado(HttpServletRequest request, String msg) {
