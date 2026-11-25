@@ -6,6 +6,7 @@ import beans.capacityplanner.Solicitud;
 import daos.capacityplanner.ClienteDao;
 import daos.capacityplanner.ServicioDao;
 import daos.capacityplanner.SolicitudDao;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -19,7 +20,6 @@ import java.util.ArrayList;
 @WebServlet(name = "ClienteServletSuper", value = "/ClienteServletSuper")
 public class ClienteServletSuper extends HttpServlet {
 
-  // GET: listar clientes y mostrar el cliente seleccionado
   @Override
   protected void doGet(HttpServletRequest request,
                        HttpServletResponse response)
@@ -32,7 +32,13 @@ public class ClienteServletSuper extends HttpServlet {
     }
   }
 
-  // Consultar los datos que necesita la vista
+  @Override
+  protected void doPost(HttpServletRequest request,
+                        HttpServletResponse response)
+    throws ServletException, IOException {
+    response.sendRedirect(request.getContextPath() + "/ClienteServletSuper");
+  }
+
   private void mostrarClientes(HttpServletRequest request,
                                HttpServletResponse response)
     throws SQLException, ServletException, IOException {
@@ -67,14 +73,12 @@ public class ClienteServletSuper extends HttpServlet {
       cliente = clienteDao.obtenerCliente(idCliente);
     }
 
-    // Mostrar el primer cliente si no hay uno seleccionado
     if (cliente == null && !clientes.isEmpty()) {
       cliente = clientes.get(0);
     }
 
     request.setAttribute("clienteSeleccionado", cliente);
 
-    // Consultar las solicitudes y servicios del mismo cliente
     ArrayList<Solicitud> solicitudes = new ArrayList<>();
     ArrayList<Servicio> servicios = new ArrayList<>();
 
@@ -93,64 +97,10 @@ public class ClienteServletSuper extends HttpServlet {
       .forward(request, response);
   }
 
-  // Mostrar un error junto con la lista de clientes
-  private void mostrarError(HttpServletRequest request,
-                            HttpServletResponse response,
-                            String mensaje)
-    throws ServletException, IOException {
-
-    request.setAttribute("error", mensaje);
-
-    try {
-      mostrarClientes(request, response);
-    } catch (SQLException e) {
-      throw new ServletException(
-        "No se pudieron cargar los clientes", e);
-    }
-  }
-
-  // Validaciones del formulario en el servidor
-  private String validarCliente(Cliente cliente) {
-
-    if (cliente.getNombre().isEmpty()
-      || cliente.getNombre().length() > 100) {
-      return "El nombre es obligatorio y admite hasta 100 caracteres.";
-    }
-
-    if (cliente.getRazonSocial().isEmpty()
-      || cliente.getRazonSocial().length() > 150) {
-      return "La razón social es obligatoria "
-        + "y admite hasta 150 caracteres.";
-    }
-
-    if (!cliente.getRuc().matches("[0-9]{11}")) {
-      return "El RUC debe tener exactamente 11 dígitos.";
-    }
-
-    if (cliente.getCorreo().length() > 100
-      || !cliente.getCorreo().matches(
-      "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
-      return "Ingresa un correo válido de hasta 100 caracteres.";
-    }
-
-    if (cliente.getTelefono().length() > 15) {
-      return "El teléfono admite hasta 15 caracteres.";
-    }
-
-    if (!"activo".equals(cliente.getEstado())
-      && !"inactivo".equals(cliente.getEstado())) {
-      return "Selecciona un estado válido.";
-    }
-
-    return null;
-  }
-
-  // Evitar valores null y quitar espacios al inicio y al final
   private String texto(String valor) {
     return valor == null ? "" : valor.trim();
   }
 
-  // Convertir un identificador recibido desde el formulario
   private int parseId(String valor) {
     try {
       return Integer.parseInt(valor);

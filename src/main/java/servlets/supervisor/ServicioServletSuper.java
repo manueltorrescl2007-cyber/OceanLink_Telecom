@@ -3,7 +3,6 @@ package servlets.supervisor;
 import beans.capacityplanner.Servicio;
 import daos.capacityplanner.RutaDao;
 import daos.capacityplanner.ServicioDao;
-import daos.capacityplanner.SolicitudDao;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,11 +12,13 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 @WebServlet(name = "ServicioServletSuper", value = "/ServicioServletSuper")
 public class ServicioServletSuper extends HttpServlet {
 
-  // Mostrar la lista y el detalle de un servicio
+  private static final int TAMANO_PAGINA = 10;
+
   @Override
   protected void doGet(HttpServletRequest request,
                        HttpServletResponse response)
@@ -31,231 +32,37 @@ public class ServicioServletSuper extends HttpServlet {
     }
   }
 
-  // Crear, activar o cancelar un servicio
-
   @Override
   protected void doPost(HttpServletRequest request,
                         HttpServletResponse response)
     throws ServletException, IOException {
-
-    request.setCharacterEncoding("UTF-8");
-
-    String accion = request.getParameter("accion");
-    String servlet = request.getContextPath() + "/ServicioServletSuper";
-
-    if (accion == null) {
-      accion = "";
-    }
-
-    ServicioDao servicioDao = new ServicioDao();
-
-    try {
-      switch (accion) {
-
-        case "guardar": {
-          Servicio servicio = new Servicio();
-
-          servicio.setIdSolicitud(parseId(
-            request.getParameter("id_solicitud")));
-
-          servicio.setIdRuta(parseId(
-            request.getParameter("id_ruta")));
-
-          request.setAttribute("servicioFormulario", servicio);
-          request.setAttribute("mostrarFormulario", true);
-
-          if (servicio.getIdSolicitud() <= 0
-            || servicio.getIdRuta() <= 0) {
-
-            mostrarError(request, response,
-              "Selecciona una solicitud y una ruta.");
-            return;
-          }
-
-          boolean creado = servicioDao.crearServicio(servicio);
-
-          if (!creado) {
-            mostrarError(request, response,
-              "No se pudo crear el servicio. "
-                + "La solicitud debe estar aprobada y sin "
-                + "otro servicio vigente. La ruta debe estar "
-                + "activa, conectar el origen con el destino "
-                + "y tener capacidad suficiente.");
-            return;
-          }
-
-          response.sendRedirect(servlet
-            + "?guardado=1&servicio="
-            + servicio.getIdServicio());
-          break;
-        }
-
-        case "activar": {
-          int idServicio = parseId(
-            request.getParameter("id_servicio"));
-
-          if (idServicio <= 0) {
-            mostrarError(request, response,
-              "El identificador del servicio no es válido.");
-            return;
-          }
-
-          boolean activado =
-            servicioDao.activarServicio(idServicio);
-
-          if (!activado) {
-            mostrarError(request, response,
-              "No se pudo activar el servicio. "
-                + "Debe estar Pendiente y su solicitud "
-                + "Provisionada. Revisa también el estado "
-                + "de la ruta y la reserva de sus segmentos.");
-            return;
-          }
-
-          response.sendRedirect(servlet
-            + "?activado=1&servicio=" + idServicio);
-          break;
-        }
-
-        case "suspender": {
-          int idServicio = parseId(
-            request.getParameter("id_servicio"));
-
-          if (idServicio <= 0) {
-            mostrarError(request, response,
-              "El identificador del servicio no es válido.");
-            return;
-          }
-
-          boolean suspendido =
-            servicioDao.suspenderServicio(idServicio);
-
-          if (!suspendido) {
-            mostrarError(request, response,
-              "Solo se puede suspender un servicio Activo.");
-            return;
-          }
-
-          response.sendRedirect(servlet
-            + "?suspendido=1&servicio=" + idServicio);
-          break;
-        }
-
-        case "cancelar": {
-          int idServicio = parseId(
-            request.getParameter("id_servicio"));
-
-          if (idServicio <= 0) {
-            mostrarError(request, response,
-              "El identificador del servicio no es válido.");
-            return;
-          }
-
-          boolean cancelado =
-            servicioDao.cancelarServicio(idServicio);
-
-          if (!cancelado) {
-            mostrarError(request, response,
-              "No se pudo cancelar el servicio. "
-                + "Debe estar Pendiente, Activo o Suspendido, "
-                + "y su capacidad debe estar registrada "
-                + "correctamente en los segmentos.");
-            return;
-          }
-
-          response.sendRedirect(servlet
-            + "?cancelado=1&servicio=" + idServicio);
-          break;
-        }
-
-        case "reactivar": {
-          int idServicio = parseId(
-            request.getParameter("id_servicio"));
-
-          if (idServicio <= 0) {
-            mostrarError(request, response,
-              "El identificador del servicio no es válido.");
-            return;
-          }
-
-          boolean reactivado =
-            servicioDao.reactivarServicio(idServicio);
-
-          if (!reactivado) {
-            mostrarError(request, response,
-              "No se pudo reactivar el servicio. "
-                + "Debe estar Suspendido, con su solicitud Activa. "
-                + "Revisa también la ruta, sus segmentos "
-                + "y la capacidad asignada.");
-            return;
-          }
-
-          response.sendRedirect(servlet
-            + "?reactivado=1&servicio=" + idServicio);
-          break;
-        }
-
-        default:
-          response.sendError(
-            HttpServletResponse.SC_BAD_REQUEST,
-            "Acción no válida.");
-      }
-
-    } catch (SQLException e) {
-      getServletContext().log(
-        "Error al modificar un servicio", e);
-
-      mostrarError(request, response,
-        "No se pudo completar la operación. "
-          + "Inténtalo nuevamente.");
-    }
+    response.sendRedirect(request.getContextPath() + "/ServicioServletSuper");
   }
 
-  // Cargar los datos que necesita servicios.jsp
   private void mostrarServicios(HttpServletRequest request,
                                 HttpServletResponse response)
     throws SQLException, ServletException, IOException {
 
     ServicioDao servicioDao = new ServicioDao();
-    SolicitudDao solicitudDao = new SolicitudDao();
     RutaDao rutaDao = new RutaDao();
 
-    String estado = request.getParameter("estado");
-
-    if (!"Pendiente".equals(estado)
-      && !"Activo".equals(estado)
-      && !"Suspendido".equals(estado)
-      && !"Cancelado".equals(estado)) {
-
-      estado = "";
+    String estado = filtroEstado(request);
+    ArrayList<Servicio> todos = servicioDao.listarServicios(estado);
+    if (todos == null) {
+      todos = new ArrayList<>();
     }
 
-    request.setAttribute("listaServicios",
-      servicioDao.listarServicios(estado));
-
+    request.setAttribute("listaServicios", aplicarPaginacion(request, todos));
     request.setAttribute("filtroEstado", estado);
+    request.setAttribute("listaRutas", rutaDao.listarRutas());
 
-    // Solicitudes disponibles para crear un servicio
-    request.setAttribute("listaSolicitudes",
-      solicitudDao.listarSolicitudes("Aprobada"));
-
-    // Cada ruta incluye sus segmentos y capacidad disponible
-    request.setAttribute("listaRutas",
-      rutaDao.listarRutas());
-
-    int idServicio = parseId(
-      request.getParameter("servicio"));
-
-    // Conservar el detalle al mostrar un error de activar o cancelar
+    int idServicio = parseId(request.getParameter("servicio"));
     if (idServicio <= 0) {
-      idServicio = parseId(
-        request.getParameter("id_servicio"));
+      idServicio = parseId(request.getParameter("id_servicio"));
     }
 
     if (idServicio > 0) {
-      Servicio servicio =
-        servicioDao.obtenerServicio(idServicio);
-
+      Servicio servicio = servicioDao.obtenerServicio(idServicio);
       request.setAttribute("servicioSeleccionado", servicio);
 
       if (servicio != null) {
@@ -268,20 +75,47 @@ public class ServicioServletSuper extends HttpServlet {
       .forward(request, response);
   }
 
-  // Mostrar un error junto con la página de servicios
-  private void mostrarError(HttpServletRequest request,
-                            HttpServletResponse response,
-                            String mensaje)
-    throws ServletException, IOException {
+  private <T> ArrayList<T> aplicarPaginacion(HttpServletRequest request,
+                                             ArrayList<T> listaCompleta) {
+    int totalRegistros = listaCompleta.size();
+    int totalPaginas = Math.max(1, (int) Math.ceil((double) totalRegistros / TAMANO_PAGINA));
 
-    request.setAttribute("error", mensaje);
-
-    try {
-      mostrarServicios(request, response);
-    } catch (SQLException e) {
-      throw new ServletException(
-        "No se pudieron cargar los servicios.", e);
+    int paginaActual = parseId(request.getParameter("pagina"));
+    if (paginaActual < 1) {
+      paginaActual = 1;
+    } else if (paginaActual > totalPaginas) {
+      paginaActual = totalPaginas;
     }
+
+    int indiceInicio = (paginaActual - 1) * TAMANO_PAGINA;
+    int indiceFin = Math.min(indiceInicio + TAMANO_PAGINA, totalRegistros);
+
+    ArrayList<T> sublista = new ArrayList<>();
+    if (totalRegistros > 0 && indiceInicio < totalRegistros) {
+      sublista.addAll(listaCompleta.subList(indiceInicio, indiceFin));
+    }
+
+    request.setAttribute("paginaActual", paginaActual);
+    request.setAttribute("totalPaginas", totalPaginas);
+    request.setAttribute("totalRegistros", totalRegistros);
+    request.setAttribute("registroInicio", totalRegistros == 0 ? 0 : indiceInicio + 1);
+    request.setAttribute("registroFin", indiceFin);
+
+    return sublista;
+  }
+
+  private String filtroEstado(HttpServletRequest request) {
+    String estado = request.getParameter("estado");
+
+    if (!"Pendiente".equals(estado)
+      && !"Activo".equals(estado)
+      && !"Suspendido".equals(estado)
+      && !"Cancelado".equals(estado)) {
+
+      return "";
+    }
+
+    return estado;
   }
 
   private int parseId(String valor) {
