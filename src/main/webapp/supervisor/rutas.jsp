@@ -1,119 +1,60 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.List" %>
 <%@ page import="beans.capacityplanner.Ruta" %>
 <%@ page import="beans.capacityplanner.Segmento" %>
-<%@ page import="beans.capacityplanner.LandingStation" %>
 <%!
   private String texto(String valor) {
-    return valor == null ? "" : valor.replace("&", "&amp;")
-      .replace("<", "&lt;").replace(">", "&gt;")
-      .replace("\"", "&quot;").replace("'", "&#39;");
+    if (valor == null) return "";
+
+    return valor.replace("&", "&amp;")
+      .replace("<", "&lt;")
+      .replace(">", "&gt;")
+      .replace("\"", "&quot;")
+      .replace("'", "&#39;");
   }
 %>
 <%
   String servlet = request.getContextPath() + "/RutaServletSuper";
 
-  ArrayList<Ruta> rutas =
-    (ArrayList<Ruta>) request.getAttribute("listaRutas");
-
-  ArrayList<LandingStation> estaciones =
-    (ArrayList<LandingStation>) request.getAttribute("listaEstaciones");
-
-  ArrayList<Segmento> segmentos =
-    (ArrayList<Segmento>) request.getAttribute("listaSegmentos");
-
-  // Si se abre el JSP directamente, pasar primero por el servlet
-  if (rutas == null || estaciones == null || segmentos == null) {
+  List<Ruta> rutas = (List<Ruta>) request.getAttribute("listaRutas");
+  if (rutas == null) {
     response.sendRedirect(servlet);
     return;
   }
 
-  String error = (String) request.getAttribute("error");
-  if (error == null) {
-    error = "";
-  }
-
-  String filtro = request.getParameter("filtro");
+  String filtro = (String) request.getAttribute("filtroEstado");
   if (!"activa".equals(filtro) && !"inactiva".equals(filtro)) {
     filtro = "Todas";
   }
 
-  int cantidad = 0;
-  Ruta rutaDetalle = null;
-  Ruta rutaFormulario = null;
+  int pagina = request.getAttribute("paginaActual") != null
+    ? (Integer) request.getAttribute("paginaActual") : 1;
+  int totalPaginas = request.getAttribute("totalPaginas") != null
+    ? (Integer) request.getAttribute("totalPaginas") : 1;
+  int cantidad = request.getAttribute("totalRegistros") != null
+    ? (Integer) request.getAttribute("totalRegistros") : rutas.size();
+  int registroInicio = request.getAttribute("registroInicio") != null
+    ? (Integer) request.getAttribute("registroInicio") : (rutas.isEmpty() ? 0 : 1);
+  int registroFin = request.getAttribute("registroFin") != null
+    ? (Integer) request.getAttribute("registroFin") : rutas.size();
 
-  boolean formulario = "nuevo".equals(request.getParameter("ventana"));
-
-  for (Ruta ruta : rutas) {
-    if ("Todas".equals(filtro) || filtro.equals(ruta.getEstado())) {
-      cantidad++;
-    }
-
-    String idRuta = String.valueOf(ruta.getIdRuta());
-
-    if (idRuta.equals(request.getParameter("detalle"))) {
-      rutaDetalle = ruta;
-    }
-
-    if (idRuta.equals(request.getParameter("editar"))) {
-      rutaFormulario = ruta;
-      formulario = true;
-    }
-  }
-
-  // Recuperar los datos enviados si hubo un error al guardar
-  Ruta datosEnviados =
-    (Ruta) request.getAttribute("rutaFormulario");
-
-  if (datosEnviados != null) {
-    rutaFormulario = datosEnviados;
-    formulario = true;
-  }
-
-  boolean esEdicion =
-    rutaFormulario != null && rutaFormulario.getIdRuta() > 0;
-
-  // ID, nombre, origen, destino, estado y códigos de segmentos
-  String[] valor = {"", "", "", "", "activa", ""};
-
-  if (rutaFormulario != null) {
-    valor[0] = esEdicion
-      ? String.valueOf(rutaFormulario.getIdRuta()) : "";
-    valor[1] = rutaFormulario.getNombre();
-    valor[2] = String.valueOf(rutaFormulario.getIdLandingOrigen());
-    valor[3] = String.valueOf(rutaFormulario.getIdLandingDestino());
-    valor[4] = rutaFormulario.getEstado();
-
-    for (Segmento segmento : rutaFormulario.getSegmentos()) {
-      if (!valor[5].isEmpty()) {
-        valor[5] += ", ";
-      }
-      valor[5] += segmento.getCodigo();
-    }
-  }
-
-  String codigosEnviados =
-    (String) request.getAttribute("segmentosFormulario");
-
-  if (codigosEnviados != null) {
-    valor[5] = codigosEnviados;
-  }
+  String urlPagina = servlet + "?filtro=" + filtro + "&pagina=";
+  String urlLista = urlPagina + pagina;
+  Ruta rutaDetalle = (Ruta) request.getAttribute("rutaDetalle");
 %>
-<!-- Contenido JSP -->
-
 <!doctype html>
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>OceanLink | Dashboard</title>
+  <title>OceanLink | Rutas</title>
 
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/capacity_planner/rutas.css">
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/barras.css">
+  <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/barras.css">
+  <link rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/supervisor/rutas.css">
 </head>
 
 <body>
@@ -135,24 +76,20 @@
 
         <!-- Dashboard -->
         <a href="${pageContext.request.contextPath}/DashboardServletSuper">
-            Dashboard general
+          Dashboard general
         </a>
 
         <!-- Incidencias -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
           <input
             type="checkbox"
             id="control-incidencias"
-            class="control-submenu"
-          >
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
+            class="control-submenu">
           <label for="control-incidencias"
                  class="titulo-grupo">
             <span>Incidencias</span>
             <span class="flecha-submenu"></span>
           </label>
-          <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
             <a href="${pageContext.request.contextPath}/IncidenciaServletSuper"
                class="subopcion">
@@ -168,23 +105,20 @@
 
         <!-- Estado de la red -->
         <div class="grupo-menu">
-          <!-- Controla la apertura del submenú -->
           <input
             type="checkbox"
             id="controlEstadoRed"
             class="control-submenu"
             checked>
 
-          <!-- Al hacer clic, marca o desmarca el checkbox -->
           <label for="controlEstadoRed"
                  class="titulo-grupo">
             <span class="texto-grupo">
-                Estado de la red
+              Estado de la red
             </span>
             <span class="flecha-submenu"></span>
           </label>
 
-          <!-- Opciones que aparecen al desplegar -->
           <div class="contenido-submenu">
             <a href="${pageContext.request.contextPath}/TarjetasServletSuper"
                class="subopcion">
@@ -210,18 +144,16 @@
           <input
             type="checkbox"
             id="control-servicios-clientes"
-            class="control-submenu"
-          >
+            class="control-submenu">
 
           <label for="control-servicios-clientes"
                  class="titulo-grupo">
             <span class="texto-grupo">
-                Servicios y clientes
+              Servicios y clientes
             </span>
             <span class="flecha-submenu"></span>
           </label>
           <div class="contenido-submenu">
-
             <a href="${pageContext.request.contextPath}/ClienteServletSuper"
                class="subopcion">
               Clientes
@@ -231,9 +163,8 @@
                class="subopcion">
               Servicios
             </a>
-            <a
-              href="${pageContext.request.contextPath}/SolicitudesServletSuper"
-              class="subopcion">
+            <a href="${pageContext.request.contextPath}/SolicitudesServletSuper"
+               class="subopcion">
               Solicitudes
             </a>
           </div>
@@ -241,27 +172,21 @@
 
         <!-- Mantenimientos -->
         <div class="grupo-menu">
-
           <input
             type="checkbox"
             id="control-mantenimientos"
-            class="control-submenu"
-          >
+            class="control-submenu">
 
           <label
             for="control-mantenimientos"
             class="titulo-grupo">
-
             <span class="texto-grupo">
-                Mantenimientos
+              Mantenimientos
             </span>
-
             <span class="flecha-submenu"></span>
-
           </label>
 
           <div class="contenido-submenu">
-
             <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=listar"
                class="subopcion">
               Programación
@@ -269,29 +194,29 @@
 
             <a href="${pageContext.request.contextPath}/MantenimientoServletSuper?accion=historial"
                class="subopcion">
-              Historial de mantenimientos
+              Historial de programados
             </a>
           </div>
         </div>
 
         <!-- Reportes -->
         <a href="${pageContext.request.contextPath}/ReporteServletSuper">
-            Reportes
+          Reportes
         </a>
         <!-- Históricos -->
         <a href="${pageContext.request.contextPath}/HistoricoServletSuper">
-            Históricos
+          Históricos
         </a>
       </nav>
     </div>
-    <!-- parte baja -->
+
     <div class="configuracion">
       <nav aria-label="Opciones del usuario">
-          <a href="${pageContext.request.contextPath}/PerfilServlet">Perfil</a>
-          <a href="${pageContext.request.contextPath}/LogoutServlet"
-             class="cerrar-sesion">
-              Cerrar sesión
-          </a>
+        <a href="${pageContext.request.contextPath}/PerfilServlet">Perfil</a>
+        <a href="${pageContext.request.contextPath}/LogoutServlet"
+           class="cerrar-sesion">
+          Cerrar sesión
+        </a>
       </nav>
     </div>
   </aside>
@@ -300,41 +225,23 @@
   <main class="contenido-principal pagina-rutas">
     <section class="encabezado-pagina">
       <div class="encabezado-panel">
-        <h2>Capacity Planner</h2>
+        <h2>Supervisor</h2>
         <h1>Rutas</h1>
       </div>
     </section>
-
-    <% if ("1".equals(request.getParameter("guardado"))) { %>
-    <p class="mensaje-exito">Ruta guardada.</p>
-    <% } %>
-
-    <% if ("1".equals(request.getParameter("eliminado"))) { %>
-    <p class="mensaje-exito">Ruta eliminada.</p>
-    <% } %>
-
-    <% if (!error.isEmpty() && !formulario) { %>
-    <p class="mensaje-error" role="alert"><%= texto(error) %></p>
-    <% } %>
 
     <section class="barra-herramientas">
       <form method="get" action="<%= servlet %>" class="formulario-filtro">
         <label for="filtro">Estado:</label>
         <select id="filtro" name="filtro">
-          <option value="Todas"
-            <%= "Todas".equals(filtro) ? "selected" : "" %>>
-            Todas
-          </option>
-          <option value="activa"
-            <%= "activa".equals(filtro) ? "selected" : "" %>>
-            Activa
-          </option>
-          <option value="inactiva"
-            <%= "inactiva".equals(filtro) ? "selected" : "" %>>
-            Inactiva
-          </option>
+          <option value="Todas" <%= "Todas".equals(filtro) ? "selected" : "" %>>Todas</option>
+          <option value="activa" <%= "activa".equals(filtro) ? "selected" : "" %>>Activa</option>
+          <option value="inactiva" <%= "inactiva".equals(filtro) ? "selected" : "" %>>Inactiva</option>
         </select>
         <button class="boton secundario" type="submit">Filtrar</button>
+        <% if (!"Todas".equals(filtro)) { %>
+        <a href="<%= servlet %>" class="boton secundario">Limpiar</a>
+        <% } %>
       </form>
       <span><%= cantidad %> rutas</span>
     </section>
@@ -354,12 +261,13 @@
         </thead>
         <tbody>
         <% for (Ruta ruta : rutas) {
-          if ("Todas".equals(filtro)
-            || filtro.equals(ruta.getEstado())) { %>
-        <tr>
+          boolean esSeleccionada = rutaDetalle != null
+            && rutaDetalle.getIdRuta() == ruta.getIdRuta();
+        %>
+        <tr class="<%= esSeleccionada ? "fila-seleccionada" : "" %>">
           <td>
             <a class="enlace-ruta"
-               href="<%= servlet %>?detalle=<%= ruta.getIdRuta() %>">
+               href="<%= urlLista %>&detalle=<%= ruta.getIdRuta() %>#detalle-ruta">
               RUT-<%= ruta.getIdRuta() %>
             </a>
           </td>
@@ -367,39 +275,69 @@
           <td><%= texto(ruta.getNombreOrigen()) %></td>
           <td><%= texto(ruta.getNombreDestino()) %></td>
           <td><%= ruta.getSegmentos().size() %></td>
-          <td><%= ruta.getCapacidadDisponible() %> Gbps</td>
+          <td class="disponible-destacado"><%= ruta.getCapacidadDisponible() %> Gbps</td>
           <td>
-                            <span class="estado <%= texto(ruta.getEstado()) %>">
-                                <%= "activa".equals(ruta.getEstado())
-                                  ? "Activa" : "Inactiva" %>
-                            </span>
+              <span class="estado <%= texto(ruta.getEstado()) %>">
+                <%= "activa".equals(ruta.getEstado()) ? "Activa" : "Inactiva" %>
+              </span>
           </td>
         </tr>
-        <%  }
-        } %>
+        <% } %>
 
-        <% if (cantidad == 0) { %>
+        <% if (rutas.isEmpty()) { %>
         <tr>
-          <td colspan="7">No hay rutas con este estado.</td>
+          <td colspan="7" class="celda-vacia">No hay rutas con este estado.</td>
         </tr>
         <% } %>
         </tbody>
       </table>
     </section>
 
+    <div class="pie-tabla">
+      <span>
+        <% if (cantidad > 0) { %>
+          Mostrando <%= registroInicio %>–<%= registroFin %> de <%= cantidad %> registros (Página <%= pagina %> de <%= totalPaginas %>) · Haz clic en el ID para ver los segmentos de la ruta.
+        <% } else { %>
+          Haz clic en el ID para ver los segmentos de la ruta.
+        <% } %>
+      </span>
+
+      <% if (totalPaginas > 1) { %>
+      <div class="controles-paginacion">
+        <% if (pagina > 1) { %>
+        <a class="boton secundario" href="<%= urlPagina %><%= pagina - 1 %>">Anterior</a>
+        <% } else { %>
+        <span class="pagina-deshabilitada">Anterior</span>
+        <% } %>
+
+        <% for (int numero = 1; numero <= totalPaginas; numero++) { %>
+        <% if (numero == pagina) { %>
+        <span class="boton primario" aria-current="page"><%= numero %></span>
+        <% } else { %>
+        <a class="boton secundario" href="<%= urlPagina %><%= numero %>"><%= numero %></a>
+        <% } %>
+        <% } %>
+
+        <% if (pagina < totalPaginas) { %>
+        <a class="boton secundario" href="<%= urlPagina %><%= pagina + 1 %>">Siguiente</a>
+        <% } else { %>
+        <span class="pagina-deshabilitada">Siguiente</span>
+        <% } %>
+      </div>
+      <% } %>
+    </div>
+
     <% if (rutaDetalle != null) {
       int orden = 1;
     %>
-    <section class="panel-detalle">
+    <section id="detalle-ruta" class="panel-detalle">
       <div class="encabezado-detalle">
         <h2><%= texto(rutaDetalle.getNombre()) %></h2>
-        <a href="<%= servlet %>" aria-label="Cerrar detalle">&times;</a>
+        <a href="<%= urlLista %>" aria-label="Cerrar detalle">×</a>
       </div>
 
       <p class="resumen-ruta">
-        <%= texto(rutaDetalle.getNombreOrigen()) %>
-        →
-        <%= texto(rutaDetalle.getNombreDestino()) %>
+        <%= texto(rutaDetalle.getNombreOrigen()) %> → <%= texto(rutaDetalle.getNombreDestino()) %>
       </p>
 
       <h3>Segmentos de la ruta</h3>
@@ -430,7 +368,7 @@
 
           <% if (rutaDetalle.getSegmentos().isEmpty()) { %>
           <tr>
-            <td colspan="6">Esta ruta no tiene segmentos.</td>
+            <td colspan="6" class="celda-vacia">Esta ruta no tiene segmentos.</td>
           </tr>
           <% } %>
           </tbody>
@@ -438,10 +376,8 @@
       </div>
 
       <p class="ayuda">
-        Disponible = menor valor de (total − ocupada − reservada)
-        entre los segmentos.
+        Disponible = menor valor de (total − ocupada − reservada) entre los segmentos.
       </p>
-
     </section>
     <% } %>
   </main>

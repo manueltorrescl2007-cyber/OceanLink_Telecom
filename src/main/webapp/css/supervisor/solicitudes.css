@@ -1,7 +1,3 @@
-/* SOLICITUDES: filtros, tabla, detalles y formularios.
-   Cargar barras.css después de este archivo. */
-
-/* Colores propios de Clientes; los demás están en barras.css */
 :root {
   --color-rojo: #d64545;
   --color-verde: #2fa36b;
@@ -38,9 +34,11 @@
 
 /* Botones */
 .boton {
+  display: inline-block;
   padding: 11px 17px;
   font-family: var(--fuente-principal), sans-serif;
   font-size: 13px;
+  text-decoration: none;
   border-radius: 7px;
   cursor: pointer;
 }
@@ -80,12 +78,16 @@
 
 .formulario-filtro select {
   min-width: 150px;
-  padding: 10px 12px;
+  padding: 10px 36px 10px 12px;
   color: var(--color-texto);
   background-color: white;
   border: 1px solid var(--color-borde);
   border-radius: 7px;
   outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1L6 6L11 1' fill='none' stroke='%231e293b' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
 }
 
 .cantidad-solicitudes {
@@ -110,21 +112,25 @@
 .tabla-solicitudes {
   width: 100%;
   min-width: 1000px;
+  table-layout: fixed;
   border-collapse: collapse;
 }
 
 .tabla-solicitudes th {
+  width: 16.666%;
   padding: 17px 18px;
   color: var(--color-texto-claro);
   font-size: 13px;
-  text-align: left;
+  text-align: center;
   background-color: #edf3f7;
   border-bottom: 1px solid var(--color-borde);
 }
 
 .tabla-solicitudes td {
+  width: 16.666%;
   padding: 15px 18px;
   font-size: 14px;
+  text-align: center;
   border-bottom: 1px solid var(--color-borde);
 }
 
@@ -132,82 +138,57 @@
   border-bottom: none;
 }
 
-.tabla-solicitudes tbody tr:hover {
-  background-color: #f9fbfc;
+.fila-solicitud {
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.fila-solicitud:hover {
+  background-color: #f0f8fa;
+}
+
+.fila-seleccionada {
+  background-color: #e1f2f5 !important;
+  box-shadow: inset 4px 0 0 var(--color-acento);
+}
+
+.fila-seleccionada .id-solicitud {
+  color: var(--color-acento);
 }
 
 .id-solicitud {
   color: var(--color-primario);
   font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+}
+
+.id-solicitud:hover {
+  text-decoration: underline;
 }
 
 /* Estados */
-.formulario-estado {
-  margin: 0;
-}
-
-.selector-estado {
-  min-width: 125px;
-  padding: 7px 12px;
-  color: white;
+.etiqueta-estado {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 14px;
+  font-size: 12px;
   font-weight: bold;
-  border: none;
-  border-radius: 17px;
-  outline: none;
-  cursor: pointer;
 }
 
-.selector-estado.pendiente {
-  color: var(--color-texto);
-  background-color: var(--color-amarillo);
+.etiqueta-estado.pendiente {
+  color: #6b4700;
+  background-color: #fff0bd;
 }
 
-.selector-estado.aprobado {
+.etiqueta-estado.aprobada {
+  color: white;
   background-color: var(--color-verde);
 }
 
-.selector-estado.desaprobado {
+.etiqueta-estado.rechazada {
+  color: white;
   background-color: var(--color-rojo);
-}
-
-/* Las opciones permanecen blancas */
-.selector-estado option {
-  color: var(--color-texto);
-  font-weight: normal;
-  background-color: white;
-}
-
-/* Acciones */
-.acciones-tabla {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-}
-
-.acciones-tabla form {
-  margin: 0;
-}
-
-.accion {
-  padding: 0;
-  font-family: var(--fuente-principal), sans-serif;
-  font-size: 12px;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.accion.ver {
-  color: var(--color-primario);
-  font-weight: bold;
-}
-
-.accion.editar {
-  color: var(--color-acento);
-}
-
-.accion.eliminar {
-  color: var(--color-rojo);
 }
 
 .sin-resultados {
@@ -247,6 +228,7 @@
 .cerrar-detalle {
   color: var(--color-texto-claro);
   font-size: 27px;
+  text-decoration: none;
 }
 
 .cuadricula-detalle {
@@ -284,119 +266,54 @@
   line-height: 1.5;
 }
 
-.estado-detalle.pendiente {
-  color: #b7790a;
+.enlace-detalle-relacionado {
+  color: #1c8c9c;
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.estado-detalle.aprobado {
-  color: var(--color-verde);
+.enlace-detalle-relacionado:hover {
+  color: #0b3d5c;
+  text-decoration: underline;
 }
 
-.estado-detalle.desaprobado {
-  color: var(--color-rojo);
+.aviso-solicitud {
+  margin-top: 15px;
+  color: var(--color-texto-claro);
+  font-size: 13px;
+  text-align: center;
 }
 
-/* Editar */
-.editar-solicitud {
-  margin-top: 20px;
+/* Paginación */
+.pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0 24px;
 }
 
-.editar-solicitud summary {
-  color: var(--color-acento);
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
+.pagination-info {
+  color: var(--color-texto-claro, #64748b);
+  font-size: 13px;
 }
 
-/* Modal */
-.modal[popover] {
-  width: min(650px, calc(100% - 40px));
-  max-height: calc(100vh - 40px);
-  margin: auto;
-  padding: 25px;
-  overflow-y: auto;
-  background-color: white;
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 18px 40px rgba(11, 61, 92, 0.27);
-}
-
-.modal[popover]::backdrop {
-  background-color: rgba(15, 23, 42, 0.56);
-}
-
-.encabezado-modal {
+.pagination-links {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.encabezado-modal h2 {
-  color: var(--color-primario);
-  font-size: 20px;
-}
-
-.cerrar-modal {
-  color: var(--color-texto-claro);
-  font-size: 28px;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-/* Formulario */
-.formulario-solicitud {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 17px;
-  margin-top: 18px;
-}
-
-.formulario-solicitud label {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  color: var(--color-primario);
+.pagination-links .boton {
+  padding: 6px 12px;
   font-size: 13px;
-  font-weight: bold;
 }
 
-.formulario-solicitud input,
-.formulario-solicitud select,
-.formulario-solicitud textarea {
-  width: 100%;
-  padding: 10px 12px;
-  color: var(--color-texto);
-  font-family: var(--fuente-principal), sans-serif;
-  font-size: 13px;
-  background-color: white;
-  border: 1px solid var(--color-borde);
-  border-radius: 6px;
-  outline: none;
-}
-
-.formulario-solicitud textarea {
-  min-height: 95px;
-  resize: vertical;
-}
-
-.formulario-solicitud input:focus,
-.formulario-solicitud select:focus,
-.formulario-solicitud textarea:focus {
-  border-color: var(--color-acento);
-  box-shadow: 0 0 0 3px rgba(28, 140, 156, 0.12);
-}
-
-.ancho-completo {
-  grid-column: 1 / -1;
-}
-
-.botones-formulario {
-  display: flex;
-  flex-direction: row !important;
-  justify-content: flex-end;
-  gap: 12px;
+.pagination-links [aria-current="page"] {
+  cursor: default;
+  pointer-events: none;
 }
 
 @media (max-width: 900px) {
@@ -416,186 +333,11 @@
     flex-direction: column;
   }
 
-  .formulario-solicitud,
+  .formulario-filtro {
+    flex-wrap: wrap;
+  }
+
   .cuadricula-detalle {
     grid-template-columns: 1fr;
   }
-
-  .ancho-completo {
-    grid-column: auto;
-  }
-}
-
-/* Filas seleccionables */
-.fila-solicitud {
-  cursor: pointer;
-  transition:
-    background-color 0.2s,
-    box-shadow 0.2s;
-}
-
-.fila-solicitud:hover {
-  background-color: #f0f8fa;
-}
-
-.fila-seleccionada {
-  background-color: #e1f2f5 !important;
-  box-shadow: inset 4px 0 0 var(--color-acento);
-}
-
-.fila-seleccionada .id-solicitud {
-  color: var(--color-acento);
-}
-
-/* Acciones dentro del detalle */
-.acciones-detalle {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 25px;
-  margin-top: 22px;
-  padding-top: 20px;
-  border-top: 1px solid var(--color-borde);
-}
-
-.editar-solicitud {
-  flex: 1;
-  margin-top: 0;
-}
-
-.editar-solicitud summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--color-acento);
-  font-size: 14px;
-  font-weight: bold;
-  list-style: none;
-  cursor: pointer;
-}
-
-.editar-solicitud summary::-webkit-details-marker {
-  display: none;
-}
-
-.editar-solicitud summary::before {
-  content: "▶";
-  font-size: 11px;
-  transition: transform 0.2s;
-}
-
-.editar-solicitud[open] summary::before {
-  transform: rotate(90deg);
-}
-
-.formulario-eliminar {
-  margin: 0;
-}
-
-.boton-eliminar-solicitud {
-  padding: 10px 16px;
-  color: var(--color-rojo);
-  font-family: var(--fuente-principal), sans-serif;
-  font-size: 13px;
-  background-color: white;
-  border: 1px solid var(--color-rojo);
-  border-radius: 7px;
-  cursor: pointer;
-}
-
-.boton-eliminar-solicitud:hover {
-  color: white;
-  background-color: var(--color-rojo);
-}
-
-/* Ocultar estilos antiguos de acciones de tabla */
-.acciones-tabla {
-  display: none;
-}
-
-@media (max-width: 700px) {
-  .acciones-detalle {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .boton-eliminar-solicitud {
-    width: 100%;
-  }
-}
-
-/* Distribuir las seis columnas uniformemente */
-.tabla-solicitudes {
-  width: 100%;
-  table-layout: fixed;
-}
-
-.tabla-solicitudes th,
-.tabla-solicitudes td {
-  width: 16.666%;
-  text-align: center;
-}
-
-/* Centrar el selector dentro de Estado */
-.formulario-estado {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-/* Mantener el ID resaltado */
-.id-solicitud {
-  text-align: center;
-}
-
-/* Estados del SQL: amarillo para revisión, verde para aprobadas y rojo para rechazo. */
-.etiqueta-estado { display: inline-block; padding: 6px 10px; border-radius: 14px; font-size: 12px; }
-.etiqueta-estado.pendiente { color: #6b4700; background-color: #fff0bd; }
-.etiqueta-estado.aprobada { color: white; background-color: var(--color-verde); }
-.etiqueta-estado.rechazada { color: white; background-color: var(--color-rojo); }
-/* Mensajes de prueba y de validación. */
-.aviso-prueba { margin: 15px 0; color: var(--color-texto-claro); font-size: 13px; }
-.mensaje-error { padding: 12px; margin-bottom: 15px; color: #8a2929; background-color: #fdeaea; border-radius: 6px; }
-.cambio-estado { margin-top: 20px; flex-wrap: wrap; }
-.id-solicitud:hover { text-decoration: underline; }
-/* Centra la flecha de las listas y deja espacio a la derecha. */
-.formulario-solicitud select, .formulario-filtro select {
-  appearance: none;
-  padding-right: 36px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1L6 6L11 1' fill='none' stroke='%231e293b' stroke-width='2'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-}
-@media (max-width: 700px) { .formulario-filtro { flex-wrap: wrap; } }
-
-/* Botón Nueva solicitud: misma posición y estilo que Nuevo servicio. */
-#encabezadoSolicitudes {
-  align-items: center;
-}
-
-#botonNuevaSolicitud {
-  display: inline-block;
-  width: auto;
-  min-width: 0;
-  height: auto;
-  min-height: 0;
-  margin: 0;
-  padding: 10px 16px;
-  color: white;
-  background-color: #1c8c9c;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  font: inherit;
-  font-size: 14px;
-  line-height: normal;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
-}
-
-#botonNuevaSolicitud:hover {
-  background-color: #1c8c9c;
-  border-color: transparent;
-  transform: translateY(-2px);
 }

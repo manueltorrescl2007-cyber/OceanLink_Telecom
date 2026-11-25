@@ -1,5 +1,5 @@
-/* 1. ENCABEZADO: título y botón Nuevo segmento.
-Las barras, colores generales y fuente están en barras.css. */
+/* Vista de Segmentos - Rol Supervisor (Solo Lectura) */
+/* 1. ENCABEZADO */
 .pagina-segmentos .encabezado-pagina {
   display: flex;
   align-items: center;
@@ -7,12 +7,13 @@ Las barras, colores generales y fuente están en barras.css. */
   gap: 20px;
   margin-bottom: 24px;
 }
+
 .pagina-segmentos .encabezado-panel {
   margin-bottom: 0;
 }
 
-/* 2. BOTONES: estilos comunes de las acciones de Segmentos. */
-.pagina-segmentos .boton, .modal .boton {
+/* 2. BOTONES */
+.pagina-segmentos .boton {
   display: inline-block;
   padding: 10px 16px;
   border: 1px solid transparent;
@@ -21,40 +22,45 @@ Las barras, colores generales y fuente están en barras.css. */
   font-size: 14px;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color .2s ease, transform .2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
-.primario {
+
+.pagina-segmentos .primario {
   color: white;
   background: #1c8c9c;
 }
-.secundario {
+
+.pagina-segmentos .secundario {
   color: #0b3d5c;
   background: #e8edf2;
 }
-.peligro {
-  color: white;
-  background: #d64545;
-}
-.boton:not(:disabled):hover {
-  transform: translateY(-2px);
-}
-.boton:disabled {
-  opacity: .55;
-  cursor: default;
+
+.pagina-segmentos .boton:hover {
+  transform: translateY(-1px);
 }
 
-/* 3. FILTRO: selección de estado y cantidad de registros. */
-.barra-herramientas, .formulario-filtro {
+/* 3. BARRA DE HERRAMIENTAS Y FILTROS */
+.pagina-segmentos .barra-herramientas,
+.pagina-segmentos .formulario-filtro {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
 }
-.barra-herramientas {
+
+.pagina-segmentos .barra-herramientas {
   justify-content: space-between;
   margin-bottom: 18px;
   font-size: 14px;
+  color: #1e293b;
 }
-.pagina-segmentos select, .modal select, .modal input {
+
+.pagina-segmentos .contador-registros {
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.pagina-segmentos select {
   padding: 10px 12px;
   border: 1px solid #d9e1e8;
   border-radius: 6px;
@@ -64,204 +70,314 @@ Las barras, colores generales y fuente están en barras.css. */
   font-size: 14px;
 }
 
-/* 4. TABLA: permite desplazarse si la pantalla es pequeña. */
-.contenedor-tabla {
+.pagina-segmentos select:focus {
+  outline: none;
+  border-color: #1c8c9c;
+}
+
+/* 4. TABLA */
+.pagina-segmentos .contenedor-tabla {
   overflow-x: auto;
   border: 1px solid #d9e1e8;
   border-radius: 9px;
   background: white;
 }
+
 .pagina-segmentos table {
   width: 100%;
-  min-width: 850px;
+  min-width: 960px;
   border-collapse: collapse;
   font-size: 14px;
 }
-.pagina-segmentos th, .pagina-segmentos td {
+
+.pagina-segmentos th,
+.pagina-segmentos td {
   padding: 18px 14px;
   text-align: left;
   border-bottom: 1px solid #e8edf2;
+  vertical-align: middle;
 }
+
 .pagina-segmentos th {
   background: #edf4f7;
   color: #0b3d5c;
+  font-weight: bold;
+  white-space: nowrap;
 }
+
 .pagina-segmentos tbody tr {
-  transition: background-color .2s ease;
+  transition: background-color 0.2s ease;
 }
+
 .pagina-segmentos tbody tr:hover {
   background: #f0f7f9;
 }
+
 .pagina-segmentos tbody tr:last-child td {
   border-bottom: 0;
 }
-.enlace-segmento {
-  color: #1c8c9c;
-  font-weight: bold;
+
+.pagina-segmentos .fila-seleccionada {
+  background: #f0f7f9;
 }
 
-/* 5. ESTADOS: los mismos cuatro nombres del SQL. */
-.estado {
+.pagina-segmentos .enlace-segmento {
+  color: #1c8c9c;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.pagina-segmentos .enlace-segmento:hover {
+  text-decoration: underline;
+}
+
+.pagina-segmentos .disponible-destacado {
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.pagina-segmentos .celda-vacia {
+  text-align: center;
+  padding: 22px;
+  color: #64748b;
+}
+
+/* 5. BADGES DE ESTADO Y NIVEL */
+.pagina-segmentos .estado {
   display: inline-block;
   padding: 6px 10px;
   border-radius: 20px;
   font-size: 12px;
   white-space: nowrap;
 }
-.estado.operativo {
+
+.pagina-segmentos .estado.operativo,
+.pagina-segmentos .estado.normal {
   color: #237b51;
   background: #e4f4eb;
 }
-.estado.degradado {
+
+.pagina-segmentos .estado.degradado,
+.pagina-segmentos .estado.alta {
   color: #926813;
   background: #fff4d8;
 }
-.estado.mantenimiento {
+
+.pagina-segmentos .estado.mantenimiento {
   color: #7852a0;
   background: #efe7f7;
 }
-.estado.fuera {
+
+.pagina-segmentos .estado.fuera,
+.pagina-segmentos .estado.critica {
   color: #b43838;
   background: #fbe7e7;
 }
 
-/* 6. DETALLE: información del segmento seleccionado. */
-.panel-detalle {
+/* 6. BARRA DE UTILIZACIÓN EN TABLA Y DETALLE */
+.pagina-segmentos .celda-uso {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+}
+
+.pagina-segmentos .fila-uso-texto {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.pagina-segmentos .fila-uso-texto .estado {
+  padding: 3px 9px;
+  font-size: 11px;
+}
+
+.pagina-segmentos .barra-uso {
+  width: 100%;
+  height: 7px;
+  border: none;
+  border-radius: 999px;
+  background: #e8edf2;
+  overflow: hidden;
+  appearance: none;
+}
+
+.pagina-segmentos .barra-uso::-webkit-progress-bar {
+  background: #e8edf2;
+  border-radius: 999px;
+}
+
+.pagina-segmentos .uso-normal::-webkit-progress-value { background: #237b51; border-radius: 999px; }
+.pagina-segmentos .uso-normal::-moz-progress-bar { background: #237b51; border-radius: 999px; }
+
+.pagina-segmentos .uso-alta::-webkit-progress-value { background: #d97706; border-radius: 999px; }
+.pagina-segmentos .uso-alta::-moz-progress-bar { background: #d97706; border-radius: 999px; }
+
+.pagina-segmentos .uso-critica::-webkit-progress-value { background: #b43838; border-radius: 999px; }
+.pagina-segmentos .uso-critica::-moz-progress-bar { background: #b43838; border-radius: 999px; }
+
+/* 7. PAGINACIÓN Y TEXTO DE AYUDA */
+.pagina-segmentos .pie-tabla {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.pagina-segmentos .controles-paginacion {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pagina-segmentos .controles-paginacion .boton {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.pagina-segmentos .pagina-deshabilitada {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  color: #94a3b8;
+  background: #f1f5f9;
+}
+
+/* 8. PANEL DE DETALLE INFERIOR */
+.pagina-segmentos .panel-detalle {
   margin-top: 24px;
   padding: 24px;
   border: 1px solid #d9e1e8;
   border-radius: 9px;
   background: white;
 }
-.encabezado-detalle {
+
+.pagina-segmentos .encabezado-detalle {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 22px;
 }
-.encabezado-detalle h2 {
+
+.pagina-segmentos .encabezado-detalle h2 {
   font-size: 20px;
   color: #0b3d5c;
+  margin-bottom: 4px;
 }
-.encabezado-detalle a {
+
+.pagina-segmentos .encabezado-detalle p {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.pagina-segmentos .encabezado-detalle .cerrar-detalle {
   font-size: 28px;
+  line-height: 1;
   color: #64748b;
   text-decoration: none;
 }
-.datos-detalle {
+
+.pagina-segmentos .encabezado-detalle .cerrar-detalle:hover {
+  color: #0b3d5c;
+}
+
+.pagina-segmentos .datos-detalle {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
 }
-.datos-detalle span {
+
+.pagina-segmentos .datos-detalle span {
   display: block;
   margin-bottom: 7px;
   color: #64748b;
   font-size: 12px;
 }
-.datos-detalle strong {
+
+.pagina-segmentos .datos-detalle strong {
   font-size: 14px;
-}
-.acciones {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 24px;
+  color: #1e293b;
 }
 
-/* 7. MODAL: formulario que aparece al pulsar Nuevo segmento. */
-.modal {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
+.pagina-segmentos .utilizacion-detalle {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #e8edf2;
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pagina-segmentos .fila-utilizacion-detalle {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  padding: 24px;
-  overflow-y: auto;
-  background: rgba(15, 23, 42, .45);
-}
-.contenido-modal {
-  width: 100%;
-  max-width: 520px;
-  max-height: 100%;
-  overflow-y: auto;
-  padding: 26px;
-  border-radius: 12px;
-  background: white;
-}
-.grupo-formulario {
-  margin-bottom: 18px;
-}
-.grupo-formulario label {
-  display: block;
-  margin-bottom: 7px;
-  font-size: 14px;
-}
-.grupo-formulario select, .grupo-formulario input {
-  width: 100%;
-}
-.ayuda {
-  color: #64748b;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 13px;
+  color: #0b3d5c;
 }
 
-/* 8. PANTALLAS PEQUEÑAS: acomoda el encabezado, filtro y detalle. */
+/* 9. HISTORIAL DENTRO DEL PANEL DE DETALLE */
+.pagina-segmentos .historial-segmento {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e8edf2;
+}
+
+.pagina-segmentos .historial-segmento h3 {
+  font-size: 16px;
+  color: #0b3d5c;
+  margin-bottom: 14px;
+}
+
+.pagina-segmentos .historial-segmento .contenedor-tabla table {
+  min-width: 680px;
+}
+
+.pagina-segmentos .historial-segmento th,
+.pagina-segmentos .historial-segmento td {
+  padding: 13px 14px;
+  font-size: 13px;
+}
+
+.pagina-segmentos .badge-origen {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #0b3d5c;
+  background: #edf4f7;
+}
+
+/* 10. RESPONSIVO */
 @media (max-width: 900px) {
-  .datos-detalle {
+  .pagina-segmentos .datos-detalle {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
 @media (max-width: 700px) {
-  .pagina-segmentos .encabezado-pagina, .barra-herramientas {
+  .pagina-segmentos .encabezado-pagina,
+  .pagina-segmentos .barra-herramientas {
     align-items: flex-start;
     flex-direction: column;
   }
-  .formulario-filtro {
-    flex-wrap: wrap;
-  }
-  .datos-detalle {
+
+  .pagina-segmentos .datos-detalle {
     grid-template-columns: 1fr;
   }
-  .panel-detalle {
+
+  .pagina-segmentos .panel-detalle {
     padding: 18px;
   }
-}
-
-/* 9. ERROR: muestra una validación del formulario de prueba. */
-.mensaje-error {
-  margin-bottom: 16px;
-  padding: 12px;
-  color: #b43838;
-  background: #fbe7e7;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-/* 10. CABECERA: permanece alineada aunque haya muchos segmentos. */
-body.vista-segmentos {
-  height: 100vh;
-  overflow: hidden;
-}
-.vista-segmentos .contenedor {
-  height: calc(100vh - 58px);
-  min-height: 0;
-}
-.vista-segmentos .contenido-principal {
-  height: 100%;
-  min-height: 0;
-  overflow-y: auto;
-}
-.pagina-segmentos .ayuda {
-  margin-top: 16px;
-}
-.mensaje-exito {
-  margin-bottom: 16px;
-  padding: 12px;
-  color: #237b51;
-  background: #e4f4eb;
-  border-radius: 6px;
 }
