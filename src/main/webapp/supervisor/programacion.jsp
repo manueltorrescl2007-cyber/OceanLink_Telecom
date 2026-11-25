@@ -65,7 +65,7 @@
 
   DateTimeFormatter formatoFecha =
     DateTimeFormatter.ofPattern(
-      "dd/MM/yyyy",
+      "dd/MM/yyyy HH:mm",
       Locale.forLanguageTag("es-PE")
     );
 

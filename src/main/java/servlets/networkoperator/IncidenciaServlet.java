@@ -4,6 +4,7 @@ import beans.Usuario;
 import beans.networkoperator.Incidencia;
 import beans.networkoperator.Observacion;
 import beans.networkoperator.Segmento;
+import daos.manteinance.MantenimientoDao;
 import daos.networkoperator.IncidenciaDao;
 import daos.networkoperator.ObservacionDao;
 import daos.networkoperator.SegmentoDao;
@@ -31,6 +32,9 @@ public class IncidenciaServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String action = request.getParameter("action") == null ? "lista" : request.getParameter("action");
+
+        // Antes de mostrar, se actualizan los estados según los mantenimientos (por si cambió la fecha)
+        new MantenimientoDao().actualizarEstadosAutomaticamente();
 
         IncidenciaDao incidenciaDao = new IncidenciaDao();
         SegmentoDao segmentoDao = new SegmentoDao();
@@ -284,11 +288,11 @@ public class IncidenciaServlet extends HttpServlet {
         if (actual == null) {
             return null;
         }
+        // El Network Operator solo mueve el inicio y el final del flujo.
+        // En analisis -> Reparacion programada -> En reparacion -> Servicio restaurado
+        // lo cambia automáticamente el mantenimiento (MantenimientoDao.recalcularIncidencias).
         switch (actual) {
             case "Detectada":             return "En analisis";
-            case "En analisis":           return "Reparacion programada";
-            case "Reparacion programada": return "En reparacion";
-            case "En reparacion":         return "Servicio restaurado";
             case "Servicio restaurado":   return "Cerrada";
             default:                      return null;
         }

@@ -1,7 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="beans.maintenance.Mantenimiento" %>
 <%@ page import="java.util.Map" %>
-<%@ page import="java.time.LocalDate" %>
 
 <%!
   private String escaparHtml(String valor) {
@@ -29,15 +28,17 @@
 
   String error = (String) request.getAttribute("error");
   Mantenimiento previo = (Mantenimiento) request.getAttribute("mantenimiento");
-  String hoy = LocalDate.now().toString();
+  // Formato que usa el input datetime-local: 2026-11-25T10:05
+  java.time.format.DateTimeFormatter formatoInput = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+  String ahora = java.time.LocalDateTime.now().format(formatoInput);
 
   int segPrevio = previo != null ? previo.getIdSegmento() : 0;
   String tipoPrevio = previo != null && previo.getTipo() != null ? previo.getTipo() : "";
   String prioPrevia = previo != null && previo.getPrioridad() != null ? previo.getPrioridad() : "";
   String inicioPrevio = (previo != null && previo.getFechaInicio() != null)
-    ? previo.getFechaInicio().toLocalDate().toString() : "";
+    ? previo.getFechaInicio().format(formatoInput) : "";
   String finPrevio = (previo != null && previo.getFechaFin() != null)
-    ? previo.getFechaFin().toLocalDate().toString() : "";
+    ? previo.getFechaFin().format(formatoInput) : "";
   String descPrevia = (previo != null && previo.getDescripcionGeneral() != null)
     ? previo.getDescripcionGeneral() : "";
 %>
@@ -119,13 +120,13 @@
           </div>
 
           <div class="form-field">
-            <label for="fechaInicio">Fecha de inicio <span class="required">*</span></label>
-            <input type="date" id="fechaInicio" name="fechaInicio" min="<%= hoy %>" value="<%= inicioPrevio %>" required>
+            <label for="fechaInicio">Fecha y hora de inicio <span class="required">*</span></label>
+            <input type="datetime-local" id="fechaInicio" name="fechaInicio" min="<%= ahora %>" value="<%= inicioPrevio %>" required>
           </div>
 
           <div class="form-field">
-            <label for="fechaFin">Fecha de fin estimada <span class="required">*</span></label>
-            <input type="date" id="fechaFin" name="fechaFin" min="<%= hoy %>" value="<%= finPrevio %>" required>
+            <label for="fechaFin">Fecha y hora de fin estimada <span class="required">*</span></label>
+            <input type="datetime-local" id="fechaFin" name="fechaFin" min="<%= ahora %>" value="<%= finPrevio %>" required>
           </div>
 
           <div class="form-field">

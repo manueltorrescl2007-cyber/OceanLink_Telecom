@@ -4,7 +4,6 @@
 
 <%@ page import="beans.maintenance.Mantenimiento" %>
 <%@ page import="java.util.Map" %>
-<%@ page import="java.time.LocalDate" %>
 
 <%!
   private String escaparHtml(String valor) {
@@ -35,15 +34,17 @@
   }
 
   String error = (String) request.getAttribute("error");
-  String hoy = LocalDate.now().toString();
+  // Formato que usa el input datetime-local: 2026-11-25T10:05
+  java.time.format.DateTimeFormatter formatoInput = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+  String ahora = java.time.LocalDateTime.now().format(formatoInput);
 
   String fechaInicio = mantenimiento.getFechaInicio() == null
     ? ""
-    : mantenimiento.getFechaInicio().toLocalDate().toString();
+    : mantenimiento.getFechaInicio().format(formatoInput);
 
   String fechaFin = mantenimiento.getFechaFin() == null
     ? ""
-    : mantenimiento.getFechaFin().toLocalDate().toString();
+    : mantenimiento.getFechaFin().format(formatoInput);
 %>
 
 <!DOCTYPE html>
@@ -186,15 +187,15 @@
           <div class="form-field">
 
             <label for="fechaInicio">
-              Fecha de inicio
+              Fecha y hora de inicio
               <span class="required">*</span>
             </label>
 
             <input
-              type="date"
+              type="datetime-local"
               id="fechaInicio"
               name="fechaInicio"
-              min="<%= hoy %>"
+              min="<%= ahora %>"
               value="<%= fechaInicio %>"
               required>
 
@@ -205,15 +206,15 @@
           <div class="form-field">
 
             <label for="fechaFin">
-              Fecha de fin
+              Fecha y hora de fin
               <span class="required">*</span>
             </label>
 
             <input
-              type="date"
+              type="datetime-local"
               id="fechaFin"
               name="fechaFin"
-              min="<%= hoy %>"
+              min="<%= ahora %>"
               value="<%= fechaFin %>"
               required>
 

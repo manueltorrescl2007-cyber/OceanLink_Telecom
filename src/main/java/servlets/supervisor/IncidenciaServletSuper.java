@@ -1,6 +1,7 @@
 package servlets.supervisor;
 
 import beans.networkoperator.Incidencia;
+import daos.manteinance.MantenimientoDao;
 import daos.networkoperator.IncidenciaDao;
 import daos.networkoperator.ObservacionDao;
 import daos.networkoperator.SegmentoDao;
@@ -26,6 +27,9 @@ public class IncidenciaServletSuper extends HttpServlet {
     throws ServletException, IOException {
 
     String action = request.getParameter("action") == null ? "lista" : request.getParameter("action");
+
+    // Antes de mostrar, se actualizan los estados según los mantenimientos (por si cambió la fecha)
+    new MantenimientoDao().actualizarEstadosAutomaticamente();
 
     IncidenciaDao incidenciaDao = new IncidenciaDao();
     SegmentoDao segmentoDao = new SegmentoDao();

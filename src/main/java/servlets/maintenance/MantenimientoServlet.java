@@ -18,9 +18,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.List;
@@ -142,7 +142,7 @@ public class MantenimientoServlet extends HttpServlet {
         case "nuevo":
           request.setAttribute(
             "segmentos",
-            segmentoDao.listarSegmentos()
+            segmentoDao.listarSegmentosParaFormulario()
           );
 
           request.getRequestDispatcher(VISTA_NUEVO)
@@ -303,7 +303,7 @@ public class MantenimientoServlet extends HttpServlet {
     }
 
     request.setAttribute("mantenimiento", mantenimiento);
-    request.setAttribute("segmentos", segmentoDao.listarSegmentos());
+    request.setAttribute("segmentos", segmentoDao.listarSegmentosParaFormulario());
 
     request.getRequestDispatcher(VISTA_EDICION)
       .forward(request, response);
@@ -445,7 +445,7 @@ public class MantenimientoServlet extends HttpServlet {
 
     request.setAttribute("error", mensajeError);
     request.setAttribute("mantenimiento", borrador);
-    request.setAttribute("segmentos", segmentoDao.listarSegmentos());
+    request.setAttribute("segmentos", segmentoDao.listarSegmentosParaFormulario());
 
     request.getRequestDispatcher(vistaJsp)
       .forward(request, response);
@@ -470,7 +470,7 @@ public class MantenimientoServlet extends HttpServlet {
     try {
       String fIni = limpiarTextoOpcional(request.getParameter("fechaInicio"));
       if (fIni != null) {
-        m.setFechaInicio(LocalDate.parse(fIni).atStartOfDay());
+        m.setFechaInicio(LocalDateTime.parse(fIni));
       }
     } catch (DateTimeParseException ignored) {
     }
@@ -478,7 +478,7 @@ public class MantenimientoServlet extends HttpServlet {
     try {
       String fFin = limpiarTextoOpcional(request.getParameter("fechaFin"));
       if (fFin != null) {
-        m.setFechaFin(LocalDate.parse(fFin).atTime(23, 59, 59));
+        m.setFechaFin(LocalDateTime.parse(fFin));
       }
     } catch (DateTimeParseException ignored) {
     }
@@ -593,32 +593,42 @@ public class MantenimientoServlet extends HttpServlet {
       );
     }
 
-    LocalDate fechaInicio = LocalDate.parse(
-      obtenerParametro(request, "fechaInicio")
-    );
-
-    LocalDate fechaFin = LocalDate.parse(
-      obtenerParametro(request, "fechaFin")
-    );
-
-    if (fechaInicio.isBefore(LocalDate.now())) {
+    // Regla: un correctivo solo se programa en un segmento con una incidencia por reparar
+    // (En análisis, Reparación programada o En reparación). Los preventivos van en cualquier segmento.
+    if ("Correctivo".equals(tipo) && !segmentoDao.tieneIncidenciaPorReparar(idSegmento)) {
       throw new IllegalArgumentException(
-        "La fecha de inicio no puede ser anterior a la fecha actual."
+        "Un mantenimiento correctivo solo se puede programar en un segmento "
+          + "con una incidencia en análisis (marcados como \"incidencia por reparar\")."
       );
     }
 
-    if (fechaFin.isBefore(fechaInicio)) {
+    // Fecha y hora (input datetime-local), ej. "2026-11-25T10:05"
+    LocalDateTime inicio = LocalDateTime.parse(
+      obtenerParametro(request, "fechaInicio")
+    );
+
+    LocalDateTime fin = LocalDateTime.parse(
+      obtenerParametro(request, "fechaFin")
+    );
+
+    // Se compara por minutos: se puede programar desde el minuto actual
+    LocalDateTime ahora = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+
+    if (inicio.isBefore(ahora)) {
       throw new IllegalArgumentException(
-        "La fecha de fin no puede ser anterior a la de inicio."
+        "La fecha y hora de inicio no puede ser anterior a la actual."
+      );
+    }
+
+    if (!fin.isAfter(inicio)) {
+      throw new IllegalArgumentException(
+        "La fecha y hora de fin debe ser posterior a la de inicio."
       );
     }
 
     mantenimiento.setIdSegmento(idSegmento);
     mantenimiento.setTipo(tipo);
     mantenimiento.setPrioridad(prioridad);
-
-    LocalDateTime inicio = fechaInicio.atStartOfDay();
-    LocalDateTime fin = fechaFin.atTime(23, 59, 59);
 
     mantenimiento.setFechaInicio(inicio);
     mantenimiento.setFechaFin(fin);

@@ -69,7 +69,7 @@
 
   DateTimeFormatter formatoFecha =
     DateTimeFormatter.ofPattern(
-      "dd/MM/yyyy", Locale.forLanguageTag("es-PE")
+      "dd/MM/yyyy HH:mm", Locale.forLanguageTag("es-PE")
     );
 
   String[] estadosHistorial = {"Finalizado", "Cancelado"};

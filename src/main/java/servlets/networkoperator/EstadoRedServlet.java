@@ -3,6 +3,7 @@ package servlets.networkoperator;
 import beans.networkoperator.Incidencia;
 import beans.networkoperator.Segmento;
 import beans.networkoperator.UtilizacionDiaria;
+import daos.manteinance.MantenimientoDao;
 import daos.networkoperator.IncidenciaDao;
 import daos.networkoperator.SegmentoDao;
 import daos.networkoperator.ServicioDao;
@@ -33,6 +34,10 @@ public class EstadoRedServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String action = request.getParameter("action") == null ? "lista" : request.getParameter("action");
+
+        // Antes de mostrar, se actualizan los estados según los mantenimientos (por si cambió la fecha)
+        new MantenimientoDao().actualizarEstadosAutomaticamente();
+
         SegmentoDao segmentoDao = new SegmentoDao();
         RequestDispatcher view;
 

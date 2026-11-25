@@ -41,7 +41,7 @@
 
   // Formateamos las fechas para mostrarlas en la vista.
   java.time.format.DateTimeFormatter formato =
-    java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
   String fechaInicio = mantenimiento.getFechaInicio() != null
     ? mantenimiento.getFechaInicio().format(formato)

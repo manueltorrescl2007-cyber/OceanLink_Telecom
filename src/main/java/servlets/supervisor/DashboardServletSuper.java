@@ -35,6 +35,9 @@ public class DashboardServletSuper extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
 
+    // Antes de mostrar, se actualizan los estados según los mantenimientos (por si cambió la fecha)
+    new MantenimientoDao().actualizarEstadosAutomaticamente();
+
     IncidenciaDao incidenciaDao = new IncidenciaDao();
     SegmentoDao segmentoDao = new SegmentoDao();
     ServicioDao servicioDao = new ServicioDao();

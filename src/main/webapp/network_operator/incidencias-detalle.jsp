@@ -146,11 +146,16 @@
 
             <div class="acciones-incidencia">
 
+                <% if (siguienteEstado != null) { %>
                 <form method="POST" action="<%= servlet %>?action=avanzar">
                     <input type="hidden" name="idIncidencia" value="<%= inc.getIdIncidencia() %>">
                     <input type="hidden" name="estadoActual" value="<%= inc.getEstado() %>">
                     <button type="submit" class="btn-primary"><%= textoBoton %></button>
                 </form>
+                <% } else { %>
+                <%-- Entre "En análisis" y "Restaurado" el estado lo mueve el mantenimiento correctivo --%>
+                <p class="ayuda">El estado se actualiza automáticamente con el mantenimiento correctivo de sus segmentos.</p>
+                <% } %>
 
                 <form method="POST" action="<%= servlet %>?action=severidad" class="form-en-linea">
                     <input type="hidden" name="idIncidencia" value="<%= inc.getIdIncidencia() %>">
