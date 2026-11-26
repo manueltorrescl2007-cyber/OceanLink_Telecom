@@ -201,6 +201,27 @@ public class UsuarioDao extends BaseDao {
       }
     }
 
+    /* ========== ¿El correo ya lo usa OTRO usuario? (el correo es único en la tabla) ========== */
+    // idUsuarioActual: al editar, el propio usuario no cuenta; al crear se pasa 0.
+    public boolean existeCorreo(String correo, int idUsuarioActual) {
+
+      String sql = "SELECT 1 FROM usuarios WHERE correo = ? AND id_usuario <> ? LIMIT 1";
+
+      try (Connection conn = getConnection();
+           PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, correo.trim());
+        pstmt.setInt(2, idUsuarioActual);
+
+        try (ResultSet rs = pstmt.executeQuery()) {
+          return rs.next();
+        }
+
+      } catch (SQLException e) {
+        throw new IllegalStateException("No se pudo validar el correo.", e);
+      }
+    }
+
     /* ========== UPDATE: nombre, correo y rol (la contraseña no se toca aquí) ========== */
     public void actualizarUsuario(Usuario usuario) {
         String sql = "UPDATE usuarios SET nombre = ?, correo = ?, id_rol = ? "

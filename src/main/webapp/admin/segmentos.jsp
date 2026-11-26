@@ -131,7 +131,8 @@
         <tbody>
         <% for (Segmento segmento : segmentos) {
           long total = segmento.getCapacidadTotal();
-          long ocupada = segmento.getCapacidadOcupada();
+          // Uso = ocupada + reservada (igual que en el dashboard y los reportes)
+          long ocupada = segmento.getCapacidadOcupada() + segmento.getCapacidadReservada();
           boolean critica = total > 0 && ocupada * 100 > total * 95;
           boolean alta = total > 0 && ocupada * 100 >= total * 80;
 

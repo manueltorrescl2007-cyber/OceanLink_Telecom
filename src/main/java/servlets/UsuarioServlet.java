@@ -101,7 +101,12 @@ public class UsuarioServlet extends HttpServlet {
         break;
 
       case "desactivar":
-        usuarioDao.cambiarEstado(parseId(request.getParameter("id")), "inactivo");
+        int idDesactivar = parseId(request.getParameter("id"));
+        Usuario adminActual = obtenerUsuarioSesion(request);
+        // Un administrador no puede desactivarse a sí mismo (se quedaría sin acceso)
+        if (adminActual == null || adminActual.getIdUsuario() != idDesactivar) {
+          usuarioDao.cambiarEstado(idDesactivar, "inactivo");
+        }
         response.sendRedirect(construirUrlLista(request));
         break;
 
@@ -142,7 +147,20 @@ public class UsuarioServlet extends HttpServlet {
         usuario.setCorreo(correo);
         usuario.setRol(rol);
 
-        if (idUsuario == null || idUsuario.isEmpty()) {
+        boolean esNuevo = (idUsuario == null || idUsuario.isEmpty());
+        int idActual = esNuevo ? 0 : parseId(idUsuario);
+
+        // El correo debe ser único: si ya lo usa otro usuario, se vuelve al formulario con el aviso
+        if (correo == null || correo.isBlank() || usuarioDao.existeCorreo(correo, idActual)) {
+          usuario.setIdUsuario(idActual);
+          request.setAttribute("usuario", usuario);
+          request.setAttribute("listaRoles", new RolDao().listarRoles());
+          request.setAttribute("error", "El correo ya está registrado por otro usuario.");
+          request.getRequestDispatcher("/admin/usuario_form.jsp").forward(request, response);
+          return;
+        }
+
+        if (esNuevo) {
           // CREATE
           usuario.setContrasena(contrasena);
           usuarioDao.crearUsuario(usuario);

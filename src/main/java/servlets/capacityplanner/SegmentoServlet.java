@@ -58,7 +58,8 @@ public class SegmentoServlet extends HttpServlet {
 
   public static String nivelUtilizacion(Segmento segmento) {
     long total = segmento.getCapacidadTotal();
-    long ocupada = segmento.getCapacidadOcupada();
+    // Uso = ocupada + reservada: la capacidad reservada ya no está disponible para otros servicios
+    long ocupada = segmento.getCapacidadOcupada() + segmento.getCapacidadReservada();
     if (total <= 0) return "Sin capacidad";
     if (ocupada * 100 > total * 95) return "Crítica";
     if (ocupada * 100 >= total * 80) return "Alta";

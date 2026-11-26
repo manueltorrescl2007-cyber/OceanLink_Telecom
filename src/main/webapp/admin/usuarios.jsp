@@ -5,6 +5,11 @@
 <%@ page import="beans.Usuario" %>
 <%@ page import="beans.Rol" %>
 <%
+    // Usuario que inició sesión: no se le muestra "Desactivar" en su propia fila
+    Object enSesion = session.getAttribute("usuarioLogueado");
+    int idSesion = (enSesion instanceof Usuario) ? ((Usuario) enSesion).getIdUsuario() : -1;
+%>
+<%
   String servlet = request.getContextPath() + "/UsuarioServlet";
 
   // Datos enviados por UsuarioServlet (case "lista")
@@ -133,7 +138,9 @@
             </td>
             <td class="acciones">
               <a href="<%= servlet %>?action=editar&id=<%= u.getIdUsuario() %>">Editar</a>
-              <% if (activo) { %>
+              <% if (activo && u.getIdUsuario() == idSesion) { %>
+              <span title="No puedes desactivar tu propia cuenta">—</span>
+              <% } else if (activo) { %>
               <a class="accion-peligro"
                  href="<%= servlet %>?action=desactivar&id=<%= u.getIdUsuario() %>&idRol=<%= URLEncoder.encode(paramIdRol, StandardCharsets.UTF_8) %>&estado=<%= URLEncoder.encode(filtroEstado, StandardCharsets.UTF_8) %>&pagina=<%= paginaActual %>"
                  onclick="return confirm('¿Seguro que deseas desactivar este usuario?');">Desactivar</a>

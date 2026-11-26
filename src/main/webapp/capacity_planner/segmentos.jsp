@@ -32,7 +32,8 @@
 
     private double porcentajeUtilizacion(Segmento segmento) {
         long total = segmento.getCapacidadTotal();
-        return total > 0 ? segmento.getCapacidadOcupada() * 100.0 / total : 0;
+        // Uso = ocupada + reservada (igual que el nivel de utilización)
+        return total > 0 ? (segmento.getCapacidadOcupada() + segmento.getCapacidadReservada()) * 100.0 / total : 0;
     }
 %>
 

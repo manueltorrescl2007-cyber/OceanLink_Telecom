@@ -43,17 +43,28 @@ public class DashboardServletSuper extends HttpServlet {
     ServicioDao servicioDao = new ServicioDao();
     DashboardSupervisorDao dashboardDao = new DashboardSupervisorDao();
 
-    ArrayList<Incidencia> incidencias = incidenciaDao.listarIncidencias(false, null, -1);
+    // Incidencias activas: no cerradas y que tampoco estén ya en "Servicio restaurado"
+    // (en ese estado el servicio ya funciona, solo falta que el Network Operator la cierre)
+    ArrayList<Incidencia> incidencias = new ArrayList<>();
+    for (Incidencia inc : incidenciaDao.listarIncidencias(false, null, -1)) {
+      if (!"Servicio restaurado".equals(inc.getEstado())) {
+        incidencias.add(inc);
+      }
+    }
     ArrayList<Segmento> segmentos = segmentoDao.listarSegmentos(null);
 
     int criticas = 0;
+    int altas = 0;
     int medias = 0;
+    int leves = 0;
     Set<Integer> idsServicios = new HashSet<>();
     Set<Integer> idsClientes = new HashSet<>();
 
     for (Incidencia incidencia : incidencias) {
       if ("Critica".equals(incidencia.getSeveridad())) criticas++;
+      if ("Alta".equals(incidencia.getSeveridad())) altas++;
       if ("Media".equals(incidencia.getSeveridad())) medias++;
+      if ("Leve".equals(incidencia.getSeveridad())) leves++;
 
       incidencia.setSegmentos(segmentoDao.listarSegmentosDeIncidencia(incidencia.getIdIncidencia()));
 
@@ -180,7 +191,9 @@ public class DashboardServletSuper extends HttpServlet {
     request.setAttribute("disponibilidad", String.format(Locale.US, "%.1f", disponibilidad));
     request.setAttribute("totalIncidencias", incidencias.size());
     request.setAttribute("incidenciasCriticas", criticas);
+    request.setAttribute("incidenciasAltas", altas);
     request.setAttribute("incidenciasMedias", medias);
+    request.setAttribute("incidenciasLeves", leves);
     request.setAttribute("clientesAfectados", idsClientes.size());
     request.setAttribute("serviciosAfectados", idsServicios.size());
     request.setAttribute("mantenimientosProgramados", proximosMantenimientos);

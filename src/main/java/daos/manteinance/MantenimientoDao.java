@@ -298,8 +298,8 @@ public class MantenimientoDao extends daos.BaseDao {
   //   - Alguno En ejecucion (o alguno ya Finalizado)         -> En reparacion
   //   - Alguno tiene un correctivo Programado                -> Reparacion programada
   //   - Sus correctivos se cancelaron                        -> En analisis
-  // Solo cuentan los correctivos que empiezan desde el día en que se registró la incidencia
-  // (así un mantenimiento antiguo no la marca como restaurada).
+  // Solo cuentan los correctivos que empiezan desde el minuto en que se registró la incidencia
+  // (así un mantenimiento anterior, aunque sea del mismo día, no la marca como restaurada).
   // Las incidencias sin ningún correctivo no se tocan.
 
   private static final String[] ESTADOS_SINCRONIZADOS =
@@ -359,7 +359,7 @@ public class MantenimientoDao extends daos.BaseDao {
             LEFT JOIN mantenimientos m
                    ON m.id_segmento = si.id_segmento
                   AND m.tipo = 'Correctivo'
-                  AND DATE(m.fecha_inicio) >= DATE(i.fecha_registro)
+                  AND m.fecha_inicio >= DATE_FORMAT(i.fecha_registro, '%Y-%m-%d %H:%i:00')
             WHERE si.id_incidencia = ?
             """;
 
@@ -397,7 +397,9 @@ public class MantenimientoDao extends daos.BaseDao {
     }
 
     String estadoNuevo;
-    if (!segmentos.isEmpty() && segmentosFinalizados.size() == segmentos.size()) {
+    if (!segmentos.isEmpty() && segmentosFinalizados.size() == segmentos.size()
+        && !hayEnEjecucion && !hayProgramado) {
+      // Todos sus segmentos terminaron y no queda ningún otro correctivo pendiente
       estadoNuevo = "Servicio restaurado";
     } else if (hayEnEjecucion || !segmentosFinalizados.isEmpty()) {
       // Ya se está reparando, o ya terminó un segmento y falta otro: nunca retrocede a "programada"
@@ -424,7 +426,9 @@ public class MantenimientoDao extends daos.BaseDao {
       pstmt.setString(1, estadoNuevo);
       pstmt.setInt(2, idIncidencia);
       pstmt.setString(3, estadoActual);
-      pstmt.executeUpdate();
+      if (pstmt.executeUpdate() == 0) {
+        return; // otra petición ya hizo este cambio: no se repite en la bitácora
+      }
     }
 
     // Queda en la bitácora de la incidencia, a nombre de quien programó el mantenimiento

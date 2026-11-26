@@ -217,3 +217,13 @@
   font-size: 13px;
   text-decoration: none;
 }
+
+/* Mensaje de error del formulario de usuarios (por ejemplo, correo repetido) */
+.mensaje-error {
+  margin-bottom: 16px;
+  padding: 12px;
+  color: #b43838;
+  background: #fbe7e7;
+  border-radius: 6px;
+  font-size: 14px;
+}

@@ -69,7 +69,8 @@ public class TarjetasServletSuper extends HttpServlet {
           continue;
         }
 
-        double porcentaje = segmento.getCapacidadOcupada() * 100.0 / total;
+        // Uso = ocupada + reservada (igual que el dashboard y los reportes)
+        double porcentaje = (segmento.getCapacidadOcupada() + segmento.getCapacidadReservada()) * 100.0 / total;
         if (porcentaje < 80) {
           normales++;
         } else if (porcentaje <= 95) {

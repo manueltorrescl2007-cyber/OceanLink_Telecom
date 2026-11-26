@@ -35,11 +35,17 @@ public class Segmento {
     if (capacidadTotal == 0) {
       return 0;
     }
-    return (int) Math.round(capacidadOcupada * 100.0 / capacidadTotal);
+    return (int) Math.round(porcentajeExacto());
   }
 
+  // Uso = ocupada + reservada: la capacidad reservada ya no está disponible para otros servicios
+  private double porcentajeExacto() {
+    return capacidadTotal == 0 ? 0 : (capacidadOcupada + capacidadReservada) * 100.0 / capacidadTotal;
+  }
+
+  // El nivel se decide con el porcentaje exacto (sin redondear), igual que en las demás pantallas
   public String getNivelUso() {
-    int uso = getPorcentajeUso();
+    double uso = porcentajeExacto();
     if (uso > 95) {
       return "critica";
     } else if (uso >= 80) {

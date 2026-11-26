@@ -1,6 +1,7 @@
 package servlets.maintenance;
 
 import beans.maintenance.ServicioAfectado;
+import daos.manteinance.MantenimientoDao;
 import daos.manteinance.ServiciosAfectadosDao;
 import daos.manteinance.SegmentoDao;
 
@@ -25,6 +26,9 @@ public class ServiciosAfectadosServlet extends HttpServlet {
     HttpServletRequest request,
     HttpServletResponse response
   ) throws ServletException, IOException {
+
+    // Antes de mostrar, se actualizan los estados según los mantenimientos (por si cambió la fecha)
+    new MantenimientoDao().actualizarEstadosAutomaticamente();
 
     try {
       String clienteParam = request.getParameter("idCliente");

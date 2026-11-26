@@ -684,6 +684,18 @@ public class ServicioDao extends BaseDao {
         if ("Pendiente".equals(estadoAnterior)) {
           HistorialSegmentoDao.registrarEventoServicio(
             conn, idServicio, "Servicio cancelado", 0, -capacidad);
+
+          // Se canceló antes de activarse: ya no hay capacidad reservada, así que la solicitud
+          // deja de estar Provisionada y vuelve a Aprobada (regla 2), lista para otra ruta.
+          String sqlSolicitud =
+            "UPDATE solicitudes SET estado = 'Aprobada' "
+              + "WHERE id_solicitud = (SELECT id_solicitud FROM servicios WHERE id_servicio = ?) "
+              + "AND estado = 'Provisionada'";
+
+          try (PreparedStatement pstmt = conn.prepareStatement(sqlSolicitud)) {
+            pstmt.setInt(1, idServicio);
+            pstmt.executeUpdate();
+          }
         } else {
           HistorialSegmentoDao.registrarEventoServicio(
             conn, idServicio, "Servicio cancelado", -capacidad, 0);

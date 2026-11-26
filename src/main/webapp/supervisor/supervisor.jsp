@@ -263,8 +263,12 @@
         <div class="information">
           <p>Críticas:
             <b><%= request.getAttribute("incidenciasCriticas") %></b>
+            Altas:
+            <b><%= request.getAttribute("incidenciasAltas") %></b>
             Medias:
             <b><%= request.getAttribute("incidenciasMedias") %></b>
+            Leves:
+            <b><%= request.getAttribute("incidenciasLeves") %></b>
           </p>
         </div>
       </article>

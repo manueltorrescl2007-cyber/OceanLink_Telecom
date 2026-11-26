@@ -6,13 +6,15 @@
     // Si viene "usuario" es EDITAR (case "editar"); si es null es CREAR (case "formCrear")
     Usuario usuario = (Usuario) request.getAttribute("usuario");
     ArrayList<Rol> listaRoles = (ArrayList<Rol>) request.getAttribute("listaRoles");
-    boolean esEdicion = (usuario != null);
+    // Es edición si viene un usuario con id; si vuelve del servlet por un error al crear, trae id 0
+    boolean esEdicion = (usuario != null && usuario.getIdUsuario() > 0);
+    String error = (String) request.getAttribute("error");
     String paginaActiva = esEdicion ? "usuarios" : "nuevo";   // opción resaltada en el menú
 
     String idUsuario = esEdicion ? String.valueOf(usuario.getIdUsuario()) : "";
-    String nombre    = esEdicion ? usuario.getNombre() : "";
-    String correo    = esEdicion ? usuario.getCorreo() : "";
-    int idRolActual  = esEdicion ? usuario.getRol().getIdRol() : -1;
+    String nombre    = (usuario != null) ? usuario.getNombre() : "";
+    String correo    = (usuario != null) ? usuario.getCorreo() : "";
+    int idRolActual  = (usuario != null) ? usuario.getRol().getIdRol() : -1;
 
     String servlet = request.getContextPath() + "/UsuarioServlet";
 %>
@@ -43,6 +45,9 @@
         </section>
 
         <section class="card">
+            <% if (error != null) { %>
+            <p class="mensaje-error" role="alert"><%= error %></p>
+            <% } %>
             <form method="POST" action="<%= servlet %>?action=guardar">
 
                 <%-- Oculto: vacío = crear, con número = actualizar --%>
