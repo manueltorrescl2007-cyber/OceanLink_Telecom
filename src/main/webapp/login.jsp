@@ -93,10 +93,6 @@
             required>
         </div>
 
-        <a href="#" class="forgot-password-link">
-          Olvidé mi contraseña
-        </a>
-
         <button type="submit" class="btn-submit">
           Ingresar
         </button>

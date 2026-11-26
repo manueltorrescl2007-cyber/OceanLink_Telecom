@@ -2,10 +2,12 @@ package servlets.supervisor;
 
 import beans.maintenance.ActividadMantenimiento;
 import beans.maintenance.Mantenimiento;
+import beans.maintenance.ServicioAfectado;
 
 import daos.manteinance.ActividadMantenimientoDao;
 import daos.manteinance.MantenimientoDao;
 import daos.manteinance.SegmentoDao;
+import daos.manteinance.ServiciosAfectadosDao;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -29,6 +31,9 @@ public class MantenimientoServletSuper extends HttpServlet {
 
   private final ActividadMantenimientoDao actividadMantenimientoDao =
     new ActividadMantenimientoDao();
+
+  private final ServiciosAfectadosDao serviciosAfectadosDao =
+    new ServiciosAfectadosDao();
 
   private static final int TAMANO_PAGINA = 10;
 
@@ -104,6 +109,7 @@ public class MantenimientoServletSuper extends HttpServlet {
             aplicarPaginacion(request, listaCompleta);
 
           request.setAttribute("historialMantenimientos", paginaLista);
+          request.setAttribute("resultados", actividadMantenimientoDao.listarResultados());
           request.setAttribute("segmentos", segmentoDao.listarSegmentos());
           request.setAttribute("segmentoSeleccionado", idSegmentoFiltro);
           request.setAttribute("estadoSeleccionado", estadoFiltro);
@@ -203,6 +209,15 @@ public class MantenimientoServletSuper extends HttpServlet {
     request.setAttribute("mantenimiento", mantenimiento);
     request.setAttribute("actividades", actividades);
     request.setAttribute("segmentos", segmentoDao.listarSegmentos());
+    request.setAttribute("resultado", actividadMantenimientoDao.obtenerResultado(id));
+
+    // Servicios activos que pasan por el segmento de este mantenimiento (solo si está Programado o En ejecución).
+    // Se reutiliza el mismo DAO de la vista "Servicios afectados" de Maintenance, filtrando por el segmento.
+    List<ServicioAfectado> serviciosAfectados = new ArrayList<>();
+    if ("Programado".equals(mantenimiento.getEstado()) || "En ejecucion".equals(mantenimiento.getEstado())) {
+      serviciosAfectados = serviciosAfectadosDao.listarServiciosAfectados(null, mantenimiento.getIdSegmento());
+    }
+    request.setAttribute("serviciosAfectados", serviciosAfectados);
 
     request.getRequestDispatcher(VISTA_ESTADO)
       .forward(request, response);

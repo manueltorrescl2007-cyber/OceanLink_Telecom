@@ -26,6 +26,15 @@
     (Map<Integer, String>)
       request.getAttribute("segmentos");
 
+  // Resultados registrados por Maintenance al finalizar: id_mantenimiento -> texto
+  Map<Integer, String> resultados =
+    (Map<Integer, String>)
+      request.getAttribute("resultados");
+
+  if (resultados == null) {
+    resultados = new HashMap<>();
+  }
+
   if (historial == null || segmentos == null) {
     response.sendRedirect(
       request.getContextPath()
@@ -347,6 +356,7 @@
               <th>Fecha de cierre</th>
               <th>Prioridad</th>
               <th>Estado</th>
+              <th>Resultado</th>
               <th>Notas / Descripción</th>
             </tr>
             </thead>
@@ -357,7 +367,7 @@
               if (historial.isEmpty()) {
             %>
             <tr>
-              <td colspan="8" class="table-empty-cell">
+              <td colspan="9" class="table-empty-cell">
                 No se encontraron mantenimientos en el historial con los filtros seleccionados.
               </td>
             </tr>
@@ -395,6 +405,7 @@
                     : m.getFechaFin().format(formatoFecha);
 
                 String estado = m.getEstado();
+                String resultadoMantenimiento = resultados.get(m.getIdMantenimiento());
                 String badgeEstado = "Cancelado".equalsIgnoreCase(estado)
                   ? "badge-cancelado"
                   : "badge-finalizado";
@@ -444,6 +455,17 @@
                 <span class="badge <%= badgeEstado %>">
                   <%= escaparHtml(estado) %>
                 </span>
+              </td>
+
+              <!-- RESULTADO (lo registra Maintenance; aquí solo se consulta) -->
+              <td>
+                <% if (!"Finalizado".equals(estado)) { %>
+                —
+                <% } else if (resultadoMantenimiento == null) { %>
+                <span class="resultado-pendiente">Pendiente</span>
+                <% } else { %>
+                <%= escaparHtml(resultadoMantenimiento) %>
+                <% } %>
               </td>
 
               <!-- DESCRIPCIÓN -->

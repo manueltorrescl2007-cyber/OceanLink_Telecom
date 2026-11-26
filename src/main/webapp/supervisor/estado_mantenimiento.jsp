@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="beans.maintenance.Mantenimiento" %>
 <%@ page import="beans.maintenance.ActividadMantenimiento" %>
+<%@ page import="beans.maintenance.ServicioAfectado" %>
 <%@ page import="java.util.*" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 
@@ -336,6 +337,58 @@
 
         </div>
 
+        <!-- SERVICIOS POTENCIALMENTE AFECTADOS (SOLO LECTURA) -->
+        <% if (!esCancelado && !finalizado) {
+             List<ServicioAfectado> serviciosAfectados =
+               (List<ServicioAfectado>) request.getAttribute("serviciosAfectados");
+             if (serviciosAfectados == null) {
+               serviciosAfectados = new ArrayList<>();
+             } %>
+        <div class="bitacora">
+          <strong>Servicios potencialmente afectados</strong>
+
+          <% if (serviciosAfectados.isEmpty()) { %>
+          <p class="bitacora-empty">
+            Ningún servicio activo pasa por este segmento.
+          </p>
+          <% } else { %>
+          <div class="data-table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>Servicio</th>
+                <th>Cliente</th>
+                <th>Ruta</th>
+              </tr>
+              </thead>
+              <tbody>
+              <% for (ServicioAfectado sa : serviciosAfectados) { %>
+              <tr>
+                <td>SER-<%= sa.getIdServicio() %></td>
+                <td><%= escaparHtml(sa.getCliente()) %></td>
+                <td><%= escaparHtml(sa.getRuta()) %></td>
+              </tr>
+              <% } %>
+              </tbody>
+            </table>
+          </div>
+          <% } %>
+        </div>
+        <% } %>
+
+        <!-- RESULTADO DEL MANTENIMIENTO (SOLO LECTURA: lo registra Maintenance) -->
+        <% if (finalizado) {
+             String resultado = (String) request.getAttribute("resultado"); %>
+        <div class="formulario-comentario resultado-registrado">
+          <h3>Resultado del mantenimiento</h3>
+          <% if (resultado == null) { %>
+          <p class="resultado-pendiente">Pendiente: el coordinador de mantenimiento aún no registra el resultado.</p>
+          <% } else { %>
+          <p><%= escaparHtml(resultado) %></p>
+          <% } %>
+        </div>
+        <% } %>
+
         <!-- BITÁCORA DE INTERVENCIÓN (SOLO LECTURA) -->
         <div class="bitacora">
           <strong>Bitácora de intervención</strong>
@@ -352,7 +405,7 @@
           %>
           <div class="actividad-bitacora">
             <p>
-              <strong><%= escaparHtml(act.getTipoActividad()) %></strong>
+              <strong><%= escaparHtml(act.getNombreUsuario()) %></strong>
               <span><%= fechaAct %></span>
             </p>
             <p><%= escaparHtml(act.getDescripcionBitacora()) %></p>
