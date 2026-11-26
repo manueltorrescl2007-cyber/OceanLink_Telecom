@@ -120,6 +120,7 @@ public class MantenimientoServlet extends HttpServlet {
             aplicarPaginacion(request, listaCompleta);
 
           request.setAttribute("historialMantenimientos", paginaLista);
+          request.setAttribute("resultados", actividadMantenimientoDao.listarResultados());
           request.setAttribute("segmentos", segmentoDao.listarSegmentos());
           request.setAttribute("segmentoSeleccionado", idSegmentoFiltro);
           request.setAttribute("estadoSeleccionado", estadoFiltro);
@@ -336,6 +337,7 @@ public class MantenimientoServlet extends HttpServlet {
 
     request.setAttribute("mantenimiento", mantenimiento);
     request.setAttribute("actividades", actividades);
+    request.setAttribute("resultado", actividadMantenimientoDao.obtenerResultado(id));
 
     request.getRequestDispatcher(VISTA_ESTADO)
       .forward(request, response);
@@ -543,11 +545,25 @@ public class MantenimientoServlet extends HttpServlet {
 
     String comentario = obtenerParametro(request, "comentario");
 
+    // Si el mantenimiento ya está Finalizado, lo que se escribe es su RESULTADO (una sola vez).
+    // Mientras está Programado o En ejecución, es un comentario normal de la bitácora.
+    String tipoActividad = "Comentario";
+
+    if ("Finalizado".equals(mantenimiento.getEstado())) {
+      if (actividadMantenimientoDao.obtenerResultado(id) != null) {
+        // Ya tiene resultado: no se puede registrar otro
+        response.sendRedirect(request.getContextPath()
+          + "/MantenimientoServlet?accion=estado&idMantenimiento=" + id);
+        return;
+      }
+      tipoActividad = ActividadMantenimientoDao.TIPO_RESULTADO;
+    }
+
     ActividadMantenimiento actividad = new ActividadMantenimiento();
     actividad.setIdMantenimiento(id);
     actividad.setIdUsuario(idUsuario);
     actividad.setDescripcionBitacora(comentario);
-    actividad.setTipoActividad("Comentario");
+    actividad.setTipoActividad(tipoActividad);
 
     boolean registrado = actividadMantenimientoDao.crearActividad(actividad);
 

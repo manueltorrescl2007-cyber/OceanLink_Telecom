@@ -5,9 +5,15 @@ import daos.BaseDao;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ActividadMantenimientoDao extends BaseDao {
+
+  // Tipo de actividad con el que se guarda el resultado final de un mantenimiento
+  // (regla de negocio 5: un mantenimiento finalizado debe tener su resultado registrado).
+  public static final String TIPO_RESULTADO = "Resultado";
   // Listamos las actividades de un mantenimiento (bitacora)
 
   public List<ActividadMantenimiento> listaPorMantenimiento(int idMantenimiento) {
@@ -115,6 +121,63 @@ public class ActividadMantenimientoDao extends BaseDao {
       throw new IllegalArgumentException("Error al registrar la nueva actividad del mantenimiento");
     }
 
+  }
+
+  // RESULTADO DE UN MANTENIMIENTO
+  // Devuelve el texto del resultado, o null si todavía no se registró.
+
+  public String obtenerResultado(int idMantenimiento) {
+
+    String sql = """
+      SELECT descripcion_bitacora
+      FROM actividades_mantenimiento
+      WHERE id_mantenimiento = ? AND tipo_actividad = ?
+      LIMIT 1
+      """;
+
+    try (Connection conn = getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+      pstmt.setInt(1, idMantenimiento);
+      pstmt.setString(2, TIPO_RESULTADO);
+
+      try (ResultSet rs = pstmt.executeQuery()) {
+        return rs.next() ? rs.getString("descripcion_bitacora") : null;
+      }
+
+    } catch (SQLException e) {
+      throw new IllegalStateException("Error al obtener el resultado del mantenimiento", e);
+    }
+  }
+
+  // Resultados de todos los mantenimientos (para el historial): id_mantenimiento -> resultado
+
+  public Map<Integer, String> listarResultados() {
+
+    Map<Integer, String> resultados = new HashMap<>();
+
+    String sql = """
+      SELECT id_mantenimiento, descripcion_bitacora
+      FROM actividades_mantenimiento
+      WHERE tipo_actividad = ?
+      """;
+
+    try (Connection conn = getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+      pstmt.setString(1, TIPO_RESULTADO);
+
+      try (ResultSet rs = pstmt.executeQuery()) {
+        while (rs.next()) {
+          resultados.put(rs.getInt("id_mantenimiento"), rs.getString("descripcion_bitacora"));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new IllegalStateException("Error al listar los resultados de los mantenimientos", e);
+    }
+
+    return resultados;
   }
 
 }

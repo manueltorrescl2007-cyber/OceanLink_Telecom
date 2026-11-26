@@ -40,6 +40,66 @@ public class HistorialSegmentoDao extends BaseDao {
     }
   }
 
+  // ===================== EVENTOS QUE SE ANOTAN EN EL HISTORIAL =====================
+  // Cada vez que un DAO cambia el estado de un servicio o de un mantenimiento,
+  // llama a uno de estos métodos con la MISMA conexión (misma transacción).
+  // Se guarda una fila por cada segmento afectado, con la foto de su capacidad en ese momento.
+
+  // Servicio: una fila por cada segmento de su ruta.
+  // cambioOcupada / cambioReservada: cuánto subió (+) o bajó (-) la capacidad en ese evento.
+  public static void registrarEventoServicio(Connection conn, int idServicio, String evento,
+                                             long cambioOcupada, long cambioReservada)
+    throws SQLException {
+    String sql = """
+      INSERT INTO historial_segmento
+        (id_segmento, evento, referencia, cambio_ocupada, cambio_reservada,
+         capacidad_total, capacidad_ocupada, capacidad_reservada)
+      SELECT s.id_segmento, ?, ?, ?, ?,
+             s.capacidad_total, s.capacidad_ocupada, s.capacidad_reservada
+      FROM servicios sv
+      JOIN ruta_segmentos rs ON rs.id_ruta = sv.id_ruta
+      JOIN segmentos s ON s.id_segmento = rs.id_segmento
+      WHERE sv.id_servicio = ?
+      """;
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+      stmt.setString(1, evento);
+      stmt.setString(2, "SER-" + idServicio);
+      stmt.setLong(3, cambioOcupada);
+      stmt.setLong(4, cambioReservada);
+      stmt.setInt(5, idServicio);
+      stmt.executeUpdate();
+    }
+  }
+
+  // Mantenimiento: una fila para su segmento. El texto depende del estado nuevo.
+  public static void registrarEventoMantenimiento(Connection conn, int idMantenimiento, String estadoNuevo)
+    throws SQLException {
+    String evento;
+    switch (estadoNuevo) {
+      case "En ejecucion": evento = "Mantenimiento iniciado";   break;
+      case "Finalizado":   evento = "Mantenimiento finalizado"; break;
+      case "Cancelado":    evento = "Mantenimiento cancelado";  break;
+      default:             evento = "Mantenimiento programado"; break;
+    }
+
+    String sql = """
+      INSERT INTO historial_segmento
+        (id_segmento, evento, referencia,
+         capacidad_total, capacidad_ocupada, capacidad_reservada)
+      SELECT s.id_segmento, ?, ?,
+             s.capacidad_total, s.capacidad_ocupada, s.capacidad_reservada
+      FROM mantenimientos m
+      JOIN segmentos s ON s.id_segmento = m.id_segmento
+      WHERE m.id_mantenimiento = ?
+      """;
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+      stmt.setString(1, evento);
+      stmt.setString(2, "MAN-" + idMantenimiento);
+      stmt.setInt(3, idMantenimiento);
+      stmt.executeUpdate();
+    }
+  }
+
   public List<Evento> listar(int idSegmento) throws SQLException {
     try (Connection conn = getConnection()) {
       return consultarEventos(conn, idSegmento, null);

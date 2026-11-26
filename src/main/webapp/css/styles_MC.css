@@ -695,3 +695,20 @@ span.badge.badge-cancelado {
 }
 
 
+
+/* ===== Resultado del mantenimiento (regla de negocio 5) ===== */
+
+.resultado-pendiente {
+  color: var(--color-critica);
+  font-weight: 600;
+}
+
+.resultado-registrado {
+  border-left: 4px solid var(--color-alta);
+}
+
+.resultado-registrado p {
+  margin: 0;
+  line-height: 1.5;
+  white-space: pre-line;
+}

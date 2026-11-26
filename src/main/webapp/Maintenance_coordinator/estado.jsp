@@ -30,6 +30,10 @@
 
   String estadoActual = mantenimiento.getEstado();
 
+  // Resultado final (solo existe si el mantenimiento finalizó y ya se registró)
+  String resultado = (String) request.getAttribute("resultado");
+  boolean finalizado = "Finalizado".equals(estadoActual);
+
   // Etapas normales del mantenimiento.
   List<String> pasos = Arrays.asList(
     "Programado",
@@ -252,11 +256,27 @@
 
         </div>
 
+        <% if (finalizado && resultado != null) { %>
+
+        <!-- Ya tiene resultado: se muestra y no se puede escribir más -->
+        <div class="formulario-comentario resultado-registrado">
+          <h3>Resultado del mantenimiento</h3>
+          <p><%= escaparHtml(resultado) %></p>
+        </div>
+
+        <% } else { %>
+
         <div class="formulario-comentario">
 
           <h3>
-            Agregar commentario
+            <%= finalizado ? "Registrar resultado del mantenimiento" : "Agregar comentario" %>
           </h3>
+
+          <% if (finalizado) { %>
+          <p class="resultado-pendiente">
+            El mantenimiento finalizó. Registre un resumen de lo que se hizo.
+          </p>
+          <% } %>
 
           <form action="<%=request.getContextPath()%>/MantenimientoServlet"
                 method="POST">
@@ -267,15 +287,19 @@
             <textarea
               name="comentario"
               rows="4"
-              placeholder="Escriba un comentario/reporte sobre este mantenimiento..."
+              placeholder="<%= finalizado
+                ? "Ej.: Se reemplazó el tramo de fibra dañado. Señal restablecida al 100%."
+                : "Escriba un comentario/reporte sobre este mantenimiento..." %>"
               required></textarea>
 
             <button type="submit">
-              Registrar
+              <%= finalizado ? "Registrar resultado" : "Registrar" %>
             </button>
           </form>
 
         </div>
+
+        <% } %>
 
       </div>
     </div>

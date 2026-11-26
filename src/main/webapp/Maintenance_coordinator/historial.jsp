@@ -29,6 +29,15 @@
     (Map<Integer, String>)
       request.getAttribute("segmentos");
 
+  // Resultados registrados al finalizar: id_mantenimiento -> texto
+  Map<Integer, String> resultados =
+    (Map<Integer, String>)
+      request.getAttribute("resultados");
+
+  if (resultados == null) {
+    resultados = new HashMap<>();
+  }
+
   if (historial == null || segmentos == null) {
     response.sendRedirect(
       request.getContextPath()
@@ -189,6 +198,7 @@
               <th>Tipo</th>
               <th>Fecha de fin</th>
               <th>Estado</th>
+              <th>Resultado</th>
             </tr>
             </thead>
 
@@ -198,7 +208,7 @@
               if (historial.isEmpty()) {
             %>
             <tr>
-              <td colspan="5" class="table-empty-cell">
+              <td colspan="6" class="table-empty-cell">
                 No se encontraron registros en el historial con los filtros seleccionados.
               </td>
             </tr>
@@ -220,6 +230,9 @@
                     : m.getFechaFin().format(formatoFecha);
 
                 String estado = m.getEstado();
+
+                // Resultado registrado al finalizar (null si falta)
+                String resultadoMantenimiento = resultados.get(m.getIdMantenimiento());
 
                 String badgeClass =
                   "Finalizado".equals(estado)
@@ -259,6 +272,17 @@
                 <span class="badge <%= badgeClass %>">
                   <%= escaparHtml(estado) %>
                 </span>
+              </td>
+
+              <!-- RESULTADO -->
+              <td>
+                <% if (!"Finalizado".equals(estado)) { %>
+                —
+                <% } else if (resultadoMantenimiento == null) { %>
+                <span class="resultado-pendiente">Pendiente</span>
+                <% } else { %>
+                <%= escaparHtml(resultadoMantenimiento) %>
+                <% } %>
               </td>
 
             </tr>

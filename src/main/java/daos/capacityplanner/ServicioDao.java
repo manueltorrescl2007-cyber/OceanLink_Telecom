@@ -475,6 +475,10 @@ public class ServicioDao extends BaseDao {
           }
         }
 
+        // Historial de los segmentos: la capacidad pasa de reservada a ocupada
+        HistorialSegmentoDao.registrarEventoServicio(
+          conn, idServicio, "Servicio activado", capacidad, -capacidad);
+
         // Actualizar la solicitud
         String sqlSolicitud =
           "UPDATE solicitudes SET estado = 'Activa' "
@@ -517,11 +521,29 @@ public class ServicioDao extends BaseDao {
       "UPDATE servicios SET estado = 'Suspendido' "
         + "WHERE id_servicio = ? AND estado = 'Activo'";
 
-    try (Connection conn = getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    try (Connection conn = getConnection()) {
+      conn.setAutoCommit(false);
 
-      pstmt.setInt(1, idServicio);
-      return pstmt.executeUpdate() == 1;
+      try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idServicio);
+
+        if (pstmt.executeUpdate() != 1) {
+          conn.rollback();
+          return false;
+        }
+
+        // Historial de los segmentos (la capacidad no cambia)
+        HistorialSegmentoDao.registrarEventoServicio(
+          conn, idServicio, "Servicio suspendido", 0, 0);
+
+        conn.commit();
+        return true;
+
+      } catch (SQLException e) {
+        conn.rollback();
+        throw e;
+      }
     }
   }
 
@@ -656,6 +678,15 @@ public class ServicioDao extends BaseDao {
             throw new SQLException(
               "No se pudo cancelar el servicio.");
           }
+        }
+
+        // Historial de los segmentos: se libera la capacidad que tenía el servicio
+        if ("Pendiente".equals(estadoAnterior)) {
+          HistorialSegmentoDao.registrarEventoServicio(
+            conn, idServicio, "Servicio cancelado", 0, -capacidad);
+        } else {
+          HistorialSegmentoDao.registrarEventoServicio(
+            conn, idServicio, "Servicio cancelado", -capacidad, 0);
         }
 
         conn.commit();
@@ -795,6 +826,10 @@ public class ServicioDao extends BaseDao {
             return false;
           }
         }
+
+        // Historial de los segmentos (la capacidad no cambia)
+        HistorialSegmentoDao.registrarEventoServicio(
+          conn, idServicio, "Servicio reactivado", 0, 0);
 
         conn.commit();
         return true;

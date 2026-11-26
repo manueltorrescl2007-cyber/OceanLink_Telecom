@@ -1,6 +1,7 @@
 package daos.manteinance;
 
 import beans.maintenance.Mantenimiento;
+import daos.capacityplanner.HistorialSegmentoDao;
 import utils.EstadoMantenimientoUtil;
 
 import java.sql.Connection;
@@ -168,21 +169,29 @@ public class MantenimientoDao extends daos.BaseDao {
 
   public void actualizarEstadosAutomaticamente() {
 
+    // Mantenimientos activos con el estado que les corresponde según la fecha
     String sql = """
-            UPDATE mantenimientos
-            SET estado = CASE
-            WHEN fecha_fin IS NOT NULL
-                 AND fecha_fin < NOW()
-                THEN 'Finalizado'
+            SELECT id_mantenimiento, estado,
+                   CASE
+                   WHEN fecha_fin IS NOT NULL
+                        AND fecha_fin < NOW()
+                       THEN 'Finalizado'
 
-            WHEN fecha_inicio IS NOT NULL
-                 AND fecha_inicio <= NOW()
-                 AND (fecha_fin IS NULL OR fecha_fin >= NOW())
-                THEN 'En ejecucion'
+                   WHEN fecha_inicio IS NOT NULL
+                        AND fecha_inicio <= NOW()
+                        AND (fecha_fin IS NULL OR fecha_fin >= NOW())
+                       THEN 'En ejecucion'
 
-            ELSE 'Programado'
-            END
+                   ELSE 'Programado'
+                   END AS estado_nuevo
+            FROM mantenimientos
             WHERE estado IN ('Programado', 'En ejecucion')
+            """;
+
+    String sqlCambiarEstado = """
+            UPDATE mantenimientos
+            SET estado = ?
+            WHERE id_mantenimiento = ? AND estado = ?
             """;
 
     // Los segmentos con un mantenimiento en ejecución pasan a "En mantenimiento"
@@ -226,9 +235,34 @@ public class MantenimientoDao extends daos.BaseDao {
     try (Connection conn = getConnection()) {
       conn.setAutoCommit(false);
       try {
-        // 1. Estado de los mantenimientos según la fecha
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-          pstmt.executeUpdate();
+        // 1. Estado de los mantenimientos según la fecha.
+        //    Se revisa cada mantenimiento: si su estado debe cambiar, se cambia
+        //    y se anota en el historial del segmento.
+        ArrayList<Integer> ids = new ArrayList<>();
+        ArrayList<String> estadosActuales = new ArrayList<>();
+        ArrayList<String> estadosNuevos = new ArrayList<>();
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+          while (rs.next()) {
+            if (!rs.getString("estado").equals(rs.getString("estado_nuevo"))) {
+              ids.add(rs.getInt("id_mantenimiento"));
+              estadosActuales.add(rs.getString("estado"));
+              estadosNuevos.add(rs.getString("estado_nuevo"));
+            }
+          }
+        }
+
+        for (int i = 0; i < ids.size(); i++) {
+          try (PreparedStatement pstmt = conn.prepareStatement(sqlCambiarEstado)) {
+            pstmt.setString(1, estadosNuevos.get(i));
+            pstmt.setInt(2, ids.get(i));
+            pstmt.setString(3, estadosActuales.get(i));
+
+            if (pstmt.executeUpdate() == 1) {
+              HistorialSegmentoDao.registrarEventoMantenimiento(conn, ids.get(i), estadosNuevos.get(i));
+            }
+          }
         }
 
         // 2. Estado de las incidencias según los mantenimientos correctivos de sus segmentos
@@ -549,12 +583,28 @@ public class MantenimientoDao extends daos.BaseDao {
           AND fecha_fin > NOW()
         """;
 
-    try (Connection conn = getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    try (Connection conn = getConnection()) {
+      conn.setAutoCommit(false);
 
-      pstmt.setInt(1, idMantenimiento);
+      try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-      return pstmt.executeUpdate() == 1;
+        pstmt.setInt(1, idMantenimiento);
+
+        if (pstmt.executeUpdate() != 1) {
+          conn.rollback();
+          return false;
+        }
+
+        // Se anota en el historial del segmento
+        HistorialSegmentoDao.registrarEventoMantenimiento(conn, idMantenimiento, "Cancelado");
+
+        conn.commit();
+        return true;
+
+      } catch (SQLException e) {
+        conn.rollback();
+        throw e;
+      }
 
     } catch (SQLException e) {
       throw new IllegalStateException(
