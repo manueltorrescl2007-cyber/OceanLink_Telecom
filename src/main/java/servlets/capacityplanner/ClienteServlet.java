@@ -110,6 +110,7 @@ public class ClienteServlet extends HttpServlet {
             ? "activo" : "inactivo";
 
           realizado = clienteDao.cambiarEstado(idCliente, estado);
+          idEditado = idCliente; // volver a mostrar el mismo cliente
           mensaje = "activar".equals(action)
             ? "activado" : "desactivado";
 

@@ -218,7 +218,7 @@
             </form>
             <% } %>
             <% if ("Provisionada".equals(estadoActual) || "Activa".equals(estadoActual)) { %>
-                <p class="cambio-estado"><a class="id-solicitud" href="${pageContext.request.contextPath}/capacity_planner/servicios.jsp">Ver servicio</a></p>
+                <p class="cambio-estado"><a class="id-solicitud" href="${pageContext.request.contextPath}/ServicioServlet">Ver servicio</a></p>
             <% } %>
             <div class="acciones-detalle">
                 <% if ("Aprobada".equals(estadoActual)) { %>

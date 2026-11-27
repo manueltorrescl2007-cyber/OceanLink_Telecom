@@ -20,6 +20,13 @@
         return;
     }
 
+    // Nuevo cliente: formulario vacío
+    if ("nuevo".equals(request.getParameter("vista"))) {
+        request.removeAttribute("clienteSeleccionado");
+        request.getRequestDispatcher("/capacity_planner/cliente_form.jsp").forward(request, response);
+        return;
+    }
+
     // Usar el formulario que ya agregaste, sin cambiar el servlet.
     if ("formulario".equals(request.getParameter("vista"))
             || request.getAttribute("clienteFormulario") != null) {
@@ -193,7 +200,7 @@
                 <p id="sinCoincidenciasClientes" role="status" hidden>No hay clientes con ese nombre.</p>
                 <!-- Formularios separados; conservamos el estilo de los botones -->
                 <div class="botones-clientes">
-                    <button class="boton primario" type="button" onclick="location.href='${pageContext.request.contextPath}/capacity_planner/cliente_form.jsp'">+ Nuevo cliente</button>
+                    <button class="boton primario" type="button" onclick="location.href='<%= servlet %>?vista=nuevo'">+ Nuevo cliente</button>
                     <button class="boton secundario" type="button" <%= cliente == null ? "disabled" : "" %> onclick="location.href='<%= servlet %>?id=<%= idCliente %>&amp;vista=formulario'">Editar cliente</button>
                     <button class="boton peligro" type="button" <%= cliente == null ? "disabled" : "" %> popovertarget="modalEliminarCliente"><%= "activo".equals(estadoCliente) ? "Desactivar" : "Activar" %> cliente</button>
                 </div>
