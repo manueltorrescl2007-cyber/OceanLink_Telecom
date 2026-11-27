@@ -51,6 +51,7 @@ public class SolicitudesServlet extends HttpServlet {
           if (id > 0) {
             request.setAttribute("solicitudSeleccionada",
               solicitudDao.obtenerSolicitud(id));
+            request.setAttribute("tieneServiciosAsociados", solicitudDao.tieneServiciosAsociados(id));
           }
 
           request.getRequestDispatcher("/capacity_planner/solicitudes.jsp")
@@ -190,14 +191,17 @@ public class SolicitudesServlet extends HttpServlet {
           response.sendRedirect(urlLista(request) + "&mensaje=guardado");
           break;
 
+        case "volverEvaluacion":
         case "cambiarEstado":
           int idEstado =
             parseId(request.getParameter("id_solicitud"));
 
-          String nuevoEstado = request.getParameter("estado");
+          boolean volverEvaluacion = "volverEvaluacion".equals(action);
+          String nuevoEstado = volverEvaluacion ? "En evaluacion" : request.getParameter("estado");
 
-          boolean actualizado =
-            solicitudDao.cambiarEstado(idEstado, nuevoEstado);
+          boolean actualizado = volverEvaluacion
+            ? solicitudDao.volverAEvaluacion(idEstado)
+            : solicitudDao.cambiarEstado(idEstado, nuevoEstado);
 
           if (actualizado) {
             String estadoNotificado = "En evaluacion".equals(nuevoEstado)

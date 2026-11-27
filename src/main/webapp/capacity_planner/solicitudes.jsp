@@ -172,6 +172,7 @@
         <% if (seleccionada != null) {
             Solicitud s = seleccionada;
             String estadoActual = s.getEstado();
+            boolean tieneServiciosAsociados = Boolean.TRUE.equals(request.getAttribute("tieneServiciosAsociados"));
             boolean editable = "Registrada".equals(estadoActual)
                     || "En evaluacion".equals(estadoActual)
                     || "Pendiente por capacidad".equals(estadoActual);
@@ -220,10 +221,20 @@
                 <p class="cambio-estado"><a class="id-solicitud" href="${pageContext.request.contextPath}/capacity_planner/servicios.jsp">Ver servicio</a></p>
             <% } %>
             <div class="acciones-detalle">
-                <% if (editable) { %>
+                <% if ("Aprobada".equals(estadoActual)) { %>
+                    <form method="post" action="<%= servlet %>"
+                          onsubmit="return confirm('¿Deseas devolver esta solicitud a evaluación?');">
+                        <input type="hidden" name="action" value="volverEvaluacion">
+                        <input type="hidden" name="id_solicitud" value="<%= s.getIdSolicitud() %>">
+                        <input type="hidden" name="filtroEstado" value="<%= texto(filtro) %>">
+                        <input type="hidden" name="pagina" value="<%= paginaActual %>">
+                        <button class="boton secundario" type="submit">Volver a evaluación</button>
+                    </form>
+                <% } %>
+                <% if (editable && !tieneServiciosAsociados) { %>
                     <a class="boton secundario" href="<%= servlet %>?action=editar&amp;id=<%= s.getIdSolicitud() %><%= contextoLista %>">Editar solicitud</a>
                 <% } %>
-                <% if (editable || "Rechazada".equals(estadoActual)) { %>
+                <% if (!tieneServiciosAsociados && (editable || "Rechazada".equals(estadoActual))) { %>
                     <button class="boton-eliminar-solicitud" type="button" popovertarget="confirmarEliminar">Eliminar solicitud</button>
                 <% } %>
             </div>

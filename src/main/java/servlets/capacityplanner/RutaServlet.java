@@ -14,7 +14,12 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -62,7 +67,7 @@ public class RutaServlet extends HttpServlet {
     }
     RutaDao dao = new RutaDao();
     try {
-      if (Set.of("guardar", "actualizar", "agregar", "quitar").contains(accion)) {
+      if (Set.of("guardar", "actualizar", "agregar", "quitar", "buscarRecorrido").contains(accion)) {
         procesarFormulario(request, response, dao, accion);
       } else if ("eliminar".equals(accion)) {
         int idRuta = id(request.getParameter("id_ruta"));
@@ -86,7 +91,7 @@ public class RutaServlet extends HttpServlet {
       };
       request.setAttribute("error", mensaje);
       try {
-        if (Set.of("guardar", "actualizar", "agregar", "quitar").contains(accion)) {
+        if (Set.of("guardar", "actualizar", "agregar", "quitar", "buscarRecorrido").contains(accion)) {
           mostrarFormulario(request, response);
         } else {
           mostrarRutas(request, response, dao);
@@ -117,8 +122,21 @@ public class RutaServlet extends HttpServlet {
     ruta.setIdLandingDestino(idEstacionFormulario(request, estaciones, "destino"));
     ruta.setEstado(texto(request.getParameter("estado_ruta")));
 
+    int origen = ruta.getIdLandingOrigen();
+    int destino = ruta.getIdLandingDestino();
     String codigos = texto(request.getParameter("segmentos"));
-    if ("quitar".equals(accion)) {
+    if ("buscarRecorrido".equals(accion)) {
+      if (origen <= 0 || destino <= 0 || origen == destino) {
+        request.setAttribute("error", "Selecciona estaciones de origen y destino diferentes.");
+      } else {
+        List<Segmento> sugeridos = buscarRecorrido(origen, destino, segmentos);
+        if (sugeridos.isEmpty()) {
+          request.setAttribute("error", "No hay un recorrido disponible entre las estaciones seleccionadas.");
+        } else {
+          codigos = sugeridos.stream().map(Segmento::getCodigo).collect(Collectors.joining(","));
+        }
+      }
+    } else if ("quitar".equals(accion)) {
       codigos = codigos.contains(",") ? codigos.substring(0, codigos.lastIndexOf(',')) : "";
     } else if ("agregar".equals(accion)) {
       String siguiente = texto(request.getParameter("siguiente"));
@@ -129,8 +147,6 @@ public class RutaServlet extends HttpServlet {
 
     request.setAttribute("rutaFormulario", ruta);
     request.setAttribute("segmentosFormulario", codigos);
-    int origen = ruta.getIdLandingOrigen();
-    int destino = ruta.getIdLandingDestino();
     ruta.setNombre(origen > 0 && destino > 0 && origen != destino
       ? nombreRuta(dao.listarRutas(), segmentos, idRuta, origen, destino) : "");
 
@@ -260,6 +276,59 @@ public class RutaServlet extends HttpServlet {
     if (actual != destino) return "El último segmento debe terminar en la estación de destino.";
     ruta.setSegmentos(seleccionados);
     return null;
+  }
+
+  static List<Segmento> buscarRecorrido(int origen, int destino, List<Segmento> segmentos) {
+    ArrayDeque<Integer> pendientes = new ArrayDeque<>();
+    Map<Integer, Segmento> llegada = new HashMap<>();
+    pendientes.add(origen);
+    llegada.put(origen, null);
+
+    // La búsqueda por niveles encuentra primero el recorrido de menos tramos.
+    while (!pendientes.isEmpty() && !llegada.containsKey(destino)) {
+      int actual = pendientes.remove();
+      for (Segmento segmento : segmentos) {
+        int siguiente = segmento.getIdLandingFinal();
+        if (segmento.getIdLandingInicial() == actual
+          && !"Fuera de servicio".equals(segmento.getEstado())
+          && !llegada.containsKey(siguiente)) {
+          llegada.put(siguiente, segmento);
+          pendientes.add(siguiente);
+        }
+      }
+    }
+
+    if (!llegada.containsKey(destino)) return List.of();
+    List<Segmento> recorrido = new ArrayList<>();
+    for (int actual = destino; actual != origen; ) {
+      Segmento tramo = llegada.get(actual);
+      recorrido.add(tramo);
+      actual = tramo.getIdLandingInicial();
+    }
+    Collections.reverse(recorrido);
+    return recorrido;
+  }
+
+  public static Set<Integer> estacionesConCaminoAlDestino(
+    int destino, Set<Integer> visitadas, List<Segmento> segmentos) {
+    Set<Integer> alcanzables = new HashSet<>();
+    if (visitadas.contains(destino)) return alcanzables;
+    alcanzables.add(destino);
+
+    // Recorre las conexiones hacia atrás desde el destino.
+    boolean huboCambios;
+    do {
+      huboCambios = false;
+      for (Segmento segmento : segmentos) {
+        int inicial = segmento.getIdLandingInicial();
+        if (!visitadas.contains(inicial)
+          && alcanzables.contains(segmento.getIdLandingFinal())
+          && alcanzables.add(inicial)) {
+          huboCambios = true;
+        }
+      }
+    } while (huboCambios);
+    return alcanzables;
   }
 
   private boolean estacionExiste(List<LandingStation> estaciones, int idEstacion) {

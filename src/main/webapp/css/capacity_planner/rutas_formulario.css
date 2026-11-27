@@ -46,7 +46,7 @@
 .ruta-recorrido {
   min-width: 0;
   margin: 24px 0;
-  padding: 16px;
+  padding: clamp(16px, 3vw, 24px);
   border: 1px solid #d9e1e8;
   border-radius: 8px;
 }
@@ -57,9 +57,67 @@
   font-weight: bold;
 }
 
-.ruta-recorrido ol { padding-left: 28px; }
-.ruta-recorrido li { padding: 7px 0; }
-.ruta-recorrido p { margin-bottom: 12px; color: #64748b; }
+.ruta-tramos {
+  margin: 0 0 20px;
+  padding-inline-start: 26px;
+}
+
+.ruta-tramos:empty,
+.ruta-controles:empty {
+  display: none;
+}
+
+.ruta-tramos li {
+  padding: 10px 8px;
+  line-height: 1.45;
+}
+
+.ruta-tramos li + li {
+  border-top: 1px solid #edf1f5;
+}
+
+.ruta-tramos li::marker,
+.ruta-tramos strong {
+  color: var(--color-primario, #0b3d5c);
+  font-weight: bold;
+}
+
+.ruta-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 14px 24px;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--color-fondo, #f5f7fa);
+}
+
+.ruta-resumen dt {
+  margin-bottom: 5px;
+  color: #64748b;
+}
+
+.ruta-resumen dd {
+  margin: 0;
+  color: var(--color-primario, #0b3d5c);
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.ruta-recorrido .ruta-aviso {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.ruta-recorrido .ruta-aviso-completo {
+  color: #216647;
+  font-weight: bold;
+}
+
+.ruta-aviso + .ruta-controles:not(:empty) {
+  margin-top: 16px;
+}
 
 .ruta-controles {
   display: flex;

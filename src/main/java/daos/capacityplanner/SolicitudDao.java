@@ -186,6 +186,34 @@ public class SolicitudDao extends BaseDao {
     }
   }
 
+  public boolean volverAEvaluacion(int idSolicitud) throws SQLException {
+    String sql = """
+      UPDATE solicitudes SET estado = 'En evaluacion'
+      WHERE id_solicitud = ? AND estado = 'Aprobada'
+        AND NOT EXISTS (
+          SELECT 1 FROM servicios sv
+          WHERE sv.id_solicitud = solicitudes.id_solicitud
+            AND sv.estado <> 'Cancelado'
+        )
+      """;
+    try (Connection conn = getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+      pstmt.setInt(1, idSolicitud);
+      return pstmt.executeUpdate() == 1;
+    }
+  }
+
+  public boolean tieneServiciosAsociados(int idSolicitud) throws SQLException {
+    String sql = "SELECT 1 FROM servicios WHERE id_solicitud = ? LIMIT 1";
+    try (Connection conn = getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+      pstmt.setInt(1, idSolicitud);
+      try (ResultSet rs = pstmt.executeQuery()) {
+        return rs.next();
+      }
+    }
+  }
+
   // Eliminar solicitudes no aprobadas y sin servicios asociados
   public boolean eliminarSolicitud(int idSolicitud)
     throws SQLException {

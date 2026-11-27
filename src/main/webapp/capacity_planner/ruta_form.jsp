@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Set" %>
+<%@ page import="servlets.capacityplanner.RutaServlet" %>
 <%@ page import="beans.capacityplanner.Ruta" %>
 <%@ page import="beans.capacityplanner.Segmento" %>
 <%@ page import="beans.capacityplanner.LandingStation" %>
@@ -46,7 +48,7 @@
           href="${pageContext.request.contextPath}/css/capacity_planner/rutas.css?v=4">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/rutas_formulario.css?v=3">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/capacity_planner/rutas_formulario.css?v=4">
 </head>
 <body class="vista-rutas">
 
@@ -192,6 +194,7 @@
 
     <div class="acciones">
         <button class="boton secundario" name="accion" value="actualizar" type="submit">Aplicar estaciones</button>
+        <button class="boton primario" name="accion" value="buscarRecorrido" type="submit">Buscar recorrido</button>
     </div>
 
     <%
@@ -201,18 +204,25 @@
         }
         java.util.Set<String> usados = new java.util.HashSet<>();
         int actual = origen;
+        Set<Integer> visitadas = new java.util.HashSet<>();
+        visitadas.add(origen);
         boolean continuo = true;
+        long disponible = Long.MAX_VALUE;
         String[] recorrido = codigos.isEmpty() ? new String[0] : codigos.split(",", -1);
     %>
     <fieldset class="ruta-recorrido">
         <legend>Recorrido</legend>
-        <ol aria-label="Segmentos en orden">
+        <ol class="ruta-tramos" aria-label="Segmentos en orden">
             <% for (String codigo : recorrido) {
                 String clave = codigo.trim().toUpperCase(java.util.Locale.ROOT);
                 Segmento tramo = porCodigo.get(clave);
                 boolean repetido = !usados.add(clave);
                 continuo = continuo && tramo != null && !repetido && tramo.getIdLandingInicial() == actual;
-                if (tramo != null) actual = tramo.getIdLandingFinal();
+                if (tramo != null) {
+                    actual = tramo.getIdLandingFinal();
+                    visitadas.add(actual);
+                    disponible = Math.min(disponible, tramo.getCapacidadDisponible());
+                }
             %>
                 <li>
                     <strong><%= texto(codigo.trim()) %></strong>
@@ -228,7 +238,9 @@
             boolean extremos = origen > 0 && destino > 0 && origen != destino;
             boolean completo = extremos && continuo && recorrido.length > 0 && actual == destino;
             List<Segmento> siguientes = new java.util.ArrayList<>();
+            Set<Integer> alcanzables = Set.of();
             if (extremos && continuo && !completo) {
+                alcanzables = RutaServlet.estacionesConCaminoAlDestino(destino, visitadas, segmentos);
                 for (Segmento tramo : segmentos) {
                     if (tramo.getIdLandingInicial() == actual
                             && !usados.contains(tramo.getCodigo().toUpperCase(java.util.Locale.ROOT))) {
@@ -236,26 +248,62 @@
                     }
                 }
             }
+            boolean hayContinuacion = false;
+            for (Segmento tramo : siguientes) {
+                if (alcanzables.contains(tramo.getIdLandingFinal())) {
+                    hayContinuacion = true;
+                    break;
+                }
+            }
+            String nombreActual = "";
+            String nombreDestino = "";
+            for (LandingStation estacion : estaciones) {
+                if (estacion.getIdLanding() == actual) nombreActual = estacion.getNombre();
+                if (estacion.getIdLanding() == destino) nombreDestino = estacion.getNombre();
+            }
         %>
-        <p><%= !extremos ? "Elige un origen y un destino diferentes y pulsa Aplicar estaciones."
+        <% if (extremos && continuo) { %>
+            <dl class="ruta-resumen">
+                <div>
+                    <dt>Estación actual</dt>
+                    <dd><%= texto(nombreActual) %></dd>
+                </div>
+                <div>
+                    <dt>Destino final</dt>
+                    <dd><%= texto(nombreDestino) %></dd>
+                </div>
+                <% if (completo) { %>
+                    <div>
+                        <dt>Capacidad disponible del recorrido</dt>
+                        <dd><%= disponible %> Gbps</dd>
+                    </div>
+                <% } %>
+            </dl>
+        <% } %>
+        <p class="ruta-aviso<%= completo ? " ruta-aviso-completo" : "" %>"><%= !extremos ? "Elige el origen y el destino para buscar un recorrido o añadir los tramos manualmente."
             : !continuo ? "Quita tramos desde el final para corregir el recorrido."
             : completo ? "El recorrido llega al destino."
             : siguientes.isEmpty() ? "No hay tramos que continúen desde aquí."
-            : "Elige un tramo que salga de la estación actual." %></p>
+            : !hayContinuacion ? "Ningún tramo disponible continúa hacia el destino. Quita el último tramo o revisa las estaciones."
+            : "Elige un tramo habilitado para continuar hacia el destino." %></p>
         <div class="ruta-controles">
             <% if (!siguientes.isEmpty()) { %>
                 <div>
                     <label for="siguiente-segmento">Siguiente segmento</label>
                     <select id="siguiente-segmento" name="siguiente">
                         <option value="">Selecciona un segmento</option>
-                        <% for (Segmento tramo : siguientes) { %>
-                            <option value="<%= texto(tramo.getCodigo()) %>">
+                        <% for (Segmento tramo : siguientes) {
+                            boolean conecta = alcanzables.contains(tramo.getIdLandingFinal());
+                        %>
+                            <option value="<%= texto(tramo.getCodigo()) %>" <%= conecta ? "" : "disabled" %>>
                                 <%= texto(tramo.getCodigo()) %> · <%= texto(tramo.getNombreFinal()) %>
+                                <%= conecta ? "" : " · Sin conexión al destino" %>
                             </option>
                         <% } %>
                     </select>
                 </div>
-                <button class="boton secundario" name="accion" value="agregar" type="submit">Añadir segmento</button>
+                <button class="boton secundario" name="accion" value="agregar" type="submit"
+                        <%= hayContinuacion ? "" : "disabled" %>>Añadir segmento</button>
             <% } %>
             <% if (recorrido.length > 0) { %>
                 <button class="boton secundario" name="accion" value="quitar" type="submit" formnovalidate>Quitar último</button>
