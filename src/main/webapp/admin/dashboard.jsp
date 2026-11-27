@@ -165,7 +165,7 @@
         </div>
 
         <div class="mapa-contenedor">
-          <img src="${pageContext.request.contextPath}/img/mapa_red.svg"
+          <img src="${pageContext.request.contextPath}/img/mapa_red.png"
                alt="Mapa de topología de red submarina OceanLink"
                class="mapa-topologia-img">
         </div>

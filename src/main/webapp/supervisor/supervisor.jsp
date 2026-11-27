@@ -359,7 +359,7 @@
 
         <div class="contenedor-mapa-dashboard">
           <img class="imagen-mapa-red"
-               src="${pageContext.request.contextPath}/img/mapa_red.svg"
+               src="${pageContext.request.contextPath}/img/mapa_red.png"
                alt="Mapa de la red OceanLink: landing stations y segmentos en la costa del Pacífico">
         </div>
       </article>
