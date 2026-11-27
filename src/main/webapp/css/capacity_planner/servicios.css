@@ -68,9 +68,22 @@
 .encabezado-detalle { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
 .encabezado-detalle h2 { font-size: 20px; color: #0b3d5c; }
 .encabezado-detalle a { font-size: 28px; color: #64748b; text-decoration: none; }
-.datos-detalle { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.datos-detalle {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px 24px;
+  padding: 18px 20px;
+  border: 1px solid #e8edf2;
+  border-radius: 8px;
+  background: var(--color-fondo, #f5f7fa);
+}
 .datos-detalle span { display: block; margin-bottom: 7px; color: #64748b; font-size: 12px; }
-.datos-detalle strong { font-size: 14px; }
+.datos-detalle strong { font-size: 14px; overflow-wrap: anywhere; }
+.datos-detalle strong.estado { font-size: 12px; }
+.datos-detalle a { color: var(--color-primario, #0b3d5c); }
+.segmentos-del-servicio { margin-top: 24px; }
+.segmentos-del-servicio h3 { margin: 0 0 12px; color: var(--color-primario, #0b3d5c); }
+.segmentos-del-servicio .ayuda { margin: 10px 0 0; }
 .acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 
 /* 7. MODAL: formulario que aparece al pulsar Nuevo servicio. */

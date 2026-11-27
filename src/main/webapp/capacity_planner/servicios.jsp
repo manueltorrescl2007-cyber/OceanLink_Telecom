@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Objects" %>
 <%@ page import="beans.capacityplanner.Servicio" %>
@@ -6,6 +7,8 @@
 <%@ page import="beans.capacityplanner.Ruta" %>
 <%@ page import="beans.capacityplanner.Segmento" %>
 <%!
+    private static final DateTimeFormatter FORMATO_ACTIVACION = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
     private String texto(String valor) {
         return valor == null ? "" : valor.replace("&", "&amp;")
                 .replace("<", "&lt;").replace(">", "&gt;")
@@ -118,7 +121,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= nuevo ? "Nuevo servicio" : "Servicios" %> | OceanLink</title>
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/capacity_planner/servicios.css">
+          href="${pageContext.request.contextPath}/css/capacity_planner/servicios.css?v=2">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/barras.css">
     <link rel="stylesheet"
@@ -444,12 +447,12 @@
                     <strong>
                         <%= seleccionado.getFechaActivacion() == null
                                 ? "Sin activar"
-                                : seleccionado.getFechaActivacion().toString() %>
+                                : seleccionado.getFechaActivacion().toLocalDateTime().format(FORMATO_ACTIVACION) %>
                     </strong>
                 </div>
                 <div>
                     <span>Estado del servicio</span>
-                    <strong><%= texto(seleccionado.getEstado()) %></strong>
+                    <strong class="estado <%= texto(seleccionado.getEstado()).toLowerCase(java.util.Locale.ROOT) %>"><%= texto(seleccionado.getEstado()) %></strong>
                 </div>
                 <div>
                     <span>Origen</span>
@@ -474,35 +477,37 @@
             <% if (segmentosServicio != null && !segmentosServicio.isEmpty()) {
                 int orden = 1;
             %>
-                <h3>Segmentos de la ruta</h3>
-                <div class="contenedor-tabla">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Orden</th>
-                            <th>Segmento</th>
-                            <th>Reservada total</th>
-                            <th>Ocupada total</th>
-                            <th>Estado</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <% for (Segmento segmento : segmentosServicio) { %>
+                <section class="segmentos-del-servicio" aria-labelledby="titulo-segmentos-servicio">
+                    <h3 id="titulo-segmentos-servicio">Segmentos de la ruta</h3>
+                    <div class="contenedor-tabla">
+                        <table>
+                            <thead>
                             <tr>
-                                <td><%= orden++ %></td>
-                                <td><%= texto(segmento.getCodigo()) %></td>
-                                <td><%= segmento.getCapacidadReservada() %> Gbps</td>
-                                <td><%= segmento.getCapacidadOcupada() %> Gbps</td>
-                                <td><%= texto(segmento.getEstado()) %></td>
+                                <th>Orden</th>
+                                <th>Segmento</th>
+                                <th>Reservada total</th>
+                                <th>Ocupada total</th>
+                                <th>Estado</th>
                             </tr>
-                        <% } %>
-                        </tbody>
-                    </table>
-                </div>
-                <p class="ayuda">
-                    Las capacidades de cada segmento incluyen todos
-                    los servicios que lo utilizan.
-                </p>
+                            </thead>
+                            <tbody>
+                            <% for (Segmento segmento : segmentosServicio) { %>
+                                <tr>
+                                    <td><%= orden++ %></td>
+                                    <td><%= texto(segmento.getCodigo()) %></td>
+                                    <td><%= segmento.getCapacidadReservada() %> Gbps</td>
+                                    <td><%= segmento.getCapacidadOcupada() %> Gbps</td>
+                                    <td><%= texto(segmento.getEstado()) %></td>
+                                </tr>
+                            <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="ayuda">
+                        Las capacidades de cada segmento incluyen todos
+                        los servicios que lo utilizan.
+                    </p>
+                </section>
             <% } %>
 
             <div class="acciones">
